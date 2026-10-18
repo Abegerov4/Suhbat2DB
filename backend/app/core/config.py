@@ -19,6 +19,18 @@ class Settings(BaseSettings):
     app_database_url: str
     qdrant_url: str
     jwt_secret: SecretStr
+    jwt_ttl_minutes: int = 24 * 60
+    # ключ Fernet для шифрования строк подключения к пользовательским БД
+    app_encryption_key: SecretStr
+    cors_origins: list[str] = ["http://localhost:3000"]
+
+    # Первый администратор создаётся при старте, если его ещё нет
+    admin_email: str | None = None
+    admin_password: SecretStr | None = None
+
+    # Демо-БД регистрируется как источник данных при старте (если задано)
+    demo_datasource_url: SecretStr | None = None
+    demo_datasource_name: str = "Демо: продажи в Казахстане"
 
     # LLM (обязательными станут в роли 5)
     llm_primary_provider: Literal["anthropic", "openai"] = "anthropic"

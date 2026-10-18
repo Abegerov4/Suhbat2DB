@@ -16,6 +16,7 @@ render() {
       LANGFUSE_PUBLIC_KEY) value="pk-lf-$(hex 16)" ;;
       LANGFUSE_SECRET_KEY) value="sk-lf-$(hex 16)" ;;
       LANGFUSE_ENCRYPTION_KEY) value="$(hex 32)" ;;  # ровно 64 hex-символа
+      APP_ENCRYPTION_KEY) value="$(openssl rand -base64 32 | tr '+/' '-_')" ;;  # формат Fernet
       *) value="$(hex 24)" ;;
     esac
     echo "${key}=${value}"

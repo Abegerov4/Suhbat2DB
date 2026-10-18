@@ -47,4 +47,4 @@ jobs:
         run: uv run mypy app tests
 
       - name: Pytest
-        run: uv run pytest
+        run: uv run pytest --cov --cov-report=term-missing:skip-covered --cov-fail-under=80

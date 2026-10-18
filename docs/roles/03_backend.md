@@ -1,53 +1,82 @@
 # Роль 3. Backend
 
+**Статус: ✅ выполнена** (октябрь 2026)
+
 **Цель:** FastAPI-сервис со всеми эндпоинтами из [`CONTRACTS.md`](../CONTRACTS.md). Вместо агента пока работает заглушка, которая отдаёт корректный SSE-поток.
 **Зависит от:** роли 1 и 2.
-**Нужно для:** SQL Validator (интроспекция схемы), AI Agent (точка запуска графа), Frontend (API).
+**Нужно для:** SQL Validator (интроспекция схемы, пулы соединений), AI Agent (точка запуска графа), Frontend (API).
+
+## Структура
+
+```text
+backend/app/
+├── main.py              # create_app(): обработчики ошибок, логи, CORS, роутеры, lifespan
+├── bootstrap.py         # при старте: первый admin из env, регистрация демо-БД
+├── core/                # config, db (async SQLAlchemy), errors, logging, security
+├── models/              # таблицы БД приложения (роль 2)
+├── schemas/
+│   ├── api.py           # запросы и ответы REST
+│   ├── agent.py         # события агента и их нагрузка (CONTRACTS §2–3) — общие для ролей 4–5
+│   └── schema_snapshot.py
+├── services/
+│   ├── target_db.py     # подключение к БД пользователя: проверка прав, интроспекция, пулы
+│   ├── datasources.py   # регистрация и индексация источников
+│   ├── indexer.py       # интерфейс SchemaIndexer (реализация — роль 5)
+│   └── chat.py          # ход диалога: события агента → SSE, сохранение ответа и журнала
+├── agent/
+│   ├── runner.py        # интерфейс AgentRunner
+│   └── fake.py          # FakeAgentRunner
+└── api/                 # auth, datasources, sessions, messages, health, deps
+```
 
 ## Задачи
 
 ### 3.1 Каркас
-- [ ] Структура `backend/app/`: `api/`, `core/` (config, db, security), `models/`, `schemas/`, `services/`
-- [ ] Async SQLAlchemy + `asyncpg`, dependency `get_db()`, lifespan для пулов соединений
-- [ ] Единый обработчик ошибок в формате `{error: {code, message}}`
-- [ ] Структурированные логи (`structlog`), `request_id` в каждом логе
+- [x] Async SQLAlchemy + asyncpg, зависимость `DbSession`, корректное закрытие пулов в lifespan
+- [x] Единый формат ошибок `{error: {code, message}}`, в том числе для 404 по неизвестному пути и ошибок валидации (`details`)
+- [x] Структурированные логи `structlog` с `request_id` (заголовок `x-request-id`); JSON в prod, читаемый вывод в dev
 
 ### 3.2 Аутентификация
-- [ ] Регистрация и логин, хэширование `argon2` (или `bcrypt`), JWT (`pyjwt`), TTL 24 ч
-- [ ] Зависимости `current_user`, `require_role("admin")`
-- [ ] Первый `admin` создаётся из env (`ADMIN_EMAIL`, `ADMIN_PASSWORD`) при старте
+- [x] Регистрация (роль `analyst`), логин по JSON `{email, password}`, `GET /auth/me`
+- [x] `pwdlib` (Argon2), JWT (PyJWT, HS256, TTL 24 ч). Для неизвестного email проверяется хэш-заглушка, чтобы время ответа не выдавало существование пользователя
+- [x] Зависимости `CurrentUser`, `AdminUser`. В Swagger есть кнопка Authorize (HTTP Bearer)
+- [x] Первый `admin` создаётся из `ADMIN_EMAIL` / `ADMIN_PASSWORD` при старте
 
 ### 3.3 Источники данных
-- [ ] `POST /datasources`: проверка подключения → **проверка, что роль действительно read-only** (`SHOW default_transaction_read_only` и пробный `CREATE TEMP TABLE`, который должен упасть). Если роль может писать, подключение отклоняется с кодом `datasource_not_readonly`
-- [ ] Шифрование строки подключения (Fernet)
-- [ ] **Интроспекция схемы** → `SchemaSnapshot` (см. CONTRACTS §4): `information_schema.columns`, `pg_constraint` для PK и FK, `pg_description` для комментариев, `pg_class.reltuples` для оценки числа строк
-- [ ] `sample_values`: для текстовых столбцов с `n_distinct` ≤ 50 (из `pg_stats`) до 20 значений через `SELECT DISTINCT ... LIMIT 20`
-- [ ] Фоновая задача индексации (FastAPI `BackgroundTasks` для MVP) меняет статус `indexing → ready | error`. Сама индексация в Qdrant реализуется в роли 5, здесь вызывается интерфейс `SchemaIndexer.index(snapshot)` с пустой реализацией
-- [ ] Пул соединений к целевым БД кэшируется по `datasource_id`
+- [x] Проверка подключения и **прав роли** по системным каталогам. Изначально план предполагал пробный `CREATE TEMP TABLE`, но тесты роли 2 показали, что при включённом `default_transaction_read_only` он падает и у роли с правами на запись. Проверяются: атрибуты суперпользователя, `CREATE`/`TEMP` на базу, `CREATE` в схемах, `INSERT/UPDATE/DELETE/TRUNCATE` на таблицы, роли `pg_*_server_files`. В ошибке перечисляются конкретные нарушения
+- [x] Строка подключения хранится зашифрованной (Fernet, `APP_ENCRYPTION_KEY`)
+- [x] Интроспекция → `SchemaSnapshot`: таблицы и представления, типы (`format_type`), PK, FK (`schema.table.column`), комментарии, оценка числа строк, часовой пояс БД
+- [x] `sample_values`: все значения текстового столбца, если их ≤ 20. Кандидаты отбираются по `pg_stats.n_distinct` (с учётом отрицательных значений: −1 означает «все уникальны»), значения берутся `SELECT DISTINCT` с тайм-аутом 2 с. Изначально планировался список частых значений из `pg_stats`, но у справочников с уникальными значениями (`regions.name`) он пустой, а именно они нужны для сопоставления «Алматы» с «Алматинской областью»
+- [x] Индексация в фоне (`asyncio`-задача), статус `indexing → ready | error`. Интерфейс `SchemaIndexer` с пустой реализацией (Qdrant — роль 5)
+- [x] Пул соединений на источник (`TargetPools`), закрывается при удалении источника и остановке приложения
+- [x] Демо-БД регистрируется автоматически при старте (`DEMO_DATASOURCE_URL`). Если демо-БД ещё не заполнена, запуск не падает, а в лог пишется подсказка `make seed`
 
 ### 3.4 Сессии и сообщения
-- [ ] CRUD сессий, проверка владельца
-- [ ] `POST /sessions/{id}/messages` сохраняет сообщение пользователя и возвращает `StreamingResponse` (`text/event-stream`)
-- [ ] `POST /sessions/{id}/clarify` возвращает SSE и продолжает граф
-- [ ] **Заглушка агента** `FakeAgentRunner`: отдаёт события `step → sql → validation ×5 → result → answer → chart → done` с задержками. По слову «продажи» в вопросе отдаёт `clarification`. Это позволяет фронтенду работать до готовности агента
-- [ ] Интерфейс `AgentRunner` с методами `run(session_id, question)` и `resume(session_id, answers)`, оба возвращают `AsyncIterator[SSEEvent]`. В роли 5 заглушка заменяется на `LangGraphAgentRunner`
-- [ ] По окончании потока сохраняется сообщение ассистента (`sql`, `validation_report`, `result_meta`, `chart_spec`, `trace_id`) и запись в `query_log`
-- [ ] Отмена: если клиент закрыл соединение, выполнение прерывается
+- [x] CRUD сессий. Чужие сессии отдают 404, а не 403, чтобы не раскрывать их существование
+- [x] `POST /sessions/{id}/messages` и `/clarify` возвращают SSE (`fastapi.sse`). Ответ формируется вручную, а не через endpoint-генератор, чтобы проверки выше потока возвращали обычные HTTP-ошибки
+- [x] `FakeAgentRunner`: обычный ответ, уточнение (вопрос со словом «продаж»), отказ («удали», «drop»…)
+- [x] Интерфейс `AgentRunner.run / resume`. Заглушка подключена через `get_runner()`, в роли 5 её заменит LangGraph-агент
+- [x] По окончании потока сохраняется сообщение ассистента (SQL, отчёт валидатора, результат, график, уточнение, `trace_id`) и запись в `query_log`. `message_id` подставляется в `done`
+- [x] Один активный поток на сессию (`session_busy`). Пока не получен ответ на уточнение, новый вопрос не принимается (`clarification_pending`)
+- [x] Ошибка агента превращается в событие `error` + `done`, а не в обрыв соединения. Сессия освобождается и при обрыве клиентом
+- [x] Заголовок сессии = первый вопрос (до 80 символов)
 
 ### 3.5 Обратная связь
-- [ ] `POST /messages/{id}/feedback` сохраняет оценку в БД. В роли 5 добавляется отправка score в Langfuse по `trace_id`
+- [x] `POST /messages/{id}/feedback`: только для ответов ассистента в своей сессии, повторная оценка заменяет предыдущую (`ON CONFLICT DO UPDATE`)
+- [ ] Отправка score в Langfuse по `trace_id` — роль 5
 
 ### 3.6 Тесты
-- [ ] pytest + `httpx.AsyncClient`, тестовая БД (testcontainers или сервис в CI)
-- [ ] Тесты: auth (успех, неверный пароль, нет прав), datasource (read-only проверка отклоняет пишущую роль), интроспекция на демо-БД, SSE-поток заглушки заканчивается `done`
+- [x] 31 тест: auth, JWT, шифрование, источники данных (на специально созданной целевой БД с ролями «чтение» и «чтение + INSERT»), сессии, SSE-сценарии, уточнение, отказ, падение агента, приватность, обратная связь, bootstrap, миграции
+- [x] Покрытие 97% (порог в CI — 80%). В coverage включён учёт greenlet: без него строки после `await` в async SQLAlchemy не засчитывались
 
 ## Definition of Done
-- Все эндпоинты из CONTRACTS §1 работают, Swagger на `/docs` актуален
-- Демо-БД подключается через API, `GET /datasources/{id}/schema` возвращает полный снимок с комментариями и FK
-- Подключение с пишущей ролью отклоняется
-- SSE-заглушка проходит все сценарии из CONTRACTS §2, включая `clarification`
-- Покрытие тестами `api/` и `services/` ≥ 70%
+- [x] Все эндпоинты из CONTRACTS §1 работают, Swagger на `/docs` актуален
+- [x] Демо-БД подключается автоматически, `GET /datasources/{id}/schema` возвращает 11 таблиц с комментариями, FK и примерами значений
+- [x] Подключение с пишущей ролью и с суперпользователем отклоняется с перечнем нарушений
+- [x] SSE-заглушка проходит все сценарии из CONTRACTS §2, включая `clarification` → `/clarify`
+- [x] Покрытие `api/` и `services/` ≥ 70% (фактически 93–100%)
 
 ## База знаний
-- `prompting_memory_tools.md` §4.1 (Just-in-Time: схема и несколько строк вместо всех данных, то есть `sample_values`)
-- `ai_security.md` §2.3 (данные из БД, в том числе комментарии к столбцам, считаются untrusted)
+- `prompting_memory_tools.md` §4.1 (Just-in-Time: схема и примеры значений вместо всех данных)
+- `ai_security.md` §2.3 (значения из БД и комментарии к столбцам — недоверенные данные)
+- `ai_engineering.md` §7 (HITL: пауза графа и продолжение по ответу пользователя — здесь API-часть)

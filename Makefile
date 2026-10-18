@@ -29,7 +29,7 @@ test: test-backend test-demo-db test-frontend  ## Все тесты (нужны 
 test-backend:
 	@docker compose exec -T app-db sh -c 'psql -U "$$POSTGRES_USER" -tAc "SELECT 1 FROM pg_database WHERE datname = '"'"'app_test'"'"'" | grep -q 1 || createdb -U "$$POSTGRES_USER" app_test'
 	set -a && . ./.env && set +a && cd backend && \
-	TEST_DATABASE_URL="postgresql://$$APP_DB_USER:$$APP_DB_PASSWORD@localhost:$$APP_DB_PORT/app_test" uv run pytest
+	TEST_DATABASE_URL="postgresql://$$APP_DB_USER:$$APP_DB_PASSWORD@localhost:$$APP_DB_PORT/app_test" uv run pytest --cov --cov-report=term-missing:skip-covered --cov-fail-under=80
 
 test-demo-db:
 	cd demo_db && uv run pytest

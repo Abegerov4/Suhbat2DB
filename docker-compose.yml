@@ -64,6 +64,8 @@ services:
       APP_DATABASE_URL: postgresql://${APP_DB_USER:-app}:${APP_DB_PASSWORD}@app-db:5432/${APP_DB_NAME:-app}
       QDRANT_URL: http://qdrant:6333
       LANGFUSE_HOST: http://langfuse-web:3000
+      CORS_ORIGINS: '["http://localhost:${FRONTEND_PORT:-3000}"]'
+      DEMO_DATASOURCE_URL: postgresql://${TARGET_DB_READER_USER:-s2d_reader}:${TARGET_DB_READER_PASSWORD}@target-db:5432/${TARGET_DB_NAME:-demo}
     ports:
       - 127.0.0.1:${BACKEND_PORT:-8000}:8000
     depends_on:

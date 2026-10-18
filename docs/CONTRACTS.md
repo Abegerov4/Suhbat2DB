@@ -17,12 +17,12 @@
 | GET | `/datasources` | any | — | `[Datasource]` |
 | POST | `/datasources` | admin | `{name, connection_url}` | `Datasource` (статус `indexing`) |
 | GET | `/datasources/{id}/schema` | any | — | `SchemaSnapshot` |
-| POST | `/datasources/{id}/reindex` | admin | — | `Datasource` |
+| POST | `/datasources/{id}/reindex` | admin | — | `202` + `Datasource` |
 | DELETE | `/datasources/{id}` | admin | — | `204` |
 | GET | `/sessions` | any | — | `[Session]` |
 | POST | `/sessions` | any | `{datasource_id, title?}` | `Session` |
 | GET | `/sessions/{id}/messages` | owner | — | `[Message]` |
-| POST | `/sessions/{id}/messages` | owner | `{content}` | **SSE-поток** (раздел 2) |
+| POST | `/sessions/{id}/messages` | owner | `{content}` (1–2000 символов) | **SSE-поток** (раздел 2) |
 | POST | `/sessions/{id}/clarify` | owner | `{answers: [ClarificationAnswer]}` | **SSE-поток** (продолжение графа) |
 | POST | `/messages/{id}/feedback` | owner | `{score: 1 \| -1, comment?}` | `204` |
 
@@ -37,13 +37,34 @@ type Message = {
 type ClarificationAnswer = { ambiguity_id: string; option_id?: string; free_text?: string };
 ```
 
-Ошибки возвращаются в формате `{error: {code: string, message: string}}` с HTTP-кодами 400/401/403/404/409/422/500.
+Ошибки возвращаются в формате `{error: {code: string, message: string}}` с HTTP-кодами 400/401/403/404/409/422/500. Для `422 validation_error` добавляется `details: [{loc, msg, type}]`.
+
+| Код | HTTP | Когда |
+|---|---|---|
+| `unauthorized` | 401 | Нет токена, токен недействителен или просрочен |
+| `invalid_credentials` | 401 | Неверный email или пароль |
+| `forbidden` | 403 | Действие только для `admin` |
+| `email_taken` | 409 | Email уже зарегистрирован |
+| `datasource_not_found`, `session_not_found`, `message_not_found` | 404 | Объект не существует или принадлежит другому пользователю |
+| `unsupported_datasource` | 422 | URL не `postgresql://` |
+| `datasource_unreachable` | 422 | Не удалось подключиться |
+| `datasource_not_readonly` | 422 | У роли есть права на запись; в `message` перечислены нарушения |
+| `schema_not_ready` | 409 | Схема ещё индексируется |
+| `datasource_not_ready` | 409 | Вопрос к источнику, который не в статусе `ready` |
+| `session_busy` | 409 | Агент ещё отвечает в этой сессии |
+| `clarification_pending` | 409 | Новый вопрос до ответа на уточнение |
+| `no_pending_clarification` | 409 | `/clarify` без ожидающего уточнения |
+| `invalid_clarification` | 422 | Неизвестная неоднозначность или вариант, и нет `free_text` |
+| `validation_error` | 422 | Тело запроса не прошло валидацию |
+| `internal_error` | 500 | Непредвиденная ошибка |
+
+Проверка «только чтение» при подключении источника смотрит на **права роли** (суперпользователь, `CREATE`/`TEMP` на базу, `CREATE` в схемах, `INSERT/UPDATE/DELETE/TRUNCATE` на таблицы, роли `pg_*_server_files`), а не на `default_transaction_read_only`, который сессия может отключить сама.
 
 ---
 
 ## 2. SSE-события агента
 
-Поток `text/event-stream`. Каждое событие записывается как `event: <type>` и `data: <json>`. Порядок событий не фиксирован, но поток **всегда** заканчивается событием `done` или `error`.
+Поток `text/event-stream`. Каждое событие записывается как `event: <type>` и `data: <json>`. Порядок событий не фиксирован, но поток **всегда** заканчивается событием `done` (после `error` тоже приходит `done`). `message_id` в `done` — id сохранённого сообщения ассистента; его подставляет API-слой, а не агент.
 
 | `event` | `data` | Когда |
 |---|---|---|
@@ -120,8 +141,8 @@ async def execute_readonly(sql: str, conn: AsyncConnection, limits: Limits) -> Q
 class ColumnInfo(BaseModel):
     name: str; data_type: str; nullable: bool
     comment: str | None
-    is_pk: bool; fk: str | None              # "table.column"
-    sample_values: list[str] | None          # только для категориальных столбцов (≤ 20 значений)
+    is_pk: bool; fk: str | None              # "schema.table.column"
+    sample_values: list[str] | None          # все значения текстового столбца, если их ≤ 20 (value linking)
 
 class TableInfo(BaseModel):
     schema_name: str; name: str; comment: str | None
@@ -130,6 +151,7 @@ class TableInfo(BaseModel):
 
 class SchemaSnapshot(BaseModel):
     datasource_id: str
+    timezone: str | None                     # часовой пояс БД: агент учитывает его в датах
     tables: list[TableInfo]
     created_at: datetime
 ```
