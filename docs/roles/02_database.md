@@ -1,5 +1,7 @@
 # Роль 2. Database
 
+**Статус: ✅ выполнена** (октябрь 2026). Подробное описание демо-БД и её «ловушек» — в [docs/demo_db.md](../demo_db.md).
+
 **Цель:** демонстрационная БД, на которой реально возникают неоднозначные вопросы, безопасная роль для агента и схема БД приложения.
 **Зависит от:** роль 1 (контейнеры `app-db` и `target-db`).
 **Нужно для:** Backend, SQL Validator, AI Agent, Evals.
@@ -8,63 +10,57 @@
 
 ### 2.1 Демо-БД (`target-db`)
 
-Домен: **продажи розничной сети в Казахстане**. Его выбрали потому, что в нём естественно возникают все типы неоднозначности из README (§6).
+Домен: **продажи розничной сети электроники и товаров для дома в Казахстане**. Его выбрали потому, что в нём естественно возникают все типы неоднозначности из README (§6).
 
 | Таблица | Ключевые столбцы | Источник неоднозначности |
 |---|---|---|
-| `regions` | id, name | «Алматы» как город или как область (value) |
+| `regions` | id, name, region_type | «Алматы» как город или вместе с областью (value) |
 | `cities` | id, name, region_id | |
-| `customers` | id, full_name, city_id, segment (`b2c`/`b2b`), registered_at | «клиенты»: все или только активные (scope) |
-| `managers` | id, full_name, region_id, hired_at | «лучшие менеджеры»: по чему (scope) |
-| `categories`, `products` | id, name, category_id, price, cost | |
-| `orders` | id, customer_id, manager_id, status, created_at, total_amount | «продажи»: сумма или количество заказов (metric); `status` влияет на выбор между «оформленные» и «оплаченные» |
+| `customers` | id, full_name, city_id, segment (`b2c`/`b2b`), is_active, registered_at | «клиенты»: все, покупавшие или активные (scope) |
+| `managers` | id, full_name, region_id, hired_at, fired_at | «лучшие менеджеры»: по выручке или числу заказов, с уволенными или без (scope) |
+| `categories`, `products` | id, name, category_id, price, cost, is_discontinued | текущая цена или цена продажи (schema) |
+| `orders` | id, customer_id, manager_id, channel, status, created_at, discount_amount, total_amount | «продажи»: сумма или количество (metric); отменённые заказы; онлайн-заказы без менеджера |
 | `order_items` | order_id, product_id, quantity, unit_price | «продажи» как проданные единицы (metric) |
-| `payments` | id, order_id, paid_at, amount, method | дата «продажи»: дата заказа или дата оплаты (temporal) |
-| `returns` | id, order_id, returned_at, amount | «чистая выручка» с учётом возвратов или без |
-| `fiscal_calendar` | date, fiscal_year, fiscal_quarter | **финансовый год начинается 1 апреля**, поэтому квартал может быть календарным или финансовым (temporal) |
+| `payments` | id, order_id, paid_at, amount, method | дата заказа или дата оплаты (temporal); несколько платежей на заказ |
+| `returns` | id, order_id, returned_at, amount, reason | выручка с учётом возвратов или без |
+| `fiscal_calendar` | date, calendar_year/quarter, fiscal_year/quarter | **финансовый год начинается 1 апреля** (temporal) |
 
-- [ ] DDL в `demo_db/schema.sql` с PK, FK, индексами и `CHECK`
-- [ ] `COMMENT ON TABLE/COLUMN` на русском и английском для каждого объекта: из комментариев строятся описания для schema linking
-- [ ] Генератор данных `demo_db/seed.py` (Faker с `ru_RU`, фиксированный `seed` для воспроизводимости): ~5k клиентов, ~200 товаров, ~100k заказов за 3 года, сезонность, ~5% возвратов
-- [ ] Намеренные «ловушки» реального мира: заказы в статусе `cancelled`, `NULL` в `manager_id`, клиенты без заказов
+- [x] DDL в [`demo_db/schema.sql`](../../demo_db/schema.sql) с PK, FK, индексами и `CHECK` (в том числе `channel = 'online'` ⇔ `manager_id IS NULL`)
+- [x] `COMMENT ON TABLE/COLUMN` на русском и английском для каждого объекта (проверяется тестом)
+- [x] Генератор [`demo_db/seed.py`](../../demo_db/seed.py) (фиксированный seed, загрузка через `COPY`): 30k клиентов, 200 товаров, 100k заказов за 3 года, рост ~25% в год, сезонность, ~5% возвратов. Изначально планировалось 5k клиентов, но тогда на клиента приходилось ~20 заказов, а активными было 96% клиентов, что для магазина электроники неправдоподобно
+- [x] «Ловушки» реального мира: отменённые заказы, `NULL` в `manager_id`, клиенты без заказов, уволенные менеджеры, оплата частями, оплата в другом квартале
+- [x] Часовой пояс базы `Asia/Almaty`: кварталы и дни считаются по местному времени
 
 ### 2.2 Роль только для чтения
-```sql
-CREATE ROLE s2d_reader LOGIN PASSWORD '...' NOSUPERUSER NOCREATEDB NOCREATEROLE;
-GRANT CONNECT ON DATABASE demo TO s2d_reader;
-GRANT USAGE ON SCHEMA public TO s2d_reader;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO s2d_reader;
-ALTER ROLE s2d_reader SET default_transaction_read_only = on;
-ALTER ROLE s2d_reader SET statement_timeout = '5s';
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
-```
-- [ ] Тест: под `s2d_reader` не проходят `INSERT`, `UPDATE`, `DELETE`, `DROP`, `CREATE TEMP TABLE`, `COPY ... TO`, `pg_read_file`, `pg_sleep(10)` (срабатывает timeout)
-- [ ] Эта роль реализует уровень 5 валидатора (defense in depth): даже ошибка в коде не даст изменить данные
+- [x] Роль `s2d_reader` ([`demo_db/roles.sql`](../../demo_db/roles.sql)): только `CONNECT`, `USAGE`, `SELECT`. У `PUBLIC` отозваны права на базу (включая `TEMP`) и на схему `public`
+- [x] Ограничения сессии: `default_transaction_read_only`, `statement_timeout = 5s`, `idle_in_transaction_session_timeout`, `CONNECTION LIMIT 20`
+- [x] Тесты: 17 опасных команд × 2 режима (`default_transaction_read_only` можно отключить из сессии, поэтому гарантию дают права, и это проверяется отдельно), `GRANT` без эффекта, тайм-аут `pg_sleep`, отсутствие привилегий у роли
 
 ### 2.3 БД приложения (`app-db`)
 
 | Таблица | Столбцы |
 |---|---|
 | `users` | id (uuid), email (unique), password_hash, role (`admin`/`analyst`), created_at |
-| `datasources` | id, owner_id → users, name, dialect, connection_encrypted, status, error, schema_snapshot (jsonb), indexed_at |
-| `chat_sessions` | id (= LangGraph `thread_id`), user_id, datasource_id, title, created_at |
-| `messages` | id, session_id, role, content, sql, validation_report (jsonb), result_meta (jsonb), chart_spec (jsonb), clarification (jsonb), trace_id, created_at |
-| `feedback` | id, message_id, user_id, score (−1/1), comment, created_at |
-| `query_log` | id, session_id, sql, status (`ok`/`blocked`/`error`), blocked_level, duration_ms, row_count, created_at |
+| `datasources` | id, owner_id → users, name, dialect, connection_encrypted, status, error, schema_snapshot (jsonb), indexed_at, created_at |
+| `chat_sessions` | id (= LangGraph `thread_id`), user_id, datasource_id, title, created_at, updated_at |
+| `messages` | id, session_id, role, content, sql, validation_report, result_meta, chart_spec, clarification (jsonb), trace_id, created_at |
+| `feedback` | id, message_id, user_id, score (−1/1), comment, created_at; unique (message_id, user_id) |
+| `query_log` | id, session_id, sql, status (`ok`/`blocked`/`error`), blocked_level (1–5), duration_ms, row_count, created_at |
 
-- [ ] SQLAlchemy 2.0 модели и миграции **Alembic** (первая миграция `0001_init`)
-- [ ] Таблицы checkpoint'ов LangGraph не создаются вручную: их создаёт `PostgresSaver.setup()` в роли 5
-- [ ] `connection_encrypted` шифруется Fernet, ключ хранится в `ENCRYPTION_KEY` в env
+- [x] Модели SQLAlchemy 2.1 ([`backend/app/models`](../../backend/app/models)), перечисления как `VARCHAR + CHECK` (ADR-005)
+- [x] Миграция Alembic `0001_init`, применяется автоматически при старте контейнера backend
+- [x] Тест: `upgrade → check → downgrade → upgrade` на отдельной БД `app_test` (`alembic check` ловит изменения моделей без миграции)
+- [x] Таблицы checkpoint'ов LangGraph не создаются вручную: их создаст `PostgresSaver.setup()` в роли 5
+- [ ] Шифрование `connection_encrypted` (Fernet, `ENCRYPTION_KEY`) — реализуется в роли 3 вместе с API источников данных
 
-### 2.4 Бенчмарк-БД (для роли 7)
-- [ ] Скрипт загрузки выбранных БД **Spider** и **BIRD** в отдельные базы `target-db` (Spider и BIRD распространяются в SQLite, нужна конвертация в PostgreSQL через `pgloader` или sqlglot-транспиляцию DDL с последующей проверкой)
-- [ ] Для каждой загруженной БД свой `s2d_reader` с теми же ограничениями
+### 2.4 Бенчмарк-БД
+- [ ] **Перенесено в роль 7a** ([07_evals.md](07_evals.md)): загрузка нужна только для экспериментов, а выбор подмножества Spider и BIRD делается вместе с набором вопросов
 
 ## Definition of Done
-- `make seed` создаёт демо-БД с данными за < 2 минут, повторный запуск идемпотентен
-- Все тесты прав `s2d_reader` проходят (pytest)
-- `alembic upgrade head` создаёт схему приложения
-- В `docs/demo_db.md` есть ER-диаграмма (Mermaid) и список «ловушек» с примерами неоднозначных вопросов к ним
+- [x] `make seed` создаёт демо-БД за ~8 секунд (требование: < 2 минут), повторный запуск даёт побайтно те же данные
+- [x] Все тесты прав `s2d_reader` проходят (`make test-demo-db`: 68 тестов)
+- [x] `alembic upgrade head` создаёт схему приложения
+- [x] [`docs/demo_db.md`](../demo_db.md): ER-диаграмма, ловушки с примерами вопросов и посчитанными ответами для разных трактовок
 
 ## База знаний
 - `mcp.md` §2.5 (read-only пользователь БД для SQL-агента)

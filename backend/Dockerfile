@@ -12,6 +12,8 @@ ENV UV_COMPILE_BYTECODE=1 \
 COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-install-project --no-dev
 
+COPY alembic.ini ./
+COPY migrations ./migrations
 COPY app ./app
 
 RUN useradd --create-home --uid 1000 app
@@ -21,4 +23,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=3s --retries=5 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Миграции применяются при каждом старте (один экземпляр backend — гонки нет)
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]

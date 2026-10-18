@@ -1,0 +1,57 @@
+name: demo_db
+
+on:
+  push:
+    branches: [main]
+    paths: ["demo_db/**", ".github/workflows/demo_db.yml"]
+  pull_request:
+    paths: ["demo_db/**", ".github/workflows/demo_db.yml"]
+
+defaults:
+  run:
+    working-directory: demo_db
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: target_admin
+          POSTGRES_PASSWORD: ci-admin-password
+          POSTGRES_DB: demo
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U target_admin -d demo"
+          --health-interval 3s --health-timeout 3s --health-retries 10
+    env:
+      TARGET_DB_HOST: localhost
+      TARGET_DB_PORT: "5432"
+      TARGET_DB_NAME: demo
+      TARGET_DB_ADMIN_USER: target_admin
+      TARGET_DB_ADMIN_PASSWORD: ci-admin-password
+      TARGET_DB_READER_USER: s2d_reader
+      TARGET_DB_READER_PASSWORD: ci-reader-password
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+          cache-dependency-glob: demo_db/uv.lock
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Lint
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run mypy seed.py tests
+
+      - name: Seed (5% объёма)
+        run: uv run python seed.py --scale 0.05
+
+      - name: Tests
+        run: uv run pytest

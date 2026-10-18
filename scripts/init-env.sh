@@ -1,18 +1,15 @@
 #!/usr/bin/env bash
 # Создаёт .env из .env.example, заменяя <generated> на случайные секреты.
-# Существующий .env не перезаписывается.
+# Если .env уже есть, дописывает только переменные, которых в нём нет;
+# существующие значения не меняются.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-if [[ -f .env ]]; then
-  echo ".env уже существует — ничего не меняю"
-  exit 0
-fi
-
 hex() { openssl rand -hex "$1"; }
 
-while IFS= read -r line; do
+render() {
+  local line="$1" key value
   if [[ "$line" == *"=<generated>" ]]; then
     key="${line%%=*}"
     case "$key" in
@@ -25,7 +22,28 @@ while IFS= read -r line; do
   else
     echo "$line"
   fi
-done < .env.example > .env
+}
 
-chmod 600 .env
-echo ".env создан. Пароль Langfuse UI: см. LANGFUSE_INIT_USER_PASSWORD в .env"
+if [[ ! -f .env ]]; then
+  while IFS= read -r line; do render "$line"; done < .env.example > .env
+  chmod 600 .env
+  echo ".env создан. Пароль Langfuse UI: см. LANGFUSE_INIT_USER_PASSWORD в .env"
+  exit 0
+fi
+
+# файл мог быть отредактирован вручную без перевода строки в конце
+[[ -s .env && "$(tail -c1 .env)" != "" ]] && echo >> .env
+
+added=()
+while IFS= read -r line; do
+  [[ "$line" =~ ^([A-Z_][A-Z0-9_]*)= ]] || continue
+  key="${BASH_REMATCH[1]}"
+  if ! grep -q "^${key}=" .env; then
+    render "$line" >> .env
+    added+=("$key")
+  fi
+done < .env.example
+
+if (( ${#added[@]} )); then
+  echo "В .env добавлены: ${added[*]}"
+fi

@@ -313,10 +313,11 @@ class AgentState(TypedDict):
 │   ├── datasets/                # spider_subset, bird_subset, ambiguous_ru, unsafe
 │   ├── runners/                 # прогон baseline / agent, подсчёт метрик
 │   └── reports/
-├── demo_db/                     # демонстрационная БД (схема + seed)
+├── demo_db/                     # демо-БД: schema.sql, seed.py, роль s2d_reader, тесты
 ├── docs/
 │   ├── roles/                   # план разработки по ролям (01_devops … 08_documentation)
-│   └── CONTRACTS.md             # API, SSE-события, валидатор, состояние агента
+│   ├── CONTRACTS.md             # API, SSE-события, валидатор, состояние агента
+│   └── demo_db.md               # описание демо-БД и «ловушек» неоднозначности
 ├── infra/langfuse/              # self-hosted Langfuse (подключается в docker-compose через include)
 ├── scripts/init-env.sh          # генерация .env со случайными секретами
 ├── .github/workflows/           # CI: backend, frontend, compose
@@ -355,8 +356,10 @@ make ps        # статус: все сервисы должны быть healt
 **Разработка без Docker и проверки:**
 
 ```bash
+make seed      # заполнить демо-БД (~8 с; SCALE=0.1 — уменьшенный объём)
+make migrate   # миграции БД приложения (применяются и при старте backend)
 make lint      # ruff + mypy (strict) + eslint + tsc + prettier
-make test      # pytest + сборка фронтенда
+make test      # pytest (backend, демо-БД) + сборка фронтенда
 make format    # автоформатирование
 cd backend && uv run uvicorn app.main:app --reload
 cd frontend && npm run dev

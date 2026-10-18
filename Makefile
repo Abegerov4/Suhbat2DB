@@ -1,4 +1,4 @@
-.PHONY: help env up up-lite down logs ps test test-backend test-frontend lint format seed index eval-smoke
+.PHONY: help env up up-lite down logs ps test test-backend test-demo-db test-frontend lint format seed migrate index eval-smoke
 
 APP_SERVICES := app-db target-db qdrant backend frontend
 
@@ -23,24 +23,36 @@ ps:  ## Статус сервисов
 logs:  ## Логи backend
 	docker compose logs -f backend
 
-test: test-backend test-frontend  ## Все тесты
+test: test-backend test-demo-db test-frontend  ## Все тесты (нужны запущенные app-db и target-db)
 
+# Отдельная БД app_test: тест миграций откатывает схему до base
 test-backend:
-	cd backend && uv run pytest
+	@docker compose exec -T app-db sh -c 'psql -U "$$POSTGRES_USER" -tAc "SELECT 1 FROM pg_database WHERE datname = '"'"'app_test'"'"'" | grep -q 1 || createdb -U "$$POSTGRES_USER" app_test'
+	set -a && . ./.env && set +a && cd backend && \
+	TEST_DATABASE_URL="postgresql://$$APP_DB_USER:$$APP_DB_PASSWORD@localhost:$$APP_DB_PORT/app_test" uv run pytest
+
+test-demo-db:
+	cd demo_db && uv run pytest
 
 test-frontend:
 	cd frontend && npm run build
 
 lint:  ## Линтеры и проверка типов
 	cd backend && uv run ruff check . && uv run ruff format --check . && uv run mypy app tests
+	cd demo_db && uv run ruff check . && uv run ruff format --check . && uv run mypy seed.py tests
 	cd frontend && npm run lint && npm run typecheck && npm run format:check
 
 format:  ## Автоформатирование
 	cd backend && uv run ruff format . && uv run ruff check --fix .
+	cd demo_db && uv run ruff format . && uv run ruff check --fix .
 	cd frontend && npm run format
 
-seed:  ## Заполнить демо-БД (роль 2)
-	@echo "Будет реализовано в роли 2 (docs/roles/02_database.md)"
+SCALE ?= 1.0
+seed:  ## Пересоздать и заполнить демо-БД (SCALE=0.1 — уменьшенный объём)
+	cd demo_db && uv run python seed.py --scale $(SCALE)
+
+migrate:  ## Применить миграции БД приложения
+	docker compose exec backend alembic upgrade head
 
 index:  ## Проиндексировать схему в Qdrant (роль 5)
 	@echo "Будет реализовано в роли 5 (docs/roles/05_ai_agent.md)"
