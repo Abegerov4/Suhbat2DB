@@ -53,8 +53,13 @@ _runner: AgentRunner = FakeAgentRunner()
 
 
 def get_runner() -> AgentRunner:
-    """В роли 5 здесь будет LangGraphAgentRunner; в тестах подменяется через overrides."""
+    """LangGraphAgentRunner после create_agent(), иначе заглушка; в тестах — overrides."""
     return _runner
+
+
+def set_runner(runner: AgentRunner) -> None:
+    global _runner
+    _runner = runner
 
 
 Runner = Annotated[AgentRunner, Depends(get_runner)]

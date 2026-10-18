@@ -1,0 +1,507 @@
+[
+ {
+  "embedder": "text-embedding-3-small",
+  "mode": "dense",
+  "top_tables": 3,
+  "full_recall": 0.875,
+  "table_recall": 0.907,
+  "precision": 0.486,
+  "avg_tables": 3.5,
+  "misses": [
+   {
+    "id": "sl_02",
+    "missing": [
+     "cities",
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_12",
+    "missing": [
+     "cities",
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_24",
+    "missing": [
+     "categories"
+    ]
+   },
+   {
+    "id": "sl_28",
+    "missing": [
+     "regions"
+    ]
+   },
+   {
+    "id": "sl_30",
+    "missing": [
+     "orders"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "text-embedding-3-small",
+  "mode": "dense",
+  "top_tables": 5,
+  "full_recall": 0.9,
+  "table_recall": 0.947,
+  "precision": 0.333,
+  "avg_tables": 5.33,
+  "misses": [
+   {
+    "id": "sl_02",
+    "missing": [
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_12",
+    "missing": [
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_24",
+    "missing": [
+     "categories"
+    ]
+   },
+   {
+    "id": "sl_28",
+    "missing": [
+     "regions"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "text-embedding-3-small",
+  "mode": "dense",
+  "top_tables": 7,
+  "full_recall": 0.95,
+  "table_recall": 0.973,
+  "precision": 0.263,
+  "avg_tables": 6.95,
+  "misses": [
+   {
+    "id": "sl_02",
+    "missing": [
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_28",
+    "missing": [
+     "regions"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "—",
+  "mode": "sparse",
+  "top_tables": 3,
+  "full_recall": 0.775,
+  "table_recall": 0.853,
+  "precision": 0.538,
+  "avg_tables": 2.98,
+  "misses": [
+   {
+    "id": "sl_02",
+    "missing": [
+     "customers",
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_11",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_12",
+    "missing": [
+     "cities",
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_18",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_24",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_27",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_28",
+    "missing": [
+     "regions"
+    ]
+   },
+   {
+    "id": "sl_30",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_37",
+    "missing": [
+     "orders"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "—",
+  "mode": "sparse",
+  "top_tables": 5,
+  "full_recall": 0.8,
+  "table_recall": 0.867,
+  "precision": 0.428,
+  "avg_tables": 3.8,
+  "misses": [
+   {
+    "id": "sl_02",
+    "missing": [
+     "customers",
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_11",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_12",
+    "missing": [
+     "cities",
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_18",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_24",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_28",
+    "missing": [
+     "regions"
+    ]
+   },
+   {
+    "id": "sl_30",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_37",
+    "missing": [
+     "orders"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "—",
+  "mode": "sparse",
+  "top_tables": 7,
+  "full_recall": 0.85,
+  "table_recall": 0.907,
+  "precision": 0.43,
+  "avg_tables": 3.95,
+  "misses": [
+   {
+    "id": "sl_02",
+    "missing": [
+     "customers",
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_11",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_18",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_24",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_30",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_37",
+    "missing": [
+     "orders"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "text-embedding-3-small",
+  "mode": "hybrid",
+  "top_tables": 3,
+  "full_recall": 0.85,
+  "table_recall": 0.893,
+  "precision": 0.475,
+  "avg_tables": 3.52,
+  "misses": [
+   {
+    "id": "sl_02",
+    "missing": [
+     "cities",
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_12",
+    "missing": [
+     "cities",
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_18",
+    "missing": [
+     "orders"
+    ]
+   },
+   {
+    "id": "sl_24",
+    "missing": [
+     "categories"
+    ]
+   },
+   {
+    "id": "sl_28",
+    "missing": [
+     "regions"
+    ]
+   },
+   {
+    "id": "sl_30",
+    "missing": [
+     "orders"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "text-embedding-3-small",
+  "mode": "hybrid",
+  "top_tables": 5,
+  "full_recall": 0.9,
+  "table_recall": 0.947,
+  "precision": 0.338,
+  "avg_tables": 5.25,
+  "misses": [
+   {
+    "id": "sl_02",
+    "missing": [
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_12",
+    "missing": [
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_24",
+    "missing": [
+     "categories"
+    ]
+   },
+   {
+    "id": "sl_28",
+    "missing": [
+     "regions"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "text-embedding-3-small",
+  "mode": "hybrid",
+  "top_tables": 7,
+  "full_recall": 0.95,
+  "table_recall": 0.973,
+  "precision": 0.264,
+  "avg_tables": 6.92,
+  "misses": [
+   {
+    "id": "sl_02",
+    "missing": [
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_28",
+    "missing": [
+     "regions"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "text-embedding-3-large",
+  "mode": "dense",
+  "top_tables": 3,
+  "full_recall": 0.95,
+  "table_recall": 0.973,
+  "precision": 0.514,
+  "avg_tables": 3.55,
+  "misses": [
+   {
+    "id": "sl_12",
+    "missing": [
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_18",
+    "missing": [
+     "orders"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "text-embedding-3-large",
+  "mode": "dense",
+  "top_tables": 5,
+  "full_recall": 0.975,
+  "table_recall": 0.987,
+  "precision": 0.347,
+  "avg_tables": 5.33,
+  "misses": [
+   {
+    "id": "sl_12",
+    "missing": [
+     "customers"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "text-embedding-3-large",
+  "mode": "dense",
+  "top_tables": 7,
+  "full_recall": 0.975,
+  "table_recall": 0.987,
+  "precision": 0.268,
+  "avg_tables": 6.9,
+  "misses": [
+   {
+    "id": "sl_12",
+    "missing": [
+     "customers"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "text-embedding-3-large",
+  "mode": "hybrid",
+  "top_tables": 3,
+  "full_recall": 0.925,
+  "table_recall": 0.947,
+  "precision": 0.507,
+  "avg_tables": 3.5,
+  "misses": [
+   {
+    "id": "sl_02",
+    "missing": [
+     "cities",
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_12",
+    "missing": [
+     "customers"
+    ]
+   },
+   {
+    "id": "sl_18",
+    "missing": [
+     "orders"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "text-embedding-3-large",
+  "mode": "hybrid",
+  "top_tables": 5,
+  "full_recall": 0.975,
+  "table_recall": 0.987,
+  "precision": 0.351,
+  "avg_tables": 5.28,
+  "misses": [
+   {
+    "id": "sl_12",
+    "missing": [
+     "customers"
+    ]
+   }
+  ]
+ },
+ {
+  "embedder": "text-embedding-3-large",
+  "mode": "hybrid",
+  "top_tables": 7,
+  "full_recall": 0.975,
+  "table_recall": 0.987,
+  "precision": 0.27,
+  "avg_tables": 6.85,
+  "misses": [
+   {
+    "id": "sl_12",
+    "missing": [
+     "customers"
+    ]
+   }
+  ]
+ }
+]

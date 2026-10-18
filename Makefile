@@ -1,4 +1,4 @@
-.PHONY: help env up up-lite down logs ps test test-backend test-demo-db test-frontend lint format seed migrate index eval-smoke
+.PHONY: help env up up-lite up-langfuse down logs ps test test-backend test-demo-db test-frontend lint format seed migrate index smoke prompts eval-smoke
 
 APP_SERVICES := app-db target-db qdrant backend frontend
 
@@ -8,14 +8,16 @@ help:  ## Список команд
 env:  ## Создать .env со случайными секретами
 	@./scripts/init-env.sh
 
-up: env  ## Поднять все сервисы, включая Langfuse
+up: env  ## Поднять сервисы приложения
 	docker compose up -d --build
 
-up-lite: env  ## Поднять сервисы без Langfuse
-	docker compose up -d --build $(APP_SERVICES)
+up-lite: up  ## То же, что up (оставлено для совместимости)
+
+up-langfuse: env  ## Дополнительно поднять локальный Langfuse (http://localhost:3001)
+	docker compose --profile langfuse-local up -d
 
 down:  ## Остановить все сервисы
-	docker compose down
+	docker compose --profile langfuse-local down
 
 ps:  ## Статус сервисов
 	docker compose ps
@@ -56,8 +58,14 @@ seed:  ## Пересоздать и заполнить демо-БД (SCALE=0.1 
 migrate:  ## Применить миграции БД приложения
 	docker compose exec backend alembic upgrade head
 
-index:  ## Проиндексировать схему в Qdrant (роль 5)
-	@echo "Будет реализовано в роли 5 (docs/roles/05_ai_agent.md)"
+index:  ## Переиндексировать все источники данных в Qdrant
+	docker compose exec backend python -m scripts.reindex_all
+
+smoke:  ## Smoke-тест агента с настоящим LLM на 10 вопросах (нужен OPENAI_API_KEY)
+	cd backend && uv run python -m scripts.smoke_agent
+
+prompts:  ## Загрузить промпты в Langfuse (новая версия — только при изменении текста)
+	cd backend && uv run python -m scripts.push_prompts "$(MSG)"
 
 eval-smoke:  ## Быстрый прогон evals (роль 7)
 	@echo "Будет реализовано в роли 7 (docs/roles/07_evals.md)"

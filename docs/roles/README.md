@@ -12,7 +12,7 @@
 | 2 ✅ | Database | [02_database.md](02_database.md) | Демо-БД с данными и комментариями, read-only роль, схема БД приложения | Октябрь – ноябрь 2026 |
 | 3 ✅ | Backend | [03_backend.md](03_backend.md) | FastAPI: auth, источники данных, интроспекция схемы, сессии, SSE-заглушка агента | Ноябрь – декабрь 2026 |
 | 4 ✅ | SQL Validator | [04_sql_validator.md](04_sql_validator.md) | 5-уровневый валидатор и безопасное выполнение, покрытые тестами | Декабрь 2026 |
-| 5 | AI Agent | [05_ai_agent.md](05_ai_agent.md) | LangGraph-агент: schema linking, генерация, самокоррекция, уточнение, пояснение | Декабрь 2026 – март 2027 |
+| 5 ✅ | AI Agent | [05_ai_agent.md](05_ai_agent.md) | LangGraph-агент: schema linking, генерация, самокоррекция, уточнение, пояснение | Декабрь 2026 – март 2027 |
 | 6 | Frontend | [06_frontend.md](06_frontend.md) | Next.js: чат, уточнения, SQL и отчёт валидатора, таблица, графики | Январь – март 2027 |
 | 7 | Evals | [07_evals.md](07_evals.md) | Наборы данных, раннеры, метрики, A/B-эксперименты, `EVALS.md` | Ноябрь 2026 (наборы) → март 2027 (эксперименты) |
 | 8 | Documentation & Defense | [08_documentation.md](08_documentation.md) | `ARCHITECTURE.md`, текст диплома, презентация, демо-сценарий | Апрель – май 2027 |

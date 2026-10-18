@@ -5,7 +5,8 @@
 #   - наружу открыты только UI (localhost:3001) и MinIO (localhost:9090, нужен браузеру для медиа);
 #   - секреты только из .env, без значений по умолчанию;
 #   - headless-инициализация: организация, проект и API-ключи создаются при первом запуске,
-#     поэтому backend сразу получает LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY.
+#     ключи — LANGFUSE_LOCAL_PUBLIC_KEY / LANGFUSE_LOCAL_SECRET_KEY.
+#   - профиль langfuse-local: по умолчанию не запускается (основной вариант — Langfuse Cloud).
 
 x-langfuse-env: &langfuse-env
   NEXTAUTH_URL: http://localhost:3001
@@ -48,12 +49,14 @@ x-langfuse-depends: &langfuse-depends
 
 services:
   langfuse-worker:
+    profiles: ["langfuse-local"]
     image: docker.langfuse.com/langfuse/langfuse-worker:4
     restart: unless-stopped
     depends_on: *langfuse-depends
     environment: *langfuse-env
 
   langfuse-web:
+    profiles: ["langfuse-local"]
     image: docker.langfuse.com/langfuse/langfuse:4
     restart: unless-stopped
     depends_on: *langfuse-depends
@@ -68,8 +71,8 @@ services:
       LANGFUSE_INIT_ORG_NAME: Suhbat2DB
       LANGFUSE_INIT_PROJECT_ID: suhbat2db-dev
       LANGFUSE_INIT_PROJECT_NAME: suhbat2db-dev
-      LANGFUSE_INIT_PROJECT_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:?}
-      LANGFUSE_INIT_PROJECT_SECRET_KEY: ${LANGFUSE_SECRET_KEY:?}
+      LANGFUSE_INIT_PROJECT_PUBLIC_KEY: ${LANGFUSE_LOCAL_PUBLIC_KEY:?}
+      LANGFUSE_INIT_PROJECT_SECRET_KEY: ${LANGFUSE_LOCAL_SECRET_KEY:?}
       LANGFUSE_INIT_USER_EMAIL: ${LANGFUSE_INIT_USER_EMAIL:?}
       LANGFUSE_INIT_USER_NAME: ${LANGFUSE_INIT_USER_NAME:-admin}
       LANGFUSE_INIT_USER_PASSWORD: ${LANGFUSE_INIT_USER_PASSWORD:?}
@@ -82,6 +85,7 @@ services:
       start_period: 30s
 
   langfuse-clickhouse:
+    profiles: ["langfuse-local"]
     image: clickhouse/clickhouse-server:25.12
     restart: unless-stopped
     user: "101:101"
@@ -100,6 +104,7 @@ services:
       start_period: 1s
 
   langfuse-minio:
+    profiles: ["langfuse-local"]
     image: cgr.dev/chainguard/minio
     restart: unless-stopped
     entrypoint: sh
@@ -119,6 +124,7 @@ services:
       start_period: 1s
 
   langfuse-redis:
+    profiles: ["langfuse-local"]
     image: redis:7
     restart: unless-stopped
     command: >
@@ -133,6 +139,7 @@ services:
       retries: 10
 
   langfuse-postgres:
+    profiles: ["langfuse-local"]
     image: postgres:17
     restart: unless-stopped
     environment:

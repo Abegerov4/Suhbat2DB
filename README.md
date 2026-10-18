@@ -88,7 +88,7 @@ flowchart LR
     VAL --> SBX[(Целевая БД<br/>PostgreSQL<br/>read-only роль)]
 
     API --> APPDB[(PostgreSQL приложения<br/>пользователи, сессии,<br/>checkpoints LangGraph)]
-    AG -.traces.-> LF[Langfuse<br/>self-hosted]
+    AG -.traces.-> LF[Langfuse Cloud]
 ```
 
 **Путь одного запроса:**
@@ -233,14 +233,15 @@ class AgentState(TypedDict):
 | **Язык бэкенда** | Python 3.12 | Экосистема LLM и SQL-инструментов |
 | **API** | FastAPI, Pydantic v2, SSE | Асинхронность, типизированные схемы, стриминг шагов агента в UI |
 | **Оркестрация агента** | LangGraph | Циклы (самокоррекция), ветвления, нативный human-in-the-loop (`interrupt`), checkpointer и time travel. LangChain Chains не поддерживают циклы, CrewAI и AutoGen не поддерживают нативный HITL с персистентностью |
-| **LLM** | API Anthropic (Claude) / OpenAI (GPT) | Высокое качество tool calling и structured output. Провайдер настраивается, есть fallback на второго провайдера при недоступности или превышении бюджета. Модель выбирается отдельно для каждого узла: сильная для `generate_sql`, дешёвая для `guard_input` и пояснения |
+| **LLM** | OpenAI **gpt-4.1** (генерация SQL, неоднозначность) и **gpt-4.1-mini** (guard, пояснение); Anthropic — резервный провайдер | Structured output, температура 0 для точных узлов, модель на узел. Резервный провайдер подключается при наличии ключа. Стоимость ≈ $0,01 за вопрос (ADR-014) |
 | **Разбор и анализ SQL** | sqlglot | AST-парсер с поддержкой диалектов, `qualify` для сверки со схемой, транспиляция |
 | **Целевая и служебная СУБД** | PostgreSQL 17 | Стандарт индустрии, `EXPLAIN (FORMAT JSON)`, роли и read-only транзакции. Хранит также checkpoints LangGraph |
 | **Векторная БД** | Qdrant | Фильтрация по payload (`db_id`, `type`), гибридный поиск, запуск в Docker |
 | **Эмбеддинги** | мультиязычная модель (выбор по eval) | Вопросы на русском, схема на английском |
 | **Фронтенд** | Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui | Чат, таблицы результатов, панель SQL и отчёта валидатора |
 | **Визуализация** | Recharts (или Apache ECharts) | Графики по `chart_spec`, который формирует агент |
-| **Трассировка и evals** | Langfuse (self-hosted) | Framework-agnostic, self-hosted, учёт стоимости, датасеты и prompt management |
+| **Эмбеддинги** | OpenAI **text-embedding-3-large** | Выбрана по полноте отбора таблиц на 40 вопросах: 0,975 против 0,900 у small (ADR-015) |
+| **Трассировка и evals** | Langfuse Cloud (локальный — опционально) | Framework-agnostic, учёт стоимости, датасеты, prompt management (ADR-013) |
 | **Тестирование** | pytest, Playwright (e2e) | Юнит-тесты валидатора, интеграционные тесты графа, e2e UI |
 | **Инфраструктура** | Docker, docker-compose, GitHub Actions | Запуск одной командой, CI с автопрогоном evals на PR |
 
@@ -283,7 +284,7 @@ class AgentState(TypedDict):
 
 ## 12. Наблюдаемость (LLMOps)
 
-- **Langfuse** поднимается в docker-compose. Каждый запуск графа записывается как отдельный trace, каждый узел как span. Видны промпты, ответы, токены, стоимость и задержка.
+- **Langfuse Cloud** (или локальный через `make up-langfuse`). Каждый ход диалога записывается как отдельный trace, каждый узел графа и вызов LLM — как span. Видны промпты, ответы, токены, стоимость и задержка; `trace_id` хранится в сообщении.
 - **Пользовательский фидбек** (👍 / 👎 под ответом) прикрепляется к trace как score. Неудачные traces попадают в регрессионный датасет.
 - **Prompt management.** Промпты версионируются в Langfuse, поэтому эволюцию главного промпта (v1 → текущая версия) можно показать на защите.
 - **CI.** GitHub Actions запускает юнит-тесты валидатора и быстрый eval на малом наборе для каждого PR.
@@ -318,8 +319,9 @@ class AgentState(TypedDict):
 │   ├── roles/                   # план разработки по ролям (01_devops … 08_documentation)
 │   ├── CONTRACTS.md             # API, SSE-события, валидатор, состояние агента
 │   ├── demo_db.md               # описание демо-БД и «ловушек» неоднозначности
-│   └── validator.md             # правила 5 уровней проверки SQL и результаты
-├── infra/langfuse/              # self-hosted Langfuse (подключается в docker-compose через include)
+│   ├── validator.md             # правила 5 уровней проверки SQL и результаты
+│   └── graph.md                 # граф агента (сгенерирован из кода)
+├── infra/langfuse/              # локальный Langfuse (необязательно, профиль langfuse-local)
 ├── scripts/init-env.sh          # генерация .env со случайными секретами
 ├── .github/workflows/           # CI: backend, frontend, compose
 ├── docker-compose.yml
@@ -335,29 +337,32 @@ class AgentState(TypedDict):
 
 ```bash
 git clone https://github.com/Abegerov4/Suhbat2DB.git && cd Suhbat2DB
-make up        # создаёт .env со случайными секретами и поднимает все сервисы
+make up        # создаёт .env со случайными секретами и поднимает сервисы приложения (5 контейнеров)
 make ps        # статус: все сервисы должны быть healthy
 ```
 
-`make up-lite` поднимает только сервисы приложения, без Langfuse (5 контейнеров вместо 11).
+Для работы агента нужен `OPENAI_API_KEY` в `.env`; без ключа LLM работает заглушка агента. Трассировка — Langfuse Cloud (ключи проекта в `.env`); локальный Langfuse — `make up-langfuse`.
 
 | Сервис | Адрес по умолчанию |
 |---|---|
 | Frontend | http://localhost:3000 |
 | API (Swagger) | http://localhost:8000/docs |
-| Langfuse | http://localhost:3001 (логин `admin@suhbat2db.local`, пароль в `.env` → `LANGFUSE_INIT_USER_PASSWORD`) |
+| Langfuse | https://cloud.langfuse.com (или http://localhost:3001 после `make up-langfuse`) |
 | PostgreSQL приложения | `localhost:5442` |
 | Демо-БД | `localhost:5443` |
 | Qdrant | http://localhost:6333/dashboard |
 
 Если порт занят, переопределите его в `.env` (`FRONTEND_PORT`, `BACKEND_PORT`, `APP_DB_PORT`, `TARGET_DB_PORT`).
 
-Все переменные окружения перечислены в [`.env.example`](.env.example). Ключи LLM (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`) вписываются вручную. Ключи Langfuse создаются автоматически при первом запуске.
+Все переменные окружения перечислены в [`.env.example`](.env.example). Ключи LLM (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) и Langfuse Cloud вписываются вручную; остальные секреты генерируются.
 
 **Разработка без Docker и проверки:**
 
 ```bash
 make seed      # заполнить демо-БД (~8 с; SCALE=0.1 — уменьшенный объём)
+make smoke     # 10 вопросов агенту с настоящим LLM
+make index     # переиндексировать схемы источников в Qdrant
+make prompts   # загрузить промпты в Langfuse (MSG="что изменилось")
 make migrate   # миграции БД приложения (применяются и при старте backend)
 make lint      # ruff + mypy (strict) + eslint + tsc + prettier
 make test      # pytest (backend, демо-БД) + сборка фронтенда
@@ -392,7 +397,7 @@ docker compose exec backend python -m evals.runners.run --suite spider_subset --
 | Structured output (Pydantic) | AI Security, Prompting | Вердикт неоднозначности, маршруты, спецификация графика |
 | Многоуровневая защита (5 уровней) | AI Security | Guardrail на входе, `<untrusted_data>`, least privilege, контроль выполнения |
 | Выбор модели на узел, temperature | AI Engineering, выбор модели | Сильная модель для генерации SQL (`temperature` ≈ 0), дешёвая для классификации и пояснения |
-| Трассировка, evals, prompt management | AI Engineering, LLMOps | Langfuse self-hosted, golden-наборы, A/B, регрессия из неудачных traces |
+| Трассировка, evals, prompt management | AI Engineering, LLMOps | Langfuse Cloud, промпты v1 в Prompt Management, golden-наборы, A/B, регрессия из неудачных traces |
 | Fallback между моделями | Требования финального проекта курса | Переключение провайдера при ошибке или превышении бюджета |
 
 **Опциональные расширения**, которые закрывают остальные требования финального проекта курса и не входят в обязательный объём диплома:

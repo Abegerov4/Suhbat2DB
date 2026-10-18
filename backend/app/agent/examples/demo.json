@@ -1,0 +1,91 @@
+{
+ "requires_tables": [
+  "orders",
+  "customers",
+  "regions",
+  "fiscal_calendar",
+  "payments"
+ ],
+ "examples": [
+  {
+   "question": "Сколько всего заказов?",
+   "sql": "SELECT count(*) AS orders_count FROM orders"
+  },
+  {
+   "question": "Выручка по регионам клиентов за 2025 год",
+   "sql": "SELECT r.name AS region, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nJOIN regions r ON r.id = ci.region_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY r.name\nORDER BY revenue DESC"
+  },
+  {
+   "question": "Топ-10 товаров по проданным единицам",
+   "sql": "SELECT p.name AS product, sum(i.quantity) AS units_sold\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nWHERE o.status <> 'cancelled'\nGROUP BY p.name\nORDER BY units_sold DESC\nLIMIT 10"
+  },
+  {
+   "question": "Средний чек по каналам продаж",
+   "sql": "SELECT o.channel, round(avg(o.total_amount), 2) AS avg_check\nFROM orders o\nWHERE o.status <> 'cancelled'\nGROUP BY o.channel\nORDER BY avg_check DESC"
+  },
+  {
+   "question": "Выручка по месяцам за 2026 год",
+   "sql": "SELECT date_trunc('month', o.created_at)::date AS month, sum(o.total_amount) AS revenue\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\nGROUP BY 1\nORDER BY 1"
+  },
+  {
+   "question": "Выручка за финансовый квартал FQ1 2026 года",
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.fiscal_year = 2026 AND f.fiscal_quarter = 1"
+  },
+  {
+   "question": "Сумма оплат за прошлый календарный квартал",
+   "sql": "SELECT sum(p.amount) AS paid_amount\nFROM payments p\nWHERE p.paid_at >= date_trunc('quarter', now()) - interval '3 months'\n  AND p.paid_at < date_trunc('quarter', now())"
+  },
+  {
+   "question": "Топ-5 менеджеров по выручке в 2025 году",
+   "sql": "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 5"
+  },
+  {
+   "question": "Сколько клиентов ни разу не делали заказ?",
+   "sql": "SELECT count(*) AS customers_without_orders\nFROM customers c\nWHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id)"
+  },
+  {
+   "question": "Сумма возвратов по причинам",
+   "sql": "SELECT r.reason, count(*) AS returns_count, sum(r.amount) AS refunded\nFROM returns r\nGROUP BY r.reason\nORDER BY refunded DESC"
+  },
+  {
+   "question": "Выручка по категориям товаров за 2025 год",
+   "sql": "SELECT cat.name AS category, sum(i.quantity * i.unit_price) AS revenue\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories cat ON cat.id = p.category_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY cat.name\nORDER BY revenue DESC"
+  },
+  {
+   "question": "Доля онлайн-заказов",
+   "sql": "SELECT round(100.0 * count(*) FILTER (WHERE o.channel = 'online') / count(*), 2) AS online_share_pct\nFROM orders o\nWHERE o.status <> 'cancelled'"
+  },
+  {
+   "question": "Сколько заказов в Алматинской области по месту жительства клиента?",
+   "sql": "SELECT count(*) AS orders_count\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nJOIN regions r ON r.id = ci.region_id\nWHERE o.status <> 'cancelled' AND r.name = 'Алматинская область'"
+  },
+  {
+   "question": "Популярность способов оплаты",
+   "sql": "SELECT p.method, count(*) AS payments_count, sum(p.amount) AS amount\nFROM payments p\nGROUP BY p.method\nORDER BY payments_count DESC"
+  },
+  {
+   "question": "Чистая выручка за 2025 год с учётом возвратов",
+   "sql": "WITH sales AS (\n  SELECT sum(o.total_amount) AS revenue\n  FROM orders o\n  WHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\n), refunds AS (\n  SELECT sum(r.amount) AS refunded\n  FROM returns r\n  JOIN orders o ON o.id = r.order_id\n  WHERE o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\n)\nSELECT s.revenue, rf.refunded, s.revenue - coalesce(rf.refunded, 0) AS net_revenue\nFROM sales s CROSS JOIN refunds rf"
+  },
+  {
+   "question": "Сколько новых клиентов регистрировалось каждый месяц в 2026 году?",
+   "sql": "SELECT date_trunc('month', c.registered_at)::date AS month, count(*) AS new_customers\nFROM customers c\nWHERE c.registered_at >= '2026-01-01' AND c.registered_at < '2027-01-01'\nGROUP BY 1\nORDER BY 1"
+  },
+  {
+   "question": "Средняя наценка по категориям",
+   "sql": "SELECT cat.name AS category, round(avg(p.price - p.cost), 2) AS avg_markup\nFROM products p\nJOIN categories cat ON cat.id = p.category_id\nGROUP BY cat.name\nORDER BY avg_markup DESC"
+  },
+  {
+   "question": "Сколько работающих менеджеров в каждом регионе?",
+   "sql": "SELECT r.name AS region, count(*) AS managers_count\nFROM managers m\nJOIN regions r ON r.id = m.region_id\nWHERE m.fired_at IS NULL\nGROUP BY r.name\nORDER BY managers_count DESC"
+  },
+  {
+   "question": "Топ-5 b2b-клиентов по сумме покупок",
+   "sql": "SELECT c.full_name AS customer, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nWHERE o.status <> 'cancelled' AND c.segment = 'b2b'\nGROUP BY c.full_name\nORDER BY revenue DESC\nLIMIT 5"
+  },
+  {
+   "question": "Заказы, оплаченные несколькими платежами",
+   "sql": "SELECT p.order_id, count(*) AS payments_count, sum(p.amount) AS paid\nFROM payments p\nGROUP BY p.order_id\nHAVING count(*) > 1\nORDER BY paid DESC\nLIMIT 20"
+  }
+ ]
+}

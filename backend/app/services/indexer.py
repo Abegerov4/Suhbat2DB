@@ -24,3 +24,9 @@ _indexer: SchemaIndexer = NoopIndexer()
 
 def get_indexer() -> SchemaIndexer:
     return _indexer
+
+
+def set_indexer(indexer: SchemaIndexer) -> None:
+    """В роли 5 пустая реализация заменяется индексом в Qdrant (app.agent.factory)."""
+    global _indexer
+    _indexer = indexer

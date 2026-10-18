@@ -176,22 +176,36 @@ class SchemaSnapshot(BaseModel):
 
 ## 5. Состояние агента (LangGraph)
 
+Реализация — [`backend/app/agent/state.py`](../backend/app/agent/state.py), граф — [graph.md](graph.md).
+
 ```python
-class AgentState(TypedDict):
-    messages: Annotated[list, add_messages]
-    datasource_id: str
-    question: str
-    resolved_question: str
-    clarifications: Annotated[list[dict], add]
-    clarification_rounds: int                  # лимит 2
-    linked_schema: dict                        # подмножество SchemaSnapshot + few-shot примеры
+class AgentState(TypedDict, total=False):
+    question: str                               # вопрос текущего хода
+    resolved_question: str                      # вопрос + уточнения пользователя
+    route: str                                  # решение узла; маршрут выбирает route() в graph.py
+    pending_clarification: dict | None          # запрос уточнения + трактовки вариантов
+    turn_clarifications: list[Clarification]    # уточнения этого хода
+    clarification_rounds: int                   # лимит MAX_CLARIFICATION_ROUNDS (2)
+    clarifications: Annotated[list[Clarification], add]   # память сессии
+    linked_schema: str                          # отрисованная связанная схема (для промпта)
+    linked_tables: list[str]
+    examples: list[dict]                        # few-shot «вопрос → SQL»
     sql: str | None
-    validation_report: ValidationReport | None
-    attempts: int                              # лимит AGENT_MAX_CORRECTIONS (3)
-    result: QueryResult | None
+    attempts: int                               # лимит AGENT_MAX_CORRECTIONS (3)
+    feedback: list[Feedback]                    # ошибки прошлых попыток для самокоррекции
+    normalized_sql: str | None                  # SQL после валидатора (с LIMIT)
+    result: dict | None                         # QueryResult
     answer: str | None
-    chart_spec: dict | None
-    error: dict | None
+    chart: dict | None                          # ChartSpec
+    error: dict | None                          # {code, message} для отказа
+    history: Annotated[list[Turn], add]         # вопросы и SQL прошлых ходов (follow-up)
+
+class Clarification(TypedDict): span: str; choice: str; interpretation: str
+class Feedback(TypedDict): sql: str; level: int; message: str; hint: str | None
 ```
 
-`thread_id` графа совпадает с `session.id`, поэтому один чат соответствует одному потоку checkpoint'ов.
+Поля без reducer сбрасываются в начале каждого хода (`new_turn(question)`); `clarifications` и `history` накапливаются в пределах сессии. Снимок схемы, пул соединений и лимиты передаются не в состоянии, а в контексте прогона (`AgentContext`): они не сохраняются в checkpoint.
+
+`thread_id` графа совпадает с `session.id`, поэтому один чат соответствует одному потоку checkpoint'ов (PostgreSQL, `AsyncPostgresSaver`). Ответ на уточнение передаётся в граф как `Command(resume=[{ambiguity_id, option_id, free_text}])`.
+
+Коды отказов в событии `error`: `refused` (просьба изменить данные), `unsafe_input` (prompt injection), `out_of_scope`, `unsafe_sql` (фатальное нарушение политики), `max_attempts`, `cannot_answer`, `no_connection`, `internal_error`.

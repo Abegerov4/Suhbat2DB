@@ -18,7 +18,19 @@ if TEST_DATABASE_URL:
 os.environ.setdefault("QDRANT_URL", "http://localhost:6333")
 os.environ.setdefault("JWT_SECRET", secrets.token_hex(32))
 os.environ.setdefault("APP_ENCRYPTION_KEY", Fernet.generate_key().decode())
-for var in ("ADMIN_EMAIL", "ADMIN_PASSWORD", "DEMO_DATASOURCE_URL"):
+# тесты не ходят во внешние сервисы, даже если make подгрузил .env
+for var in (
+    "ADMIN_EMAIL",
+    "ADMIN_PASSWORD",
+    "DEMO_DATASOURCE_URL",
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "LANGFUSE_PUBLIC_KEY",
+    "LANGFUSE_SECRET_KEY",
+    "LANGFUSE_BASE_URL",
+    "PROMPTS_FROM_LANGFUSE",
+    "AGENT_MODE",
+):
     os.environ.pop(var, None)
 
 import asyncpg

@@ -1,0 +1,40 @@
+{"id": "sl_01", "question": "Сколько всего заказов?", "gold_tables": ["orders"]}
+{"id": "sl_02", "question": "Выручка по регионам за 2025 год", "gold_tables": ["orders", "customers", "cities", "regions"]}
+{"id": "sl_03", "question": "Топ-10 товаров по количеству проданных единиц", "gold_tables": ["order_items", "products"]}
+{"id": "sl_04", "question": "Средний чек онлайн-заказов", "gold_tables": ["orders"]}
+{"id": "sl_05", "question": "Сколько клиентов-организаций?", "gold_tables": ["customers"]}
+{"id": "sl_06", "question": "Какой менеджер продал больше всего в 2025 году?", "gold_tables": ["orders", "managers"]}
+{"id": "sl_07", "question": "Выручка по категориям товаров", "gold_tables": ["order_items", "products", "categories"]}
+{"id": "sl_08", "question": "Распределение возвратов по причинам", "gold_tables": ["returns"]}
+{"id": "sl_09", "question": "Сумма возвратов по категориям товаров", "gold_tables": ["returns", "order_items", "products", "categories"]}
+{"id": "sl_10", "question": "Сколько платежей прошло через Kaspi QR в сентябре 2026?", "gold_tables": ["payments"]}
+{"id": "sl_11", "question": "Выручка за первый финансовый квартал 2026 года", "gold_tables": ["orders", "fiscal_calendar"]}
+{"id": "sl_12", "question": "Сколько заказов в Алматинской области?", "gold_tables": ["orders", "customers", "cities", "regions"]}
+{"id": "sl_13", "question": "Какие товары сняты с продажи?", "gold_tables": ["products"]}
+{"id": "sl_14", "question": "Средняя наценка по категориям (цена минус себестоимость)", "gold_tables": ["products", "categories"]}
+{"id": "sl_15", "question": "Сколько новых клиентов зарегистрировалось в 2026 году?", "gold_tables": ["customers"]}
+{"id": "sl_16", "question": "Количество отменённых заказов по месяцам", "gold_tables": ["orders"]}
+{"id": "sl_17", "question": "Какой способ оплаты самый популярный?", "gold_tables": ["payments"]}
+{"id": "sl_18", "question": "Выручка по городам", "gold_tables": ["orders", "customers", "cities"]}
+{"id": "sl_19", "question": "Сколько менеджеров работает в Астане?", "gold_tables": ["managers", "regions"]}
+{"id": "sl_20", "question": "Сколько менеджеров уволилось?", "gold_tables": ["managers"]}
+{"id": "sl_21", "question": "Какие заказы оплачены несколькими платежами?", "gold_tables": ["payments"]}
+{"id": "sl_22", "question": "Клиенты, которые ни разу ничего не купили", "gold_tables": ["customers", "orders"]}
+{"id": "sl_23", "question": "Средняя скидка по каналам продаж", "gold_tables": ["orders"]}
+{"id": "sl_24", "question": "Сколько смартфонов продано в декабре 2025?", "gold_tables": ["order_items", "orders", "products", "categories"]}
+{"id": "sl_25", "question": "Самый дорогой товар в каждой категории", "gold_tables": ["products", "categories"]}
+{"id": "sl_26", "question": "Сумма оплат за прошлый квартал", "gold_tables": ["payments"]}
+{"id": "sl_27", "question": "Выручка от b2b-клиентов по регионам", "gold_tables": ["orders", "customers", "cities", "regions"]}
+{"id": "sl_28", "question": "Сколько заказов оформил каждый менеджер в Шымкенте?", "gold_tables": ["orders", "managers", "regions"]}
+{"id": "sl_29", "question": "Средняя сумма возврата", "gold_tables": ["returns"]}
+{"id": "sl_30", "question": "Динамика выручки по неделям в 2026 году", "gold_tables": ["orders"]}
+{"id": "sl_31", "question": "Какая доля заказов оформлена онлайн?", "gold_tables": ["orders"]}
+{"id": "sl_32", "question": "Топ-5 клиентов по сумме покупок", "gold_tables": ["orders", "customers"]}
+{"id": "sl_33", "question": "Сколько товаров в каждой категории?", "gold_tables": ["products", "categories"]}
+{"id": "sl_34", "question": "Возвраты из-за брака за 2026 год", "gold_tables": ["returns"]}
+{"id": "sl_35", "question": "Сколько доставленных заказов оплачено не полностью?", "gold_tables": ["orders", "payments"]}
+{"id": "sl_36", "question": "В каких городах живут активные клиенты?", "gold_tables": ["customers", "cities"]}
+{"id": "sl_37", "question": "Выручка по финансовым годам", "gold_tables": ["orders", "fiscal_calendar"]}
+{"id": "sl_38", "question": "Сколько заказов в среднем делает один клиент?", "gold_tables": ["orders"]}
+{"id": "sl_39", "question": "Средняя цена продажи ноутбуков", "gold_tables": ["order_items", "products", "categories"]}
+{"id": "sl_40", "question": "Какие регионы являются городами республиканского значения?", "gold_tables": ["regions"]}

@@ -4,7 +4,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.agent.factory import create_agent, reindex_missing
 from app.api import auth, datasources, health, messages, sessions
+from app.api.deps import set_runner
 from app.bootstrap import bootstrap
 from app.core.config import get_settings
 from app.core.db import get_engine
@@ -18,9 +20,16 @@ from app.services.target_db import target_pools
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()  # проверка конфигурации при старте
     configure_logging(json_logs=settings.app_env == "prod")
+    agent = await create_agent(settings)
+    if agent is not None:
+        set_runner(agent.runner)
     await bootstrap(settings)
+    if agent is not None:
+        await reindex_missing(agent.store)
     yield
     await wait_background()
+    if agent is not None:
+        await agent.close()
     await target_pools.close_all()
     await get_engine().dispose()
 

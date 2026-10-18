@@ -226,14 +226,22 @@ class Generator:
         weights = [w for _, _, w in cities]
         customers: list[Customer] = []
         used_companies: set[str] = set()
+        company_counts: dict[str, int] = defaultdict(int)
         for cid in range(1, n + 1):
             city_id, region_id, _ = self.rng.choices(cities, weights)[0]
             if self.rng.random() < 0.1:
                 segment = "b2b"
-                name = f"ТОО «{self.rng.choice(COMPANY_A)} {self.rng.choice(COMPANY_B)}»"
-                while name in used_companies:
-                    name = name[:-1] + f" {self.rng.randint(2, 99)}»"
-                used_companies.add(name)
+                base = f"{self.rng.choice(COMPANY_A)} {self.rng.choice(COMPANY_B)}"
+                # Цикл ниже определяет расход генератора случайных чисел, а от него зависят
+                # все данные набора — поэтому он сохранён как есть. Имя для показа строится
+                # отдельно: базовое название + порядковый номер («ТОО «Нур Трейд 3»»).
+                key = f"ТОО «{base}»"
+                while key in used_companies:
+                    key = key[:-1] + f" {self.rng.randint(2, 99)}»"
+                used_companies.add(key)
+                company_counts[base] += 1
+                n = company_counts[base]
+                name = f"ТОО «{base}»" if n == 1 else f"ТОО «{base} {n}»"
             else:
                 segment, name = "b2c", self.person_name()
             # распределение Парето: небольшая доля клиентов делает большую часть заказов

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Response, status
 from sqlalchemy.dialects.postgresql import insert
 
 from app.api.deps import CurrentUser, DbSession
+from app.core.config import get_settings
 from app.core.errors import not_found
 from app.models import ChatSession, Feedback, Message, MessageRole
 from app.schemas.api import FeedbackCreate
@@ -36,5 +37,14 @@ async def feedback(
         )
     )
     await db.commit()
-    # отправка score в Langfuse по message.trace_id — роль 5
+    if message.trace_id and get_settings().langfuse_enabled:
+        from langfuse import get_client
+
+        get_client().create_score(
+            trace_id=message.trace_id,
+            name="user_feedback",
+            value=body.score,
+            data_type="NUMERIC",
+            comment=body.comment,
+        )
     return Response(status_code=status.HTTP_204_NO_CONTENT)

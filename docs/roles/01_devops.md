@@ -32,7 +32,7 @@
 | `langfuse-web` + worker, postgres, clickhouse, redis, minio | официальные образы Langfuse v4 | 3001 (UI), 9090 (MinIO) | Трассировка |
 
 - [x] Volumes для данных, healthcheck у каждого сервиса, `depends_on: condition: service_healthy`
-- [x] Langfuse self-hosted в отдельном файле [`infra/langfuse/docker-compose.yml`](../../infra/langfuse/docker-compose.yml), подключён через `include`. Организация, проект и API-ключи создаются автоматически при первом запуске
+- [x] Langfuse: в роли 5 по умолчанию Langfuse Cloud (ADR-013), self-hosted — профиль `langfuse-local` (`make up-langfuse`) в отдельном файле [`infra/langfuse/docker-compose.yml`](../../infra/langfuse/docker-compose.yml), подключён через `include`. Организация, проект и API-ключи создаются автоматически при первом запуске
 - [x] Все порты привязаны к `127.0.0.1`, хост-порты переопределяются в `.env` (5432 часто занят локальным Postgres)
 - [ ] `docker-compose.override.yml` с hot reload — отложено до роли 3, пока разработка идёт локально через `uv run uvicorn --reload` и `npm run dev`
 
