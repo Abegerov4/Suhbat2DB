@@ -1,0 +1,91 @@
+# Suhbat2DB: окружение разработки.
+#   make up       — все сервисы, включая Langfuse
+#   make up-lite  — без Langfuse (легче для ноутбука)
+# Секреты задаются в .env (шаблон — .env.example).
+
+include:
+  - path: infra/langfuse/docker-compose.yml
+    env_file: .env
+
+services:
+  app-db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${APP_DB_USER:-app}
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD:?задайте APP_DB_PASSWORD в .env}
+      POSTGRES_DB: ${APP_DB_NAME:-app}
+    ports:
+      - 127.0.0.1:${APP_DB_PORT:-5442}:5432
+    volumes:
+      - app_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  target-db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${TARGET_DB_ADMIN_USER:-target_admin}
+      POSTGRES_PASSWORD: ${TARGET_DB_ADMIN_PASSWORD:?задайте TARGET_DB_ADMIN_PASSWORD в .env}
+      POSTGRES_DB: ${TARGET_DB_NAME:-demo}
+    ports:
+      - 127.0.0.1:${TARGET_DB_PORT:-5443}:5432
+    volumes:
+      - target_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  qdrant:
+    image: qdrant/qdrant:v1.19.2
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:6333:6333
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      # в образе нет curl/wget — проверяем порт средствами bash
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/6333' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      APP_DATABASE_URL: postgresql://${APP_DB_USER:-app}:${APP_DB_PASSWORD}@app-db:5432/${APP_DB_NAME:-app}
+      QDRANT_URL: http://qdrant:6333
+      LANGFUSE_HOST: http://langfuse-web:3000
+    ports:
+      - 127.0.0.1:${BACKEND_PORT:-8000}:8000
+    depends_on:
+      app-db:
+        condition: service_healthy
+      target-db:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    ports:
+      - 127.0.0.1:${FRONTEND_PORT:-3000}:3000
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  app_db_data:
+  target_db_data:
+  qdrant_data:

@@ -1,0 +1,23 @@
+name: compose
+
+on:
+  push:
+    branches: [main]
+    paths: ["docker-compose.yml", "infra/**", ".env.example", "scripts/init-env.sh", "**/Dockerfile"]
+  pull_request:
+    paths: ["docker-compose.yml", "infra/**", ".env.example", "scripts/init-env.sh", "**/Dockerfile"]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Generate .env
+        run: ./scripts/init-env.sh
+
+      - name: Validate compose config
+        run: docker compose config --quiet
+
+      - name: Build images
+        run: docker compose build backend frontend

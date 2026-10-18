@@ -13,7 +13,7 @@ Next.js (App Router) · TypeScript · Tailwind CSS · shadcn/ui · TanStack Quer
 
 ### 6.1 Каркас
 - [ ] Проект Next.js, Tailwind, shadcn/ui, тёмная и светлая темы
-- [ ] Генерация типов API: `pnpm gen:api` → `src/lib/api/schema.d.ts` из `http://localhost:8000/openapi.json`
+- [ ] Генерация типов API: `npm run gen:api` → `src/lib/api/schema.d.ts` из `http://localhost:8000/openapi.json`
 - [ ] API-клиент с JWT (httpOnly cookie через route handler Next.js или `localStorage` для MVP), редирект на `/login` при 401
 
 ### 6.2 Страницы

@@ -235,10 +235,10 @@ class AgentState(TypedDict):
 | **Оркестрация агента** | LangGraph | Циклы (самокоррекция), ветвления, нативный human-in-the-loop (`interrupt`), checkpointer и time travel. LangChain Chains не поддерживают циклы, CrewAI и AutoGen не поддерживают нативный HITL с персистентностью |
 | **LLM** | API Anthropic (Claude) / OpenAI (GPT) | Высокое качество tool calling и structured output. Провайдер настраивается, есть fallback на второго провайдера при недоступности или превышении бюджета. Модель выбирается отдельно для каждого узла: сильная для `generate_sql`, дешёвая для `guard_input` и пояснения |
 | **Разбор и анализ SQL** | sqlglot | AST-парсер с поддержкой диалектов, `qualify` для сверки со схемой, транспиляция |
-| **Целевая и служебная СУБД** | PostgreSQL 16 | Стандарт индустрии, `EXPLAIN (FORMAT JSON)`, роли и read-only транзакции. Хранит также checkpoints LangGraph |
+| **Целевая и служебная СУБД** | PostgreSQL 17 | Стандарт индустрии, `EXPLAIN (FORMAT JSON)`, роли и read-only транзакции. Хранит также checkpoints LangGraph |
 | **Векторная БД** | Qdrant | Фильтрация по payload (`db_id`, `type`), гибридный поиск, запуск в Docker |
 | **Эмбеддинги** | мультиязычная модель (выбор по eval) | Вопросы на русском, схема на английском |
-| **Фронтенд** | Next.js, TypeScript, Tailwind CSS, shadcn/ui | Чат, таблицы результатов, панель SQL и отчёта валидатора |
+| **Фронтенд** | Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui | Чат, таблицы результатов, панель SQL и отчёта валидатора |
 | **Визуализация** | Recharts (или Apache ECharts) | Графики по `chart_spec`, который формирует агент |
 | **Трассировка и evals** | Langfuse (self-hosted) | Framework-agnostic, self-hosted, учёт стоимости, датасеты и prompt management |
 | **Тестирование** | pytest, Playwright (e2e) | Юнит-тесты валидатора, интеграционные тесты графа, e2e UI |
@@ -317,7 +317,11 @@ class AgentState(TypedDict):
 ├── docs/
 │   ├── roles/                   # план разработки по ролям (01_devops … 08_documentation)
 │   └── CONTRACTS.md             # API, SSE-события, валидатор, состояние агента
+├── infra/langfuse/              # self-hosted Langfuse (подключается в docker-compose через include)
+├── scripts/init-env.sh          # генерация .env со случайными секретами
+├── .github/workflows/           # CI: backend, frontend, compose
 ├── docker-compose.yml
+├── Makefile
 ├── ARCHITECTURE.md
 ├── EVALS.md
 └── README.md
@@ -325,43 +329,40 @@ class AgentState(TypedDict):
 
 ## 14. Запуск
 
-> Инструкция относится к целевому состоянию проекта и будет уточняться по мере разработки.
+**Требования:** Docker Desktop, `make`, `openssl`. Для разработки без Docker нужны также [uv](https://docs.astral.sh/uv/) и Node.js 24.
 
 ```bash
-git clone <repo-url> && cd <repo>
-cp .env.example .env          # заполнить ключи
-docker compose up -d --build  # postgres, qdrant, langfuse, backend, frontend
+git clone https://github.com/Abegerov4/Suhbat2DB.git && cd Suhbat2DB
+make up        # создаёт .env со случайными секретами и поднимает все сервисы
+make ps        # статус: все сервисы должны быть healthy
 ```
 
-- Frontend: http://localhost:3000
-- API (Swagger): http://localhost:8000/docs
-- Langfuse: http://localhost:3001
+`make up-lite` поднимает только сервисы приложения, без Langfuse (5 контейнеров вместо 11).
 
-**Основные переменные окружения:**
+| Сервис | Адрес по умолчанию |
+|---|---|
+| Frontend | http://localhost:3000 |
+| API (Swagger) | http://localhost:8000/docs |
+| Langfuse | http://localhost:3001 (логин `admin@suhbat2db.local`, пароль в `.env` → `LANGFUSE_INIT_USER_PASSWORD`) |
+| PostgreSQL приложения | `localhost:5442` |
+| Демо-БД | `localhost:5443` |
+| Qdrant | http://localhost:6333/dashboard |
 
-```dotenv
-# LLM
-LLM_PRIMARY_PROVIDER=anthropic       # anthropic | openai
-LLM_FALLBACK_PROVIDER=openai
-ANTHROPIC_API_KEY=
-OPENAI_API_KEY=
+Если порт занят, переопределите его в `.env` (`FRONTEND_PORT`, `BACKEND_PORT`, `APP_DB_PORT`, `TARGET_DB_PORT`).
 
-# Приложение
-APP_DATABASE_URL=postgresql://app:app@postgres:5432/app
-QDRANT_URL=http://qdrant:6333
-JWT_SECRET=
+Все переменные окружения перечислены в [`.env.example`](.env.example). Ключи LLM (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`) вписываются вручную. Ключи Langfuse создаются автоматически при первом запуске.
 
-# Лимиты выполнения SQL
-SQL_STATEMENT_TIMEOUT_MS=5000
-SQL_MAX_ROWS=1000
-SQL_MAX_EXPLAIN_COST=1000000
-AGENT_MAX_CORRECTIONS=3
+**Разработка без Docker и проверки:**
 
-# Трассировка
-LANGFUSE_HOST=http://langfuse:3000
-LANGFUSE_PUBLIC_KEY=
-LANGFUSE_SECRET_KEY=
+```bash
+make lint      # ruff + mypy (strict) + eslint + tsc + prettier
+make test      # pytest + сборка фронтенда
+make format    # автоформатирование
+cd backend && uv run uvicorn app.main:app --reload
+cd frontend && npm run dev
 ```
+
+Pre-commit хуки (ruff, prettier, gitleaks) ставятся командой `uv tool install pre-commit && pre-commit install`.
 
 **Запуск оценки:**
 
