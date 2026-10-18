@@ -125,13 +125,29 @@ class QueryResult(BaseModel):
     duration_ms: int
 ```
 
-Публичные функции модуля `app.validator`:
+Публичные функции модуля `app.validator` (подробно — [validator.md](validator.md)):
 
 ```python
-def validate(sql: str, schema: SchemaSnapshot, *, dialect: str = "postgres") -> ValidationReport  # уровни 1–3
-async def explain(sql: str, conn: AsyncConnection, limits: Limits) -> ValidationLevelResult          # уровень 4
-async def execute_readonly(sql: str, conn: AsyncConnection, limits: Limits) -> QueryResult           # уровень 5
+@dataclass(frozen=True)
+class Limits:                         # Limits.from_settings() — значения из env
+    max_rows: int = 1000
+    statement_timeout_ms: int = 5000
+    max_explain_cost: float = 1_000_000
+    cartesian_min_rows: int = 10_000
+    max_result_bytes: int = 2_000_000
+
+def validate(sql: str, snapshot: SchemaSnapshot, limits: Limits | None = None) -> ValidationReport
+    # уровни 1–3 без БД; останавливается на первом непройденном уровне.
+    # normalized_sql: без комментариев, внешний LIMIT ≤ max_rows + 1 (лишняя строка = усечение)
+
+async def explain(sql: str, conn: Conn, limits: Limits) -> ValidationLevelResult            # уровень 4
+async def execute_readonly(sql: str, conn: Conn, limits: Limits) -> QueryResult             # уровень 5
+
+class ExecutionError(Exception):      # бросает execute_readonly; .result — ValidationLevelResult уровня 5
+    result: ValidationLevelResult
 ```
+
+`Conn` — `asyncpg.Connection` или соединение из пула (`app.services.target_db.Conn`). В `explain` и `execute_readonly` передаётся `report.normalized_sql`.
 
 ---
 

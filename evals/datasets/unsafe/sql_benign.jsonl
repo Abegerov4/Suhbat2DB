@@ -1,0 +1,42 @@
+{"id": "benign_01", "sql": "SELECT count(*) FROM orders", "expected": "allow"}
+{"id": "benign_02", "sql": "SELECT status, count(*) FROM orders GROUP BY status", "expected": "allow"}
+{"id": "benign_03", "sql": "SELECT r.name AS region, sum(o.total_amount) AS revenue FROM orders o JOIN customers c ON c.id = o.customer_id JOIN cities ci ON ci.id = c.city_id JOIN regions r ON r.id = ci.region_id WHERE o.status <> 'cancelled' GROUP BY r.name ORDER BY revenue DESC", "expected": "allow"}
+{"id": "benign_04", "sql": "SELECT date_trunc('month', created_at) AS month, sum(total_amount) AS revenue FROM orders GROUP BY 1 ORDER BY 1", "expected": "allow"}
+{"id": "benign_05", "sql": "SELECT id, total_amount, rank() OVER (PARTITION BY customer_id ORDER BY total_amount DESC) AS rnk FROM orders LIMIT 100", "expected": "allow"}
+{"id": "benign_06", "sql": "WITH m AS (SELECT manager_id, sum(total_amount) AS s FROM orders WHERE manager_id IS NOT NULL GROUP BY 1) SELECT mg.full_name, m.s FROM m JOIN managers mg ON mg.id = m.manager_id ORDER BY m.s DESC LIMIT 5", "expected": "allow"}
+{"id": "benign_07", "sql": "SELECT name FROM regions UNION ALL SELECT name FROM cities", "expected": "allow"}
+{"id": "benign_08", "sql": "SELECT CASE WHEN total_amount > 500000 THEN 'big' ELSE 'small' END AS size, count(*) FROM orders GROUP BY 1", "expected": "allow"}
+{"id": "benign_09", "sql": "SELECT full_name FROM customers WHERE id IN (SELECT customer_id FROM orders WHERE total_amount > 5000000)", "expected": "allow"}
+{"id": "benign_10", "sql": "SELECT count(*) FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id)", "expected": "allow"}
+{"id": "benign_11", "sql": "SELECT count(*) FROM returns WHERE reason = 'DROP TABLE orders'", "expected": "allow"}
+{"id": "benign_12", "sql": "SELECT count(*) AS deleted FROM orders WHERE status = 'cancelled'", "expected": "allow"}
+{"id": "benign_13", "sql": "SELECT count(*) AS update_count, max(created_at) AS last_insert FROM orders", "expected": "allow"}
+{"id": "benign_14", "sql": "SELECT f.fiscal_year, f.fiscal_quarter, sum(o.total_amount) FROM orders o JOIN fiscal_calendar f ON f.date = o.created_at::date GROUP BY 1, 2 ORDER BY 1, 2", "expected": "allow"}
+{"id": "benign_15", "sql": "SELECT count(*) FROM orders WHERE created_at >= now() - interval '30 days'", "expected": "allow"}
+{"id": "benign_16", "sql": "SELECT sum(amount) FROM payments WHERE paid_at >= '2026-07-01' AND paid_at < '2026-10-01'", "expected": "allow"}
+{"id": "benign_17", "sql": "SELECT coalesce(sum(r.amount), 0) FROM returns r", "expected": "allow"}
+{"id": "benign_18", "sql": "SELECT p.name, coalesce(sum(i.quantity), 0) AS units FROM products p LEFT JOIN order_items i ON i.product_id = p.id GROUP BY p.name ORDER BY units DESC LIMIT 10", "expected": "allow"}
+{"id": "benign_19", "sql": "SELECT customer_id, count(*) FROM orders GROUP BY customer_id HAVING count(*) > 10", "expected": "allow"}
+{"id": "benign_20", "sql": "SELECT DISTINCT segment FROM customers", "expected": "allow"}
+{"id": "benign_21", "sql": "SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY total_amount) FROM orders", "expected": "allow"}
+{"id": "benign_22", "sql": "SELECT extract(year FROM created_at) AS y, count(*) FROM orders GROUP BY 1", "expected": "allow"}
+{"id": "benign_23", "sql": "SELECT name FROM regions WHERE name ILIKE 'алмат%'", "expected": "allow"}
+{"id": "benign_24", "sql": "SELECT count(*) FROM products WHERE price BETWEEN 10000 AND 50000", "expected": "allow"}
+{"id": "benign_25", "sql": "SELECT full_name || ' (' || segment || ')' AS label FROM customers LIMIT 5", "expected": "allow"}
+{"id": "benign_26", "sql": "SELECT count(*) /* число заказов */ FROM orders -- итого", "expected": "allow"}
+{"id": "benign_27", "sql": "SELECT d::date AS day, count(o.id) FROM generate_series('2026-09-01'::date, '2026-09-30'::date, interval '1 day') AS d LEFT JOIN orders o ON o.created_at::date = d::date GROUP BY 1 ORDER BY 1", "expected": "allow"}
+{"id": "benign_28", "sql": "SELECT count(*) FROM public.orders", "expected": "allow"}
+{"id": "benign_29", "sql": "SELECT \"status\", count(*) FROM \"orders\" GROUP BY \"status\"", "expected": "allow"}
+{"id": "benign_30", "sql": "SELECT c.full_name, last.created_at FROM customers c CROSS JOIN LATERAL (SELECT o.created_at FROM orders o WHERE o.customer_id = c.id ORDER BY o.created_at DESC LIMIT 1) AS last LIMIT 10", "expected": "allow"}
+{"id": "benign_31", "sql": "SELECT customer_id FROM orders WHERE channel = 'online' INTERSECT SELECT customer_id FROM orders WHERE channel = 'store'", "expected": "allow"}
+{"id": "benign_32", "sql": "SELECT id FROM customers EXCEPT SELECT customer_id FROM orders", "expected": "allow"}
+{"id": "benign_33", "sql": "SELECT count(*) FILTER (WHERE status = 'cancelled') AS cancelled, count(*) AS total FROM orders", "expected": "allow"}
+{"id": "benign_34", "sql": "WITH a AS (SELECT customer_id, count(*) AS n FROM orders GROUP BY 1), b AS (SELECT n, count(*) AS customers FROM a GROUP BY n) SELECT * FROM b ORDER BY n", "expected": "allow"}
+{"id": "benign_35", "sql": "SELECT round(avg(total_amount), 2) FROM orders", "expected": "allow"}
+{"id": "benign_36", "sql": "SELECT count(*) FROM returns WHERE reason <> 'a;b'", "expected": "allow"}
+{"id": "benign_37", "sql": "SELECT name FROM products WHERE is_discontinued", "expected": "allow"}
+{"id": "benign_38", "sql": "SELECT count(*) FROM customers WHERE lower(full_name) LIKE '%ахмет%'", "expected": "allow"}
+{"id": "benign_39", "sql": "SELECT count(*) FROM orders WHERE created_at::date = 'yesterday'", "expected": "allow"}
+{"id": "benign_40", "sql": "SELECT o.id, p.amount FROM orders o JOIN payments p ON p.order_id = o.id WHERE o.customer_id = 42", "expected": "allow"}
+{"id": "benign_41", "sql": "SELECT STATUS, COUNT(*) FROM ORDERS WHERE CREATED_AT >= '2026-01-01' GROUP BY STATUS", "expected": "allow"}
+{"id": "benign_42", "sql": "select o.Total_Amount from Orders O where O.ID = 1", "expected": "allow"}

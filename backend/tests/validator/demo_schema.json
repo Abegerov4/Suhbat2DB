@@ -1,0 +1,629 @@
+{
+ "datasource_id": "demo",
+ "timezone": "Asia/Almaty",
+ "tables": [
+  {
+   "schema_name": "public",
+   "name": "categories",
+   "comment": "Категории товаров / Product categories",
+   "row_estimate": 10,
+   "columns": [
+    {
+     "name": "id",
+     "data_type": "smallint",
+     "nullable": false,
+     "comment": "Идентификатор категории / Category ID",
+     "is_pk": true,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "name",
+     "data_type": "text",
+     "nullable": false,
+     "comment": "Название категории / Category name",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": [
+      "Аксессуары",
+      "Бытовая техника",
+      "Игровые консоли",
+      "Красота и здоровье",
+      "Ноутбуки",
+      "Смартфоны",
+      "Телевизоры",
+      "Товары для дома",
+      "Умный дом",
+      "Фото и видео"
+     ]
+    }
+   ]
+  },
+  {
+   "schema_name": "public",
+   "name": "cities",
+   "comment": "Города, в которых живут клиенты и работают магазины / Cities where customers live and stores operate",
+   "row_estimate": 16,
+   "columns": [
+    {
+     "name": "id",
+     "data_type": "smallint",
+     "nullable": false,
+     "comment": "Идентификатор города / City ID",
+     "is_pk": true,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "name",
+     "data_type": "text",
+     "nullable": false,
+     "comment": "Название города / City name",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": [
+      "Актау",
+      "Актобе",
+      "Алматы",
+      "Астана",
+      "Атырау",
+      "Караганда",
+      "Каскелен",
+      "Конаев",
+      "Костанай",
+      "Павлодар",
+      "Талгар",
+      "Темиртау",
+      "Туркестан",
+      "Усть-Каменогорск",
+      "Шымкент",
+      "Экибастуз"
+     ]
+    },
+    {
+     "name": "region_id",
+     "data_type": "smallint",
+     "nullable": false,
+     "comment": "Регион, к которому относится город / Region the city belongs to",
+     "is_pk": false,
+     "fk": "public.regions.id",
+     "sample_values": null
+    }
+   ]
+  },
+  {
+   "schema_name": "public",
+   "name": "customers",
+   "comment": "Клиенты сети: физические лица (b2c) и организации (b2b) / Customers: individuals (b2c) and companies (b2b)",
+   "row_estimate": 30000,
+   "columns": [
+    {
+     "name": "id",
+     "data_type": "integer",
+     "nullable": false,
+     "comment": "Идентификатор клиента / Customer ID",
+     "is_pk": true,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "full_name",
+     "data_type": "text",
+     "nullable": false,
+     "comment": "ФИО физического лица или название организации / Person full name or company name",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "city_id",
+     "data_type": "smallint",
+     "nullable": false,
+     "comment": "Город клиента / Customer city",
+     "is_pk": false,
+     "fk": "public.cities.id",
+     "sample_values": null
+    },
+    {
+     "name": "segment",
+     "data_type": "text",
+     "nullable": false,
+     "comment": "Сегмент: b2c — физическое лицо, b2b — организация / Segment",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": [
+      "b2b",
+      "b2c"
+     ]
+    },
+    {
+     "name": "is_active",
+     "data_type": "boolean",
+     "nullable": false,
+     "comment": "Активный клиент: совершал заказы за последние 12 месяцев / Active: ordered within the last 12 months",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "registered_at",
+     "data_type": "timestamp with time zone",
+     "nullable": false,
+     "comment": "Дата регистрации клиента / Customer registration timestamp",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    }
+   ]
+  },
+  {
+   "schema_name": "public",
+   "name": "fiscal_calendar",
+   "comment": "Календарь компании: финансовый год начинается 1 апреля / Company calendar, fiscal year starts on April 1",
+   "row_estimate": 1826,
+   "columns": [
+    {
+     "name": "date",
+     "data_type": "date",
+     "nullable": false,
+     "comment": "Дата / Date",
+     "is_pk": true,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "calendar_year",
+     "data_type": "smallint",
+     "nullable": false,
+     "comment": "Календарный год / Calendar year",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "calendar_quarter",
+     "data_type": "smallint",
+     "nullable": false,
+     "comment": "Календарный квартал (Q1 = январь–март) / Calendar quarter",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "fiscal_year",
+     "data_type": "smallint",
+     "nullable": false,
+     "comment": "Финансовый год, названный по году начала: FY2025 = 01.04.2025–31.03.2026 / Fiscal year named by its start year",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "fiscal_quarter",
+     "data_type": "smallint",
+     "nullable": false,
+     "comment": "Финансовый квартал (FQ1 = апрель–июнь) / Fiscal quarter",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    }
+   ]
+  },
+  {
+   "schema_name": "public",
+   "name": "managers",
+   "comment": "Менеджеры по продажам в офлайн-магазинах / Store sales managers",
+   "row_estimate": 56,
+   "columns": [
+    {
+     "name": "id",
+     "data_type": "smallint",
+     "nullable": false,
+     "comment": "Идентификатор менеджера / Manager ID",
+     "is_pk": true,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "full_name",
+     "data_type": "text",
+     "nullable": false,
+     "comment": "ФИО менеджера / Manager full name",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "region_id",
+     "data_type": "smallint",
+     "nullable": false,
+     "comment": "Регион, за который отвечает менеджер / Manager region",
+     "is_pk": false,
+     "fk": "public.regions.id",
+     "sample_values": null
+    },
+    {
+     "name": "hired_at",
+     "data_type": "date",
+     "nullable": false,
+     "comment": "Дата приёма на работу / Hire date",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "fired_at",
+     "data_type": "date",
+     "nullable": true,
+     "comment": "Дата увольнения; NULL — работает сейчас / Termination date, NULL if currently employed",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    }
+   ]
+  },
+  {
+   "schema_name": "public",
+   "name": "order_items",
+   "comment": "Позиции заказов / Order line items",
+   "row_estimate": 188396,
+   "columns": [
+    {
+     "name": "order_id",
+     "data_type": "integer",
+     "nullable": false,
+     "comment": "Заказ / Order",
+     "is_pk": true,
+     "fk": "public.orders.id",
+     "sample_values": null
+    },
+    {
+     "name": "product_id",
+     "data_type": "integer",
+     "nullable": false,
+     "comment": "Товар / Product",
+     "is_pk": true,
+     "fk": "public.products.id",
+     "sample_values": null
+    },
+    {
+     "name": "quantity",
+     "data_type": "integer",
+     "nullable": false,
+     "comment": "Количество проданных единиц / Units sold",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "unit_price",
+     "data_type": "numeric(12,2)",
+     "nullable": false,
+     "comment": "Цена единицы на момент продажи в тенге / Unit price at time of sale, KZT",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    }
+   ]
+  },
+  {
+   "schema_name": "public",
+   "name": "orders",
+   "comment": "Заказы покупателей / Customer orders",
+   "row_estimate": 100000,
+   "columns": [
+    {
+     "name": "id",
+     "data_type": "integer",
+     "nullable": false,
+     "comment": "Идентификатор заказа / Order ID",
+     "is_pk": true,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "customer_id",
+     "data_type": "integer",
+     "nullable": false,
+     "comment": "Клиент, оформивший заказ / Customer who placed the order",
+     "is_pk": false,
+     "fk": "public.customers.id",
+     "sample_values": null
+    },
+    {
+     "name": "manager_id",
+     "data_type": "smallint",
+     "nullable": true,
+     "comment": "Менеджер магазина; NULL для онлайн-заказов / Store manager, NULL for online orders",
+     "is_pk": false,
+     "fk": "public.managers.id",
+     "sample_values": null
+    },
+    {
+     "name": "channel",
+     "data_type": "text",
+     "nullable": false,
+     "comment": "Канал продаж: online — сайт и приложение, store — офлайн-магазин / Sales channel",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": [
+      "online",
+      "store"
+     ]
+    },
+    {
+     "name": "status",
+     "data_type": "text",
+     "nullable": false,
+     "comment": "Статус: new — оформлен, paid — оплачен, shipped — отгружен, delivered — доставлен, cancelled — отменён / Order status",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": [
+      "cancelled",
+      "delivered",
+      "new",
+      "paid",
+      "shipped"
+     ]
+    },
+    {
+     "name": "created_at",
+     "data_type": "timestamp with time zone",
+     "nullable": false,
+     "comment": "Дата и время оформления заказа (не оплаты) / Order placement timestamp (not payment)",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "discount_amount",
+     "data_type": "numeric(14,2)",
+     "nullable": false,
+     "comment": "Скидка по заказу в тенге / Order discount, KZT",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "total_amount",
+     "data_type": "numeric(14,2)",
+     "nullable": false,
+     "comment": "Сумма заказа в тенге после скидки, без учёта возвратов / Order total after discount, KZT, returns not deducted",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    }
+   ]
+  },
+  {
+   "schema_name": "public",
+   "name": "payments",
+   "comment": "Платежи по заказам; у b2b-заказа может быть несколько платежей / Order payments, b2b orders may have several",
+   "row_estimate": 97422,
+   "columns": [
+    {
+     "name": "id",
+     "data_type": "integer",
+     "nullable": false,
+     "comment": "Идентификатор платежа / Payment ID",
+     "is_pk": true,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "order_id",
+     "data_type": "integer",
+     "nullable": false,
+     "comment": "Оплачиваемый заказ / Paid order",
+     "is_pk": false,
+     "fk": "public.orders.id",
+     "sample_values": null
+    },
+    {
+     "name": "paid_at",
+     "data_type": "timestamp with time zone",
+     "nullable": false,
+     "comment": "Дата и время поступления оплаты / Payment timestamp",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "amount",
+     "data_type": "numeric(14,2)",
+     "nullable": false,
+     "comment": "Сумма платежа в тенге / Payment amount, KZT",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "method",
+     "data_type": "text",
+     "nullable": false,
+     "comment": "Способ оплаты: card, kaspi_qr, cash, bank_transfer / Payment method",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": [
+      "bank_transfer",
+      "card",
+      "cash",
+      "kaspi_qr"
+     ]
+    }
+   ]
+  },
+  {
+   "schema_name": "public",
+   "name": "products",
+   "comment": "Товары / Products",
+   "row_estimate": 200,
+   "columns": [
+    {
+     "name": "id",
+     "data_type": "integer",
+     "nullable": false,
+     "comment": "Идентификатор товара / Product ID",
+     "is_pk": true,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "name",
+     "data_type": "text",
+     "nullable": false,
+     "comment": "Название товара / Product name",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "category_id",
+     "data_type": "smallint",
+     "nullable": false,
+     "comment": "Категория товара / Product category",
+     "is_pk": false,
+     "fk": "public.categories.id",
+     "sample_values": null
+    },
+    {
+     "name": "price",
+     "data_type": "numeric(12,2)",
+     "nullable": false,
+     "comment": "Текущая розничная цена в тенге / Current retail price, KZT",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "cost",
+     "data_type": "numeric(12,2)",
+     "nullable": false,
+     "comment": "Себестоимость единицы в тенге / Unit cost, KZT",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "is_discontinued",
+     "data_type": "boolean",
+     "nullable": false,
+     "comment": "Товар снят с продажи / Product is discontinued",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    }
+   ]
+  },
+  {
+   "schema_name": "public",
+   "name": "regions",
+   "comment": "Регионы Казахстана: области и города республиканского значения / Regions of Kazakhstan: oblasts and cities of republican significance",
+   "row_estimate": 12,
+   "columns": [
+    {
+     "name": "id",
+     "data_type": "smallint",
+     "nullable": false,
+     "comment": "Идентификатор региона / Region ID",
+     "is_pk": true,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "name",
+     "data_type": "text",
+     "nullable": false,
+     "comment": "Название региона, например «Алматы» (город) или «Алматинская область» / Region name",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": [
+      "Актюбинская область",
+      "Алматинская область",
+      "Алматы",
+      "Астана",
+      "Атырауская область",
+      "Восточно-Казахстанская область",
+      "Карагандинская область",
+      "Костанайская область",
+      "Мангистауская область",
+      "Павлодарская область",
+      "Туркестанская область",
+      "Шымкент"
+     ]
+    },
+    {
+     "name": "region_type",
+     "data_type": "text",
+     "nullable": false,
+     "comment": "Тип региона: city — город республиканского значения, oblast — область / Region type",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": [
+      "city",
+      "oblast"
+     ]
+    }
+   ]
+  },
+  {
+   "schema_name": "public",
+   "name": "returns",
+   "comment": "Возвраты по доставленным заказам / Returns of delivered orders",
+   "row_estimate": 4591,
+   "columns": [
+    {
+     "name": "id",
+     "data_type": "integer",
+     "nullable": false,
+     "comment": "Идентификатор возврата / Return ID",
+     "is_pk": true,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "order_id",
+     "data_type": "integer",
+     "nullable": false,
+     "comment": "Заказ, по которому оформлен возврат / Returned order",
+     "is_pk": false,
+     "fk": "public.orders.id",
+     "sample_values": null
+    },
+    {
+     "name": "returned_at",
+     "data_type": "timestamp with time zone",
+     "nullable": false,
+     "comment": "Дата и время возврата / Return timestamp",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "amount",
+     "data_type": "numeric(14,2)",
+     "nullable": false,
+     "comment": "Сумма возврата в тенге / Refund amount, KZT",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": null
+    },
+    {
+     "name": "reason",
+     "data_type": "text",
+     "nullable": false,
+     "comment": "Причина: defect — брак, not_as_described — не соответствует описанию, changed_mind — передумал, late_delivery — опоздание доставки / Return reason",
+     "is_pk": false,
+     "fk": null,
+     "sample_values": [
+      "changed_mind",
+      "defect",
+      "late_delivery",
+      "not_as_described"
+     ]
+    }
+   ]
+  }
+ ],
+ "created_at": "2026-10-19T00:00:00Z"
+}

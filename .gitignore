@@ -26,3 +26,8 @@ out/
 .DS_Store
 .idea/
 .vscode/
+
+# Отчёты о покрытии
+.coverage
+.coverage.*
+htmlcov/

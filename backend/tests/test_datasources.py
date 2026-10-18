@@ -29,7 +29,7 @@ async def test_readonly_datasource_is_indexed(
     await wait_background()
     [listed] = (await client.get("/api/datasources", headers=admin_headers)).json()
     assert listed["status"] == "ready"
-    assert listed["tables_count"] == 2
+    assert listed["tables_count"] == 3
     assert listed["indexed_at"] is not None
 
     schema = (
@@ -37,7 +37,7 @@ async def test_readonly_datasource_is_indexed(
     ).json()
     assert schema["timezone"]
     tables = {t["name"]: t for t in schema["tables"]}
-    assert set(tables) == {"orders", "regions"}
+    assert set(tables) == {"events", "orders", "regions"}
     assert tables["regions"]["comment"] == "Регионы"
     assert tables["orders"]["row_estimate"] == 1000
 

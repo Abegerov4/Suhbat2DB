@@ -130,6 +130,15 @@ INSERT INTO regions SELECT g, 'Регион ' || g FROM generate_series(1, 5) g;
 INSERT INTO orders
 SELECT g, 1 + g % 5, (ARRAY['new', 'paid', 'cancelled'])[1 + g % 3], g * 10
 FROM generate_series(1, 1000) g;
+CREATE TABLE events (
+    id int PRIMARY KEY,
+    region_id int NOT NULL REFERENCES regions (id),
+    created_at timestamptz NOT NULL,
+    payload text
+);
+INSERT INTO events
+SELECT g, 1 + g % 5, '2026-01-01'::timestamptz + g * interval '1 minute', 'e' || g
+FROM generate_series(1, 20000) g;
 ANALYZE;
 
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO {READER}, {WRITER};

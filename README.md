@@ -310,14 +310,15 @@ class AgentState(TypedDict):
 │   └── tests/
 ├── frontend/                    # Next.js + TypeScript
 ├── evals/
-│   ├── datasets/                # spider_subset, bird_subset, ambiguous_ru, unsafe
+│   ├── datasets/                # unsafe (готов: 88 атак, 42 безобидных), spider_subset, bird_subset, ambiguous_ru
 │   ├── runners/                 # прогон baseline / agent, подсчёт метрик
 │   └── reports/
 ├── demo_db/                     # демо-БД: schema.sql, seed.py, роль s2d_reader, тесты
 ├── docs/
 │   ├── roles/                   # план разработки по ролям (01_devops … 08_documentation)
 │   ├── CONTRACTS.md             # API, SSE-события, валидатор, состояние агента
-│   └── demo_db.md               # описание демо-БД и «ловушек» неоднозначности
+│   ├── demo_db.md               # описание демо-БД и «ловушек» неоднозначности
+│   └── validator.md             # правила 5 уровней проверки SQL и результаты
 ├── infra/langfuse/              # self-hosted Langfuse (подключается в docker-compose через include)
 ├── scripts/init-env.sh          # генерация .env со случайными секретами
 ├── .github/workflows/           # CI: backend, frontend, compose
