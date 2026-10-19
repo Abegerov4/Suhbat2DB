@@ -7,7 +7,14 @@ import { cn } from "@/lib/utils";
  * Исходник — docs/brand/Suhbat2DB_logo.svg. Белые разделители, точки и орнамент
  * сделаны маской, а не белой заливкой: в тёмной теме сквозь них видна подложка.
  */
-export function Logo({ className }: { className?: string }) {
+export function Logo({
+  className,
+  mono = false,
+}: {
+  className?: string;
+  /** одним цветом (currentColor) — для декоративного силуэта на баннере */
+  mono?: boolean;
+}) {
   const mask = `logo-cut-${useId().replace(/:/g, "")}`;
   return (
     // span-обёртка: кнопки меню shadcn принудительно уменьшают вложенные svg
@@ -40,10 +47,16 @@ export function Logo({ className }: { className?: string }) {
         </mask>
         <g mask={`url(#${mask})`}>
           <path
-            fill="#2a78d6"
+            fill={mono ? "currentColor" : "#2a78d6"}
             d="M113 169 V338 C113 365 133 384 163 389 L147 428 Q141 444 155 436 L230 391 H332 C381 391 411 369 411 338 V169 Z"
           />
-          <ellipse fill="#3987e5" cx="262" cy="169" rx="149" ry="68" />
+          <ellipse
+            fill={mono ? "currentColor" : "#3987e5"}
+            cx="262"
+            cy="169"
+            rx="149"
+            ry="68"
+          />
         </g>
       </svg>
     </span>

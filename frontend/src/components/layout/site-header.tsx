@@ -1,4 +1,6 @@
 import { Separator } from "@/components/ui/separator";
+
+import { ServiceStatus } from "./service-status";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 /** Закреплённая шапка страницы: кнопка боковой панели, заголовок, действия справа. */
@@ -26,9 +28,10 @@ export function SiteHeader({
           </p>
         )}
       </div>
-      {children && (
-        <div className="flex shrink-0 items-center gap-2">{children}</div>
-      )}
+      <div className="flex shrink-0 items-center gap-3">
+        <ServiceStatus className="hidden lg:inline-flex" />
+        {children}
+      </div>
     </header>
   );
 }

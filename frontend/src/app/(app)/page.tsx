@@ -4,6 +4,8 @@ import { MessageSquarePlus } from "lucide-react";
 import Link from "next/link";
 
 import { ActivityChart } from "@/components/dashboard/activity-chart";
+import { GettingStarted } from "@/components/dashboard/getting-started";
+import { Hero } from "@/components/dashboard/hero";
 import { RecentSessions } from "@/components/dashboard/recent-sessions";
 import { SourcesCard } from "@/components/dashboard/sources-card";
 import { StatCards } from "@/components/dashboard/stat-cards";
@@ -40,6 +42,8 @@ export default function OverviewPage() {
             <AlertDescription>{stats.error.message}</AlertDescription>
           </Alert>
         )}
+        <Hero />
+        {stats.data?.questions === 0 && <GettingStarted />}
         <StatCards stats={stats.data} />
         <ActivityChart activity={stats.data?.activity} />
         <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
@@ -57,6 +61,10 @@ export default function OverviewPage() {
             )}
           </div>
         </div>
+        <footer className="flex flex-wrap justify-between gap-2 pb-2 text-xs text-muted-foreground">
+          <span>Suhbat2DB · Диалоговый анализ реляционных данных</span>
+          <span>Каждый SQL проверяется до выполнения</span>
+        </footer>
       </div>
     </>
   );

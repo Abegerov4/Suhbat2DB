@@ -1,89 +1,60 @@
 "use client";
 
-import { useEffect, useRef, type ComponentPropsWithoutRef } from "react";
+import { animate, useReducedMotion } from "motion/react";
 import {
-  useInView,
-  useMotionValue,
-  useReducedMotion,
-  useSpring,
-} from "motion/react";
+  useEffect,
+  useRef,
+  useState,
+  type ComponentPropsWithoutRef,
+} from "react";
 
 import { cn } from "@/lib/utils";
 
+const format = (n: number, decimals: number) =>
+  new Intl.NumberFormat("ru-RU", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(Number(n.toFixed(decimals)));
+
 interface NumberTickerProps extends ComponentPropsWithoutRef<"span"> {
   value: number;
-  startValue?: number;
-  direction?: "up" | "down";
-  delay?: number;
   decimalPlaces?: number;
+  /** длительность счёта, с */
+  duration?: number;
 }
 
+/**
+ * Анимированный счётчик (по мотивам Magic UI number-ticker). Число хранится в
+ * состоянии React, а не пишется в DOM напрямую: оригинал оставлял «0», когда
+ * Next 16 возвращал страницу, сохранённую в <Activity>.
+ */
 export function NumberTicker({
   value,
-  startValue = 0,
-  direction = "up",
-  delay = 0,
-  className,
   decimalPlaces = 0,
+  duration = 1,
+  className,
   ...props
 }: NumberTickerProps) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const motionValue = useMotionValue(direction === "down" ? value : startValue);
-  const springValue = useSpring(motionValue, {
-    damping: 60,
-    stiffness: 100,
-  });
-  const isInView = useInView(ref, { once: true, margin: "0px" });
   const reduced = useReducedMotion();
+  const [display, setDisplay] = useState(0);
+  const current = useRef(0);
 
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | null = null;
-
-    if (reduced) {
-      // «уменьшить движение»: сразу итоговое значение, без счётчика
-      springValue.jump(direction === "down" ? startValue : value);
-    } else if (isInView) {
-      timer = setTimeout(() => {
-        motionValue.set(direction === "down" ? startValue : value);
-      }, delay * 1000);
-    }
-
-    return () => {
-      if (timer !== null) {
-        clearTimeout(timer);
-      }
-    };
-  }, [
-    motionValue,
-    springValue,
-    reduced,
-    isInView,
-    delay,
-    value,
-    direction,
-    startValue,
-  ]);
-
-  useEffect(
-    () =>
-      springValue.on("change", (latest) => {
-        if (ref.current) {
-          ref.current.textContent = Intl.NumberFormat("ru-RU", {
-            minimumFractionDigits: decimalPlaces,
-            maximumFractionDigits: decimalPlaces,
-          }).format(Number(latest.toFixed(decimalPlaces)));
-        }
-      }),
-    [springValue, decimalPlaces],
-  );
+    if (reduced) return;
+    const controls = animate(current.current, value, {
+      duration,
+      ease: "easeOut",
+      onUpdate: (v) => {
+        current.current = v;
+        setDisplay(v);
+      },
+    });
+    return () => controls.stop();
+  }, [value, duration, reduced]);
 
   return (
-    <span
-      ref={ref}
-      className={cn("inline-block tabular-nums", className)}
-      {...props}
-    >
-      {startValue}
+    <span className={cn("inline-block tabular-nums", className)} {...props}>
+      {format(reduced ? value : display, decimalPlaces)}
     </span>
   );
 }

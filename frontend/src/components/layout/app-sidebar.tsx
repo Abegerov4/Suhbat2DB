@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   MessageSquare,
   MessageSquarePlus,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -82,10 +83,30 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
+        <ReadOnlyCard />
         <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
+  );
+}
+
+/** Напоминание о модели безопасности; в свёрнутой панели скрыто. */
+function ReadOnlyCard() {
+  return (
+    <div className="rounded-lg border bg-background/60 p-3 text-xs group-data-[collapsible=icon]:hidden">
+      <p className="flex items-center gap-1.5 font-medium">
+        <ShieldCheck className="size-3.5 text-brand-text" aria-hidden />
+        Только чтение
+      </p>
+      <p className="mt-1 text-muted-foreground">
+        Агент выполняет только SELECT в транзакции READ ONLY.
+      </p>
+      <p className="mt-1.5 flex items-center gap-1.5 text-brand-text">
+        <span aria-hidden className="size-1.5 rounded-full bg-primary" />5
+        уровней проверки SQL
+      </p>
+    </div>
   );
 }
 
