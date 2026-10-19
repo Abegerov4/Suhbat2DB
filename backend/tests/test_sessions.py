@@ -149,6 +149,7 @@ async def test_refusal(
         await client.get(f"/api/sessions/{session_id}/messages", headers=analyst_headers)
     ).json()
     assert "только читать" in messages[1]["content"]
+    assert messages[1]["error"]["code"] == "refused"  # карточка отказа восстанавливается
 
 
 class FailingRunner:

@@ -2,3 +2,7 @@
 node_modules
 next-env.d.ts
 package-lock.json
+test-results
+playwright-report
+blob-report
+src/lib/api/schema.d.ts

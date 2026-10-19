@@ -1,13 +1,19 @@
 """Модели запросов и ответов REST API (CONTRACTS §1)."""
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.models import DatasourceStatus, MessageRole, UserRole
-from app.schemas.agent import ChartSpec, ClarificationAnswer, ClarificationRequest, QueryResult
+from app.schemas.agent import (
+    ChartSpec,
+    ClarificationAnswer,
+    ClarificationRequest,
+    ErrorEvent,
+    QueryResult,
+)
 
 
 class ORMModel(BaseModel):
@@ -88,9 +94,47 @@ class MessageOut(BaseModel):
     result: QueryResult | None = None
     chart_spec: ChartSpec | None = None
     clarification: ClarificationRequest | None = None
+    error: ErrorEvent | None = None
     trace_id: str | None = None
 
 
 class FeedbackCreate(BaseModel):
     score: Literal[1, -1]
     comment: str | None = Field(default=None, max_length=2000)
+
+
+# --- Stats ---------------------------------------------------------------------------------
+
+
+class DailyActivity(BaseModel):
+    date: date
+    questions: int = 0
+    answered: int = 0
+    clarifications: int = 0
+    refused: int = 0
+
+
+class BlockedLevel(BaseModel):
+    level: int
+    name: str
+    count: int
+
+
+class StatsOut(BaseModel):
+    """Ход диалога завершается ответом (answered), уточнением или отказом (refused)."""
+
+    questions: int
+    answered: int
+    clarifications: int
+    refused: int
+    sessions: int
+    datasources: int
+    datasources_ready: int
+    queries_ok: int
+    queries_blocked: int
+    queries_failed: int
+    avg_duration_ms: int | None
+    blocked_by_level: list[BlockedLevel]
+    feedback_up: int
+    feedback_down: int
+    activity: list[DailyActivity]

@@ -124,6 +124,7 @@ class Message(UUIDPk, CreatedAt, Base):
     result_meta: Mapped[dict[str, Any] | None]  # columns, row_count, truncated, первые строки
     chart_spec: Mapped[dict[str, Any] | None]
     clarification: Mapped[dict[str, Any] | None]
+    error: Mapped[dict[str, Any] | None]  # {code, message} отказа или ошибки агента
     trace_id: Mapped[str | None] = mapped_column(String(64))
 
     __table_args__ = (

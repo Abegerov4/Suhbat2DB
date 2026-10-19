@@ -5,13 +5,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.agent.factory import create_agent, reindex_missing
-from app.api import auth, datasources, health, messages, sessions
+from app.api import auth, datasources, health, messages, sessions, stats
 from app.api.deps import set_runner
 from app.bootstrap import bootstrap
 from app.core.config import get_settings
 from app.core.db import get_engine
 from app.core.errors import install_error_handlers
 from app.core.logging import configure_logging, install_request_logging
+from app.services.chat import wait_turns
 from app.services.datasources import wait_background
 from app.services.target_db import target_pools
 
@@ -27,6 +28,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     if agent is not None:
         await reindex_missing(agent.store)
     yield
+    await wait_turns()
     await wait_background()
     if agent is not None:
         await agent.close()
@@ -45,7 +47,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
         expose_headers=["x-request-id"],
     )
-    for module in (health, auth, datasources, sessions, messages):
+    for module in (health, auth, datasources, sessions, messages, stats):
         app.include_router(module.router, prefix="/api")
     return app
 

@@ -75,6 +75,7 @@ async def clean_db(migrated: None) -> AsyncIterator[None]:
         await conn.execute(text(f"TRUNCATE {', '.join(TABLES)} CASCADE"))
     chat._active_sessions.clear()
     yield
+    await chat.wait_turns()
     await wait_background()
     await target_pools.close_all()
     await core_db.get_engine().dispose()

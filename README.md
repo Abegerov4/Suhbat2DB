@@ -74,12 +74,22 @@
 | 🔍 Прозрачность | Пользователь видит сгенерированный SQL, использованные таблицы и отчёт валидатора |
 | 📈 Трассировка | Каждый шаг агента и каждый вызов LLM записываются в Langfuse (стоимость, задержка, токены) |
 
+### Интерфейс
+
+Экран диалога разделён на две части: слева чат с уточнениями и отказами, справа аналитическая панель выбранного ответа (график, таблица, SQL с историей самокоррекции и отчёт пяти уровней проверки). Страница «Обзор» — дашборд по журналу запросов. Подробнее — [docs/roles/06_frontend.md](docs/roles/06_frontend.md).
+
+![Диалог и аналитическая панель](docs/screenshots/chat-analysis.png)
+
+| Уточнение и отчёт проверки SQL | Обзор |
+|---|---|
+| ![Уточнение неоднозначного вопроса](docs/screenshots/chat-clarification.png) | ![Обзор](docs/screenshots/overview.png) |
+
 ## 4. Архитектура
 
 ```mermaid
 flowchart LR
-    U[Пользователь] --> FE[Frontend<br/>Next.js + TypeScript]
-    FE <-->|REST + SSE| API[Backend API<br/>FastAPI]
+    U[Пользователь] --> FE[Frontend<br/>Next.js: UI + BFF-прокси]
+    FE <-->|REST + SSE<br/>JWT из httpOnly-cookie| API[Backend API<br/>FastAPI]
     API --> AG[Агент<br/>LangGraph StateGraph]
 
     AG --> LLM[(LLM API<br/>Anthropic / OpenAI<br/>+ fallback)]
@@ -224,7 +234,7 @@ class AgentState(TypedDict):
 | 4. Проверка выхода | SQL проверяется 5-уровневым валидатором, текстовое пояснение сверяется с фактическим результатом запроса |
 | 5. Контроль действий | Least privilege: роль БД только на чтение, allowlist схем и таблиц, лимиты времени и строк, логирование каждого выполненного запроса |
 
-Дополнительно: секреты передаются только через переменные окружения, строки подключения пользователей шифруются в БД приложения, в trace записываются только маскированные результаты (PII-маскирование, опционально), аутентификация реализована на JWT с ролями `admin` (подключает БД) и `analyst` (задаёт вопросы).
+Дополнительно: JWT хранится в httpOnly-cookie и недоступен JavaScript (Next.js как Backend for Frontend, ADR-017), ответ агента выводится обычным текстом без Markdown и ссылок; секреты передаются только через переменные окружения, строки подключения пользователей шифруются в БД приложения, в trace записываются только маскированные результаты (PII-маскирование, опционально), аутентификация реализована на JWT с ролями `admin` (подключает БД) и `analyst` (задаёт вопросы).
 
 ## 10. Технологический стек
 
@@ -238,11 +248,11 @@ class AgentState(TypedDict):
 | **Целевая и служебная СУБД** | PostgreSQL 17 | Стандарт индустрии, `EXPLAIN (FORMAT JSON)`, роли и read-only транзакции. Хранит также checkpoints LangGraph |
 | **Векторная БД** | Qdrant | Фильтрация по payload (`db_id`, `type`), гибридный поиск, запуск в Docker |
 | **Эмбеддинги** | мультиязычная модель (выбор по eval) | Вопросы на русском, схема на английском |
-| **Фронтенд** | Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui | Чат, таблицы результатов, панель SQL и отчёта валидатора |
-| **Визуализация** | Recharts (или Apache ECharts) | Графики по `chart_spec`, который формирует агент |
+| **Фронтенд** | Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui, TanStack Query | Чат + аналитическая панель, дашборд «Обзор». Next.js — ещё и BFF: JWT в httpOnly-cookie, прокси SSE (ADR-017, ADR-018) |
+| **Визуализация** | Recharts 3, shiki | Графики по `chart_spec` агента; палитра проверена на дальтонизм; подсветка SQL |
 | **Эмбеддинги** | OpenAI **text-embedding-3-large** | Выбрана по полноте отбора таблиц на 40 вопросах: 0,975 против 0,900 у small (ADR-015) |
 | **Трассировка и evals** | Langfuse Cloud (локальный — опционально) | Framework-agnostic, учёт стоимости, датасеты, prompt management (ADR-013) |
-| **Тестирование** | pytest, Playwright (e2e) | Юнит-тесты валидатора, интеграционные тесты графа, e2e UI |
+| **Тестирование** | pytest, hypothesis, Vitest, Playwright + axe-core | Юнит-тесты валидатора, интеграционные тесты графа, e2e UI и доступность (WCAG 2.1 AA) |
 | **Инфраструктура** | Docker, docker-compose, GitHub Actions | Запуск одной командой, CI с автопрогоном evals на PR |
 
 ## 11. Оценка и эксперименты
@@ -309,7 +319,7 @@ class AgentState(TypedDict):
 │   │   ├── llm/                 # абстракция провайдера, fallback, выбор модели на узел
 │   │   └── core/                # конфиг, БД приложения, безопасность
 │   └── tests/
-├── frontend/                    # Next.js + TypeScript
+├── frontend/                    # Next.js: страницы, BFF-прокси /api, компоненты чата и панели анализа, e2e
 ├── evals/
 │   ├── datasets/                # unsafe (готов: 88 атак, 42 безобидных), spider_subset, bird_subset, ambiguous_ru
 │   ├── runners/                 # прогон baseline / agent, подсчёт метрик
@@ -323,7 +333,7 @@ class AgentState(TypedDict):
 │   └── graph.md                 # граф агента (сгенерирован из кода)
 ├── infra/langfuse/              # локальный Langfuse (необязательно, профиль langfuse-local)
 ├── scripts/init-env.sh          # генерация .env со случайными секретами
-├── .github/workflows/           # CI: backend, frontend, compose
+├── .github/workflows/           # CI: backend, frontend, e2e, compose, demo_db
 ├── docker-compose.yml
 ├── Makefile
 ├── ARCHITECTURE.md
@@ -365,10 +375,11 @@ make index     # переиндексировать схемы источник�
 make prompts   # загрузить промпты в Langfuse (MSG="что изменилось")
 make migrate   # миграции БД приложения (применяются и при старте backend)
 make lint      # ruff + mypy (strict) + eslint + tsc + prettier
-make test      # pytest (backend, демо-БД) + сборка фронтенда
+make test      # pytest (backend, демо-БД) + Vitest и сборка фронтенда
+make test-e2e  # Playwright против запущенного стека (нужен AGENT_MODE=fake в .env)
 make format    # автоформатирование
 cd backend && uv run uvicorn app.main:app --reload
-cd frontend && npm run dev
+cd frontend && npm run dev   # BACKEND_URL=http://localhost:8000 по умолчанию
 ```
 
 Pre-commit хуки (ruff, prettier, gitleaks) ставятся командой `uv tool install pre-commit && pre-commit install`.

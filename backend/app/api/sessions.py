@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Response, status
 from fastapi.sse import EventSourceResponse
 from sqlalchemy import select
 
@@ -9,13 +9,14 @@ from app.agent.runner import RunContext
 from app.api.deps import CurrentUser, DbSession, Runner
 from app.core.errors import AppError, not_found
 from app.models import ChatSession, Datasource, DatasourceStatus, Message, MessageRole, User
-from app.schemas.agent import ChartSpec, ClarificationRequest, QueryResult
+from app.schemas.agent import ChartSpec, ClarificationRequest, ErrorEvent, QueryResult
 from app.schemas.api import ClarifyRequest, MessageCreate, MessageOut, SessionCreate, SessionOut
-from app.services.chat import acquire_session, stream_turn
+from app.services.chat import acquire_session, stop_turn, stream_turn
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 DEFAULT_TITLE = "Новый диалог"
+CLARIFICATION_PREFIX = "Уточнение: "  # ответ на уточнение — не новый вопрос (учёт в /stats)
 
 SSE_HEADERS = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
 # Ответ возвращается вручную (не генератор-endpoint): проверки выше отдают обычные HTTP-ошибки
@@ -47,6 +48,7 @@ def to_message_out(m: Message) -> MessageOut:
         clarification=(
             ClarificationRequest.model_validate(m.clarification) if m.clarification else None
         ),
+        error=ErrorEvent.model_validate(m.error) if m.error else None,
         trace_id=m.trace_id,
     )
 
@@ -165,7 +167,7 @@ async def clarify(
         Message(
             session_id=session_id,
             role=MessageRole.USER,
-            content="Уточнение: " + "; ".join(parts),
+            content=CLARIFICATION_PREFIX + "; ".join(parts),
         )
     )
     await db.commit()
@@ -175,3 +177,14 @@ async def clarify(
         stream_turn(session_id, runner.resume(ctx, clarification, body.answers)),
         headers=SSE_HEADERS,
     )
+
+
+@router.post("/{session_id}/stop", status_code=status.HTTP_204_NO_CONTENT)
+async def stop(session_id: uuid.UUID, db: DbSession, user: CurrentUser) -> Response:
+    """Остановить ответ агента. Поток завершится событиями error (cancelled) и done.
+
+    Обрыв соединения ход не останавливает: ответ дописывается и сохраняется.
+    """
+    await own_session(db, session_id, user)
+    stop_turn(session_id)  # повторный вызов и вызов без активного хода — не ошибка
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

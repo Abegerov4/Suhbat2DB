@@ -1,4 +1,4 @@
-.PHONY: help env up up-lite up-langfuse down logs ps test test-backend test-demo-db test-frontend lint format seed migrate index smoke prompts eval-smoke
+.PHONY: help env up up-lite up-langfuse down logs ps test test-backend test-demo-db test-frontend test-e2e lint format seed migrate index smoke prompts eval-smoke
 
 APP_SERVICES := app-db target-db qdrant backend frontend
 
@@ -39,7 +39,12 @@ test-demo-db:
 	cd demo_db && uv run pytest
 
 test-frontend:
-	cd frontend && npm run build
+	cd frontend && npm test && npm run build
+
+# E2E против запущенного стека; ответы агента проверяются по заглушке — нужен AGENT_MODE=fake в .env
+test-e2e:  ## E2E-тесты Playwright (стек с AGENT_MODE=fake)
+	set -a && . ./.env && set +a && cd frontend && \
+	E2E_BASE_URL=$${E2E_BASE_URL:-http://localhost:$${FRONTEND_PORT:-3000}} npm run test:e2e
 
 lint:  ## Линтеры и проверка типов
 	cd backend && uv run ruff check . && uv run ruff format --check . && uv run mypy app tests

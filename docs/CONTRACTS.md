@@ -8,6 +8,8 @@
 
 Базовый префикс: `/api`. Аутентификация: `Authorization: Bearer <JWT>`. Роли пользователей: `admin`, `analyst`.
 
+Браузер обращается к API не напрямую, а через Next.js (Backend for Frontend, [ADR-017](../ARCHITECTURE.md#adr-017-backend-for-frontend-и-jwt-в-httponly-cookie)): `POST /api/auth/login` фронтенда кладёт токен в httpOnly-cookie, `POST /api/auth/logout` удаляет его, остальные пути `/api/*` проксируются в FastAPI с заголовком `Authorization`.
+
 | Метод | Путь | Роль | Тело запроса | Ответ |
 |---|---|---|---|---|
 | GET | `/health` | — | — | `{status: "ok"}` |
@@ -24,7 +26,9 @@
 | GET | `/sessions/{id}/messages` | owner | — | `[Message]` |
 | POST | `/sessions/{id}/messages` | owner | `{content}` (1–2000 символов) | **SSE-поток** (раздел 2) |
 | POST | `/sessions/{id}/clarify` | owner | `{answers: [ClarificationAnswer]}` | **SSE-поток** (продолжение графа) |
+| POST | `/sessions/{id}/stop` | owner | — | `204`; идущий ход отменяется, поток завершается `error` (`cancelled`) и `done` |
 | POST | `/messages/{id}/feedback` | owner | `{score: 1 \| -1, comment?}` | `204` |
+| GET | `/stats?days=14&tz=Asia/Almaty` | any | — | `Stats` (только свои диалоги; `days` 1–90, `tz` — IANA) |
 
 ```ts
 type Datasource = { id: string; name: string; dialect: "postgres"; status: "indexing" | "ready" | "error"; error?: string; indexed_at?: string; tables_count?: number };
@@ -33,6 +37,15 @@ type Message = {
   id: string; role: "user" | "assistant"; content: string; created_at: string;
   sql?: string; validation_report?: ValidationReport; result?: QueryResult;
   chart_spec?: ChartSpec; clarification?: ClarificationRequest; trace_id?: string;
+  error?: { code: string; message: string };  // отказ или ошибка хода (восстанавливает карточку отказа)
+};
+type Stats = {
+  questions: number; answered: number; clarifications: number; refused: number;  // ход = ответ | уточнение | отказ
+  sessions: number; datasources: number; datasources_ready: number;
+  queries_ok: number; queries_blocked: number; queries_failed: number; avg_duration_ms: number | null;
+  blocked_by_level: { level: 1 | 2 | 3 | 4 | 5; name: string; count: number }[];
+  feedback_up: number; feedback_down: number;
+  activity: { date: string; questions: number; answered: number; clarifications: number; refused: number }[];
 };
 type ClarificationAnswer = { ambiguity_id: string; option_id?: string; free_text?: string };
 ```
@@ -64,7 +77,7 @@ type ClarificationAnswer = { ambiguity_id: string; option_id?: string; free_text
 
 ## 2. SSE-события агента
 
-Поток `text/event-stream`. Каждое событие записывается как `event: <type>` и `data: <json>`. Порядок событий не фиксирован, но поток **всегда** заканчивается событием `done` (после `error` тоже приходит `done`). `message_id` в `done` — id сохранённого сообщения ассистента; его подставляет API-слой, а не агент.
+Поток `text/event-stream`. Каждое событие записывается как `event: <type>` и `data: <json>`. Ход агента выполняется на сервере независимо от соединения ([ADR-019](../ARCHITECTURE.md#adr-019-ход-агента-не-зависит-от-соединения)): если клиент отключился, ответ всё равно дописывается и сохраняется; остановить ход можно только через `POST /sessions/{id}/stop`. Порядок событий не фиксирован, но поток **всегда** заканчивается событием `done` (после `error` тоже приходит `done`). `message_id` в `done` — id сохранённого сообщения ассистента; его подставляет API-слой, а не агент.
 
 | `event` | `data` | Когда |
 |---|---|---|
@@ -208,4 +221,4 @@ class Feedback(TypedDict): sql: str; level: int; message: str; hint: str | None
 
 `thread_id` графа совпадает с `session.id`, поэтому один чат соответствует одному потоку checkpoint'ов (PostgreSQL, `AsyncPostgresSaver`). Ответ на уточнение передаётся в граф как `Command(resume=[{ambiguity_id, option_id, free_text}])`.
 
-Коды отказов в событии `error`: `refused` (просьба изменить данные), `unsafe_input` (prompt injection), `out_of_scope`, `unsafe_sql` (фатальное нарушение политики), `max_attempts`, `cannot_answer`, `no_connection`, `internal_error`.
+Коды отказов в событии `error`: `refused` (просьба изменить данные), `unsafe_input` (prompt injection), `out_of_scope`, `unsafe_sql` (фатальное нарушение политики), `max_attempts`, `cannot_answer`, `no_connection`, `internal_error`, `cancelled` (ход остановлен через `/stop`).

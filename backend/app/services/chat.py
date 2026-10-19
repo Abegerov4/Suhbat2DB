@@ -1,7 +1,8 @@
 """Поток одного хода диалога: события агента → SSE, сохранение ответа и журнала запросов."""
 
+import asyncio
 import uuid
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator, AsyncIterator
 from dataclasses import dataclass, field
 
 import structlog
@@ -29,6 +30,10 @@ log = structlog.get_logger()
 
 # Один активный поток на сессию: повторная отправка во время ответа → 409
 _active_sessions: set[uuid.UUID] = set()
+# Задачи идущих ходов: ссылка держит задачу живой, пока клиент отключён
+_turns: dict[uuid.UUID, asyncio.Task[None]] = {}
+
+CANCELLED = "Ответ остановлен пользователем"
 
 
 def acquire_session(session_id: uuid.UUID) -> None:
@@ -123,6 +128,7 @@ async def save_turn(session_id: uuid.UUID, acc: TurnAccumulator, trace_id: str |
             clarification=(
                 acc.clarification.model_dump(mode="json") if acc.clarification else None
             ),
+            error=acc.error.model_dump(mode="json") if acc.error else None,
             trace_id=trace_id,
         )
         db.add(message)
@@ -135,35 +141,77 @@ async def save_turn(session_id: uuid.UUID, acc: TurnAccumulator, trace_id: str |
         return message.id
 
 
-async def stream_turn(
-    session_id: uuid.UUID, events: AsyncIterator[AgentEvent]
-) -> AsyncIterator[bytes]:
-    """Пересылает события агента, сохраняет ответ и подставляет message_id в `done`.
+async def run_turn(
+    session_id: uuid.UUID, events: AsyncIterator[AgentEvent], queue: asyncio.Queue[bytes | None]
+) -> None:
+    """Ход агента целиком: события → очередь SSE, итог → БД, освобождение сессии.
 
-    Сессия уже захвачена (acquire_session) вызывающим кодом и освобождается здесь.
+    Выполняется отдельной задачей и не зависит от соединения: если браузер ушёл,
+    ответ всё равно дописывается и сохраняется. Остановить ход — stop_turn().
     """
     acc = TurnAccumulator()
     done = DoneEvent()
+
+    def emit(e: AgentEvent) -> None:
+        acc.add(e)
+        queue.put_nowait(sse(e))
+
     try:
         try:
             async for e in events:
                 if isinstance(e.data, DoneEvent):
                     done = e.data
                     break
-                acc.add(e)
-                yield sse(e)
+                emit(e)
+        except asyncio.CancelledError:  # stop_turn(): пользователь остановил ответ
+            emit(AgentEvent(type="error", data=ErrorEvent(code="cancelled", message=CANCELLED)))
         except Exception as exc:  # агент упал — пользователь получает ошибку, а не обрыв
             log.exception("agent_failed", session_id=str(session_id), exc_info=exc)
-            error = AgentEvent(
-                type="error",
-                data=ErrorEvent(code="internal_error", message="Агент завершился с ошибкой"),
+            emit(
+                AgentEvent(
+                    type="error",
+                    data=ErrorEvent(code="internal_error", message="Агент завершился с ошибкой"),
+                )
             )
-            acc.add(error)
-            yield sse(error)
+        finally:
+            close = getattr(events, "aclose", None)
+            if close is not None:
+                await close()
 
         message_id = await save_turn(session_id, acc, done.trace_id)
         done.message_id = str(message_id)
-        yield sse(AgentEvent(type="done", data=done))
+        queue.put_nowait(sse(AgentEvent(type="done", data=done)))
     finally:
-        # срабатывает и при обрыве соединения клиентом (генератор отменяется)
+        queue.put_nowait(None)
+        _turns.pop(session_id, None)
         release_session(session_id)
+
+
+async def stream_turn(
+    session_id: uuid.UUID, events: AsyncIterator[AgentEvent]
+) -> AsyncGenerator[bytes]:
+    """SSE-поток хода: читает очередь задачи run_turn и подставляет message_id в `done`.
+
+    Сессия уже захвачена (acquire_session) вызывающим кодом; освобождает её run_turn.
+    Обрыв соединения отменяет только чтение очереди, а не сам ход.
+    """
+    queue: asyncio.Queue[bytes | None] = asyncio.Queue()
+    _turns[session_id] = asyncio.create_task(run_turn(session_id, events, queue))
+    while (chunk := await queue.get()) is not None:
+        yield chunk
+
+
+def stop_turn(session_id: uuid.UUID) -> bool:
+    """Отменяет идущий ход; он сохраняется с ошибкой `cancelled`. False — хода нет."""
+    task = _turns.get(session_id)
+    # повторная отмена прервала бы уже сохранение остановленного хода
+    if task is None or task.done() or task.cancelling():
+        return False
+    task.cancel()
+    return True
+
+
+async def wait_turns() -> None:
+    """Для тестов и корректного завершения: дождаться ходов, оставшихся без клиента."""
+    if _turns:
+        await asyncio.gather(*_turns.values(), return_exceptions=True)

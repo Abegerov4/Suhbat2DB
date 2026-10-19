@@ -1,0 +1,73 @@
+import {
+  CircleCheck,
+  MessageCircleQuestion,
+  MessagesSquare,
+  ShieldCheck,
+  type LucideIcon,
+} from "lucide-react";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Stats } from "@/lib/api/types";
+import { formatNumber, percent, plural } from "@/lib/format";
+
+type Stat = { label: string; value: string; hint: string; icon: LucideIcon };
+
+function toStats(s: Stats): Stat[] {
+  const turns = s.answered + s.clarifications + s.refused;
+  const queries = s.queries_ok + s.queries_blocked + s.queries_failed;
+  return [
+    {
+      label: "Вопросов задано",
+      value: formatNumber(s.questions),
+      hint: `в ${s.sessions} ${plural(s.sessions, ["диалоге", "диалогах", "диалогах"])}`,
+      icon: MessagesSquare,
+    },
+    {
+      label: "Ответов с данными",
+      value: formatNumber(s.answered),
+      hint: `${percent(s.answered, turns)}% ходов агента`,
+      icon: CircleCheck,
+    },
+    {
+      label: "Уточнений",
+      value: formatNumber(s.clarifications),
+      hint: "агент переспросил неоднозначный вопрос",
+      icon: MessageCircleQuestion,
+    },
+    {
+      label: "SQL заблокировано",
+      value: formatNumber(s.queries_blocked),
+      hint: `из ${formatNumber(queries)} проверенных запросов`,
+      icon: ShieldCheck,
+    },
+  ];
+}
+
+export function StatCards({ stats }: { stats?: Stats }) {
+  if (!stats) {
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }, (_, i) => (
+          <Skeleton key={i} className="h-[118px] rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {toStats(stats).map((stat) => (
+        <Card key={stat.label}>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-medium">{stat.label}</CardTitle>
+            <stat.icon aria-hidden className="size-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold">{stat.value}</p>
+            <p className="text-xs text-muted-foreground">{stat.hint}</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
