@@ -3,7 +3,7 @@
 import { BarChart3, Code2, ShieldCheck, Table2, Wrench } from "lucide-react";
 import { useState } from "react";
 
-import { AgentProgress } from "@/components/chat/agent-progress";
+import { AgentTrace } from "@/components/chat/agent-progress";
 import { Badge } from "@/components/ui/badge";
 import {
   Empty,
@@ -100,9 +100,10 @@ function PanelBody({ turn, question }: { turn: Turn; question?: string }) {
         </div>
       </div>
 
-      {streaming && !turn.result && (
-        <div className="border-b px-4 py-4 sm:px-6">
-          <AgentProgress steps={turn.steps} />
+      {/* шаги известны у ходов этой вкладки; у истории из БД их нет */}
+      {turn.steps.length > 0 && (
+        <div className="border-b px-4 py-3 sm:px-6">
+          <AgentTrace steps={turn.steps} defaultOpen={streaming} />
         </div>
       )}
 

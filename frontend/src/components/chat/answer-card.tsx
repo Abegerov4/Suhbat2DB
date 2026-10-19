@@ -15,7 +15,7 @@ import { countOf, ROWS } from "@/lib/format";
 import { hasAnalysis, lastAttempt, type Turn } from "@/lib/turn";
 import { cn } from "@/lib/utils";
 
-import { AgentProgress } from "./agent-progress";
+import { AgentThinking } from "./agent-progress";
 import { ClarificationCard } from "./clarification-card";
 import { ErrorCard } from "./error-card";
 import { FeedbackButtons } from "./feedback-buttons";
@@ -49,7 +49,7 @@ export function AnswerCard({
   return (
     <div className="flex flex-col gap-3">
       {streaming && !turn.answer && !turn.clarification && !turn.error && (
-        <AgentProgress steps={turn.steps} compact />
+        <AgentThinking steps={turn.steps} />
       )}
 
       {turn.answer && (

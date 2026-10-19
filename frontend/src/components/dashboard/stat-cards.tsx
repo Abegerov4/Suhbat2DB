@@ -7,11 +7,12 @@ import {
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { NumberTicker } from "@/components/ui/number-ticker";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Stats } from "@/lib/api/types";
 import { formatNumber, percent, plural } from "@/lib/format";
 
-type Stat = { label: string; value: string; hint: string; icon: LucideIcon };
+type Stat = { label: string; value: number; hint: string; icon: LucideIcon };
 
 function toStats(s: Stats): Stat[] {
   const turns = s.answered + s.clarifications + s.refused;
@@ -19,25 +20,25 @@ function toStats(s: Stats): Stat[] {
   return [
     {
       label: "Вопросов задано",
-      value: formatNumber(s.questions),
+      value: s.questions,
       hint: `в ${s.sessions} ${plural(s.sessions, ["диалоге", "диалогах", "диалогах"])}`,
       icon: MessagesSquare,
     },
     {
       label: "Ответов с данными",
-      value: formatNumber(s.answered),
+      value: s.answered,
       hint: `${percent(s.answered, turns)}% ходов агента`,
       icon: CircleCheck,
     },
     {
       label: "Уточнений",
-      value: formatNumber(s.clarifications),
+      value: s.clarifications,
       hint: "агент переспросил неоднозначный вопрос",
       icon: MessageCircleQuestion,
     },
     {
       label: "SQL заблокировано",
-      value: formatNumber(s.queries_blocked),
+      value: s.queries_blocked,
       hint: `из ${formatNumber(queries)} проверенных запросов`,
       icon: ShieldCheck,
     },
@@ -63,7 +64,11 @@ export function StatCards({ stats }: { stats?: Stats }) {
             <stat.icon aria-hidden className="size-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold">{stat.value}</p>
+            <p className="text-2xl font-semibold">
+              {/* счётчик для глаз; итоговое значение — для скринридера */}
+              <NumberTicker value={stat.value} aria-hidden />
+              <span className="sr-only">{formatNumber(stat.value)}</span>
+            </p>
             <p className="text-xs text-muted-foreground">{stat.hint}</p>
           </CardContent>
         </Card>
