@@ -5,18 +5,18 @@ import {
   Database,
   MessageSquare,
   ShieldCheck,
-  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import { useRef, type RefObject } from "react";
 
+import { Logo } from "@/components/layout/logo";
 import { AnimatedBeam } from "@/components/ui/animated-beam";
 import { cn } from "@/lib/utils";
 
-const NODES: { label: string; icon: LucideIcon; accent?: boolean }[] = [
+const NODES: { label: string; icon?: LucideIcon; accent?: boolean }[] = [
   { label: "Вопрос", icon: MessageSquare },
-  { label: "Агент", icon: Sparkles, accent: true },
+  { label: "Агент", accent: true },
   { label: "Проверка SQL", icon: ShieldCheck },
   { label: "База данных", icon: Database },
   { label: "Ответ", icon: ChartColumn },
@@ -59,13 +59,11 @@ export function PipelineBeam({ className }: { className?: string }) {
               node.accent && "size-12 border-chart-1/40",
             )}
           >
-            <node.icon
-              className={cn(
-                "size-4 text-muted-foreground",
-                node.accent && "size-5 text-chart-1",
-              )}
-              aria-hidden
-            />
+            {node.icon ? (
+              <node.icon className="size-4 text-muted-foreground" aria-hidden />
+            ) : (
+              <Logo className="size-7" />
+            )}
           </div>
           <span className="text-center text-[11px] leading-tight text-muted-foreground">
             {node.label}

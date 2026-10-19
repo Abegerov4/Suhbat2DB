@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Suhbat2DB: chat bubble and database with Kazakh koshkar-muiz ornament">
+  <title>Suhbat2DB — primary logo</title>
+  <desc>Two-color flat vector logo: database cylinder and chat bubble with a Kazakh horn motif in the top ellipse.</desc>
+  <!-- Flat body with integrated chat tail -->
+  <path fill="#2a78d6" d="M113 169 V338 C113 365 133 384 163 389 L147 428 Q141 444 155 436 L230 391 H332 C381 391 411 369 411 338 V169 Z"/>
+  <!-- Distinct light blue database lid -->
+  <ellipse fill="#3987e5" cx="262" cy="169" rx="149" ry="68"/>
+  <!-- Negative space separating database layers -->
+  <path fill="none" stroke="#ffffff" stroke-width="11.5" stroke-linecap="round" d="M114 180 C151 242 372 242 410 180"/>
+  <path fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" d="M113 271 C157 321 365 321 411 271"/>
+  <!-- Conversational ellipsis -->
+  <g fill="#ffffff"><circle cx="215" cy="349" r="11"/><circle cx="262" cy="349" r="11"/><circle cx="309" cy="349" r="11"/></g>
+  <!-- Expanded (~1.5x) symmetrical Kazakh qoshqar-muiz: leaf crown and curled horns -->
+  <g fill="#ffffff">
+    <path d="M262 109 C245 130 242 143 249 158 Q255 169 262 178 Q269 169 275 158 C282 143 279 130 262 109 Z"/>
+    <path d="M260 163 Q243 145 223 145 Q216 145 206 151 Q231 150 249 177 L262 192 L275 177 Q293 150 318 151 Q308 145 301 145 Q281 145 264 163 Z"/>
+  </g>
+  <g fill="none" stroke="#ffffff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M262 203 C245 180 222 160 199 160 C180 160 170 176 180 188 C193 204 216 188 203 178"/>
+    <path d="M262 203 C279 180 302 160 325 160 C344 160 354 176 344 188 C331 204 308 188 321 178"/>
+  </g>
+</svg>
