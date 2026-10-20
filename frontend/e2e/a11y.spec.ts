@@ -24,6 +24,7 @@ test("overview and chat with an answer have no serious accessibility violations"
   page,
 }) => {
   await registerAndLogin(page);
+  await expect(page.getByText("Сервис подключён")).toBeVisible();
   expect(await violations(page)).toEqual([]);
 
   await startChat(page, "Топ-5 регионов по выручке за 2025 год");

@@ -21,10 +21,7 @@ export function ServiceStatus({ className }: { className?: string }) {
   return (
     <span
       role="status"
-      className={cn(
-        "items-center gap-1.5 text-xs text-muted-foreground",
-        className,
-      )}
+      className={cn("items-center gap-1.5 text-xs text-foreground", className)}
     >
       <span
         aria-hidden
