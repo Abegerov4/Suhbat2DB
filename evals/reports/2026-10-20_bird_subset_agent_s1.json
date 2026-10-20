@@ -1,0 +1,3147 @@
+{
+ "meta": {
+  "suite": "bird_subset",
+  "config": {
+   "name": "agent",
+   "description": "LangGraph-агент — schema linking, уточнение, 5 уровней проверки, самокоррекция",
+   "system": "agent",
+   "clarify": true,
+   "schema_linking": true,
+   "semantic_checks": true,
+   "explain": false,
+   "max_attempts": 3,
+   "models": {},
+   "temperatures": {}
+  },
+  "seed": 1,
+  "limit": 60,
+  "n": 60,
+  "git_sha": "7490809",
+  "run_id": "bird_subset:agent:s1:20261020194156",
+  "created_at": "2026-10-20T19:42:32+00:00",
+  "models": {
+   "guard": "gpt-4.1-mini",
+   "ambiguity": "gpt-4.1",
+   "generate_sql": "gpt-4.1"
+  },
+  "duration_s": 35.7
+ },
+ "summary": {
+  "n": 60,
+  "ex": 0.3833,
+  "ex_ci95": [
+   0.2667,
+   0.5167
+  ],
+  "ex_relaxed": 0.5167,
+  "by_difficulty": {
+   "challenging": {
+    "n": 20,
+    "ex": 0.45,
+    "ex_ci95": [
+     0.25,
+     0.65
+    ],
+    "ex_relaxed": 0.6
+   },
+   "moderate": {
+    "n": 20,
+    "ex": 0.35,
+    "ex_ci95": [
+     0.15,
+     0.55
+    ],
+    "ex_relaxed": 0.55
+   },
+   "simple": {
+    "n": 20,
+    "ex": 0.35,
+    "ex_ci95": [
+     0.15,
+     0.55
+    ],
+    "ex_relaxed": 0.4
+   }
+  },
+  "first_attempt_ex": 0.3833,
+  "self_correction_gain": 0.0,
+  "attempts_distribution": {
+   "1": 57,
+   "2": 2,
+   "3": 1
+  },
+  "schema_recall": 0.9569,
+  "schema_full_recall": 0.9,
+  "refusals": 0,
+  "gold_errors": 0,
+  "clarification_rate": 0.1333,
+  "cost_usd_total": 0.7074,
+  "cost_usd_per_question": 0.01179,
+  "llm_calls_per_question": 3.35,
+  "latency_p50_s": null,
+  "latency_p95_s": null,
+  "latency_measured_on": 0
+ },
+ "cases": [
+  {
+   "id": "bird-challenging-001",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "WITH locally_funded_schools AS (\n    SELECT \n        f.cdscode,\n        f.\"School Name\" AS school_name,\n        s.doctype,\n        f.\"Enrollment (K-12)\" AS enrollment_k12,\n        f.\"Enrollment (Ages 5-17)\" AS enrollment_5_17,\n        (f.\"Enrollment (K-12)\" - f.\"Enrollment (Ages 5-17)\") AS enrollment_diff\n    FROM public.frpm f\n    JOIN public.schools s ON f.cdscode = s.cdscode\n    WHERE f.\"Charter Funding Type\" = 'Locally funded'\n      AND f.\"Enrollment (K-12)\" IS NOT NULL\n      AND f.\"Enrollment (Ages 5-17)\" IS NOT NULL\n)\n, avg_diff AS (\n    SELECT round(avg(enrollment_diff), 2) AS avg_enrollment_diff\n    FROM locally_funded_schools\n)\nSELECT \n    lfs.school_name,\n    lfs.doctype,\n    lfs.enrollment_diff\nFROM locally_funded_schools lfs\nCROSS JOIN avg_diff\nWHERE lfs.enrollment_diff > avg_diff.avg_enrollment_diff\nORDER BY lfs.enrollment_diff DESC, lfs.school_name",
+   "attempts": [
+    "WITH locally_funded_schools AS (\n    SELECT \n        f.cdscode,\n        f.\"School Name\" AS school_name,\n        s.doctype,\n        f.\"Enrollment (K-12)\" AS enrollment_k12,\n        f.\"Enrollment (Ages 5-17)\" AS enrollment_5_17,\n        (f.\"Enrollment (K-12)\" - f.\"Enrollment (Ages 5-17)\") AS enrollment_diff\n    FROM public.frpm f\n    JOIN public.schools s ON f.cdscode = s.cdscode\n    WHERE f.\"Charter Funding Type\" = 'Locally funded'\n      AND f.\"Enrollment (K-12)\" IS NOT NULL\n      AND f.\"Enrollment (Ages 5-17)\" IS NOT NULL\n)\n, avg_diff AS (\n    SELECT round(avg(enrollment_diff), 2) AS avg_enrollment_diff\n    FROM locally_funded_schools\n)\nSELECT \n    lfs.school_name,\n    lfs.doctype,\n    lfs.enrollment_diff\nFROM locally_funded_schools lfs\nCROSS JOIN avg_diff\nWHERE lfs.enrollment_diff > avg_diff.avg_enrollment_diff\nORDER BY lfs.enrollment_diff DESC, lfs.school_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 49,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "value",
+        "span": "15-17 enrollment",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "Ages 5-17",
+          "description": "Interpret '15-17 enrollment' as 'Enrollment (Ages 5-17)' column, which covers ages 5 through 17."
+         },
+         {
+          "id": "a1o2",
+          "label": "Ages 15-17 only",
+          "description": "Interpret '15-17 enrollment' as enrollment of students aged 15 to 17 only, which is not directly available in the schema."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o1"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "schools",
+    "frpm",
+    "satscores"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.91,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      451,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      14522,
+      723
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 4,
+    "cost_usd": 0.035069
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "pred_error": "UndefinedFunctionError: function round(double precision, integer) does not exist\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+  },
+  {
+   "id": "bird-challenging-002",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.admfname1 AS admin_first_name_1, s.admlname1 AS admin_last_name_1, s.admfname2 AS admin_first_name_2, s.admlname2 AS admin_last_name_2, s.admfname3 AS admin_first_name_3, s.admlname3 AS admin_last_name_3\nFROM public.satscores ss\nJOIN public.schools s ON ss.cds = s.cdscode\nORDER BY ss.numge1500 DESC NULLS LAST\nLIMIT 1",
+   "attempts": [
+    "SELECT s.admfname1 AS admin_first_name_1, s.admlname1 AS admin_last_name_1, s.admfname2 AS admin_first_name_2, s.admlname2 AS admin_last_name_2, s.admfname3 AS admin_first_name_3, s.admlname3 AS admin_last_name_3\nFROM public.satscores ss\nJOIN public.schools s ON ss.cds = s.cdscode\nORDER BY ss.numge1500 DESC NULLS LAST\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "schools",
+    "satscores",
+    "frpm"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.803,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      444,
+      54
+     ],
+     "gpt-4.1-2025-04-14": [
+      8984,
+      269
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.020384
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-006",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "WITH loan_years AS (\n  SELECT \n    l.amount,\n    SUBSTRING(l.date, 1, 4)::int AS year\n  FROM public.loan l\n  JOIN public.account a ON l.account_id = a.account_id\n  JOIN public.disp d ON a.account_id = d.account_id\n  JOIN public.client c ON d.client_id = c.client_id\n  WHERE c.gender = 'M'\n    AND SUBSTRING(l.date, 1, 4) IN ('1996', '1997')\n)\n, sums AS (\n  SELECT \n    year,\n    SUM(amount) AS total_amount\n  FROM loan_years\n  GROUP BY year\n)\nSELECT \n  round(\n    (COALESCE(s97.total_amount,0) - COALESCE(s96.total_amount,0)) \n    / NULLIF(COALESCE(s96.total_amount,0),0) * 100, 2\n  ) AS growth_rate_percent\nFROM \n  (SELECT total_amount FROM sums WHERE year = 1996) s96\n  FULL OUTER JOIN (SELECT total_amount FROM sums WHERE year = 1997) s97 ON true",
+   "attempts": [
+    "WITH loan_years AS (\n  SELECT \n    l.amount,\n    SUBSTRING(l.date, 1, 4)::int AS year\n  FROM public.loan l\n  JOIN public.account a ON l.account_id = a.account_id\n  JOIN public.disp d ON a.account_id = d.account_id\n  JOIN public.client c ON d.client_id = c.client_id\n  WHERE c.gender = 'M'\n    AND SUBSTRING(l.date, 1, 4) IN ('1996', '1997')\n)\n, sums AS (\n  SELECT \n    year,\n    SUM(amount) AS total_amount\n  FROM loan_years\n  GROUP BY year\n)\nSELECT \n  round(\n    (COALESCE(s97.total_amount,0) - COALESCE(s96.total_amount,0)) \n    / NULLIF(COALESCE(s96.total_amount,0),0) * 100, 2\n  ) AS growth_rate_percent\nFROM \n  (SELECT total_amount FROM sums WHERE year = 1996) s96\n  FULL OUTER JOIN (SELECT total_amount FROM sums WHERE year = 1997) s97 ON true"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "temporal",
+        "span": "between 1996 and 1997",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "approval date (loan.date)",
+          "description": "Use the loan approval date to determine the year (loan.date)."
+         },
+         {
+          "id": "a1o2",
+          "label": "account creation date (account.date)",
+          "description": "Use the account creation date to determine the year (account.date)."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o1"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "loan",
+    "client",
+    "account",
+    "disp",
+    "trans",
+    "district"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.654,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      463,
+      52
+     ],
+     "gpt-4.1-2025-04-14": [
+      6836,
+      619
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 4,
+    "cost_usd": 0.018892
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-008",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT DISTINCT a.element\nFROM public.connected c\nJOIN public.atom a ON (a.atom_id = c.atom_id OR a.atom_id = c.atom_id2)\nWHERE c.bond_id = 'TR004_8_9'\nORDER BY a.element",
+   "attempts": [
+    "SELECT DISTINCT a.element\nFROM public.connected c\nJOIN public.atom a ON (a.atom_id = c.atom_id OR a.atom_id = c.atom_id2)\nWHERE c.bond_id = 'TR004_8_9'\nORDER BY a.element"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "bond",
+    "molecule",
+    "connected",
+    "atom"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.277,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      416,
+      42
+     ],
+     "gpt-4.1-2025-04-14": [
+      2304,
+      193
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.006386
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-012",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT b.bond_type, COUNT(*) AS bond_count, m.label AS carcinogenic\nFROM public.bond b\nJOIN public.molecule m ON b.molecule_id = m.molecule_id\nWHERE b.molecule_id = 'TR010'\nGROUP BY b.bond_type, m.label\nORDER BY bond_count DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT b.bond_type, COUNT(*) AS bond_count, m.label AS carcinogenic\nFROM public.bond b\nJOIN public.molecule m ON b.molecule_id = m.molecule_id\nWHERE b.molecule_id = 'TR010'\nGROUP BY b.bond_type, m.label\nORDER BY bond_count DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "bond",
+    "molecule",
+    "connected",
+    "atom"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.308,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      429,
+      44
+     ],
+     "gpt-4.1-2025-04-14": [
+      2332,
+      250
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.006906
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-013",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT DISTINCT a.element\nFROM public.atom a\nLEFT JOIN public.connected c ON a.atom_id = c.atom_id\nWHERE c.atom_id IS NULL\nORDER BY a.element",
+   "attempts": [
+    "SELECT DISTINCT a.element\nFROM public.atom a\nLEFT JOIN public.connected c ON a.atom_id = c.atom_id OR a.atom_id = c.atom_id2\nWHERE c.bond_id IS NULL\nORDER BY a.element",
+    "SELECT DISTINCT a.element\nFROM public.atom a\nLEFT JOIN public.connected c ON a.atom_id = c.atom_id\nWHERE c.atom_id IS NULL\nORDER BY a.element"
+   ],
+   "n_attempts": 2,
+   "executed": true,
+   "row_count": 5,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "bond",
+    "molecule",
+    "connected",
+    "atom"
+   ],
+   "validation_failures": [
+    {
+     "level": 4,
+     "message": "Запрос слишком тяжёлый: оценка стоимости 2,349,047 > 1,000,000"
+    }
+   ],
+   "answer": "",
+   "latency_s": 5.517,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      411,
+      44
+     ],
+     "gpt-4.1-2025-04-14": [
+      3387,
+      328
+     ]
+    },
+    "calls": 4,
+    "cached_calls": 1,
+    "cost_usd": 0.009633
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-015",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT a1.element AS element_1, a2.element AS element_2\nFROM public.connected c\nJOIN public.atom a1 ON c.atom_id = a1.atom_id\nJOIN public.atom a2 ON c.atom_id2 = a2.atom_id\nWHERE c.bond_id = 'TR001_10_11'",
+   "attempts": [
+    "SELECT a1.element AS element_1, a2.element AS element_2\nFROM public.connected c\nJOIN public.atom a1 ON c.atom_id = a1.atom_id\nJOIN public.atom a2 ON c.atom_id2 = a2.atom_id\nWHERE c.bond_id = 'TR001_10_11'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "bond",
+    "molecule",
+    "connected",
+    "atom"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.207,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      406,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      2286,
+      188
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.006294
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-016",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT DISTINCT a.element AS element\nFROM public.connected c\nJOIN public.atom a ON (c.atom_id = a.atom_id OR c.atom_id2 = a.atom_id)\nWHERE c.bond_id = 'TR000_1_2'\nORDER BY a.element",
+   "attempts": [
+    "SELECT DISTINCT a.element AS element\nFROM public.connected c\nJOIN public.atom a ON (c.atom_id = a.atom_id OR c.atom_id2 = a.atom_id)\nWHERE c.bond_id = 'TR000_1_2'\nORDER BY a.element"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "bond",
+    "molecule",
+    "atom",
+    "connected"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.364,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      409,
+      42
+     ],
+     "gpt-4.1-2025-04-14": [
+      2292,
+      227
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.006631
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-021",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT\n  m.molecule_id,\n  array_agg(DISTINCT a.element) AS elements\nFROM\n  molecule m\nJOIN bond b ON m.molecule_id = b.molecule_id AND b.bond_type = '#'\nJOIN atom a ON m.molecule_id = a.molecule_id\nGROUP BY\n  m.molecule_id\nORDER BY\n  m.molecule_id",
+   "attempts": [
+    "SELECT\n  m.molecule_id,\n  array_agg(DISTINCT a.element) AS elements\nFROM\n  molecule m\nJOIN bond b ON m.molecule_id = b.molecule_id AND b.bond_type = '#'\nJOIN atom a ON m.molecule_id = a.molecule_id\nGROUP BY\n  m.molecule_id\nORDER BY\n  m.molecule_id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 3,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "bond",
+    "molecule",
+    "atom",
+    "connected"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.465,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      535,
+      47
+     ],
+     "gpt-4.1-2025-04-14": [
+      2542,
+      230
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.007213
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-024",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT DISTINCT a.element\nFROM public.bond b\nJOIN public.connected c ON b.bond_id = c.bond_id\nJOIN public.atom a ON (a.atom_id = c.atom_id OR a.atom_id = c.atom_id2)\nWHERE b.molecule_id = 'TR024'\n  AND b.bond_type = '='\nORDER BY a.element",
+   "attempts": [
+    "SELECT DISTINCT a.element\nFROM public.bond b\nJOIN public.connected c ON b.bond_id = c.bond_id\nJOIN public.atom a ON (a.atom_id = c.atom_id OR a.atom_id = c.atom_id2)\nWHERE b.molecule_id = 'TR024'\n  AND b.bond_type = '='\nORDER BY a.element"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "bond",
+    "molecule",
+    "atom",
+    "connected"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 4.287,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      536,
+      42
+     ],
+     "gpt-4.1-2025-04-14": [
+      2544,
+      238
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.007274
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-028",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.superhero_name\nFROM public.superhero s\nJOIN public.colour eye_col ON s.eye_colour_id = eye_col.id\nJOIN public.colour hair_col ON s.hair_colour_id = hair_col.id\nWHERE eye_col.colour = 'Blue'\n  AND hair_col.colour = 'Blond'\nORDER BY s.superhero_name",
+   "attempts": [
+    "SELECT s.superhero_name\nFROM public.superhero s\nJOIN public.colour eye_col ON s.eye_colour_id = eye_col.id\nJOIN public.colour hair_col ON s.hair_colour_id = hair_col.id\nWHERE eye_col.colour = 'Blue'\n  AND hair_col.colour = 'Blond'\nORDER BY s.superhero_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 90,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "superhero",
+    "attribute",
+    "alignment",
+    "gender",
+    "hero_power",
+    "hero_attribute"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.436,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      476,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      3320,
+      234
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.008763
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 0.5,
+   "schema_full_recall": false
+  },
+  {
+   "id": "bird-challenging-029",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.superhero_name\nFROM public.superhero s\nJOIN public.publisher p ON s.publisher_id = p.id\nJOIN public.hero_power hp ON s.id = hp.hero_id\nJOIN public.superpower sp ON hp.power_id = sp.id\nWHERE p.publisher_name = 'Marvel Comics'\n  AND sp.power_name = 'Super Strength'\nORDER BY s.superhero_name",
+   "attempts": [
+    "SELECT s.superhero_name\nFROM public.superhero s\nJOIN public.publisher p ON s.publisher_id = p.id\nJOIN public.hero_power hp ON s.id = hp.hero_id\nJOIN public.superpower sp ON hp.power_id = sp.id\nWHERE p.publisher_name = 'Marvel Comics'\n  AND sp.power_name = 'Super Strength'\nORDER BY s.superhero_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 201,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "superhero",
+    "attribute",
+    "alignment",
+    "gender",
+    "superpower",
+    "hero_attribute",
+    "hero_power"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.96,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      454,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      3354,
+      197
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.008526
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 0.75,
+   "schema_full_recall": false
+  },
+  {
+   "id": "bird-challenging-034",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(100.0 * COUNT(CASE WHEN s.gender_id = 2 THEN 1 END) / NULLIF(COUNT(*), 0), 2) AS female_percentage\nFROM public.superhero s\nWHERE s.alignment_id = 2",
+   "attempts": [
+    "SELECT round(100.0 * COUNT(CASE WHEN s.gender_id = 2 THEN 1 END) / NULLIF(COUNT(*), 0), 2) AS female_percentage\nFROM public.superhero s\nWHERE s.alignment_id = 2"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "superhero",
+    "alignment",
+    "gender",
+    "attribute",
+    "hero_attribute"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.966,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      476,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      3116,
+      187
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.007965
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-035",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT \n  COALESCE(SUM(CASE WHEN s.eye_colour_id = 7 THEN 1 ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN s.eye_colour_id = 1 THEN 1 ELSE 0 END), 0) AS blue_vs_none_eye_colour_difference\nFROM public.superhero s\nWHERE s.weight_kg IS NULL OR s.weight_kg = 0",
+   "attempts": [
+    "SELECT \n  COALESCE(SUM(CASE WHEN s.eye_colour_id = 7 THEN 1 ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN s.eye_colour_id = 1 THEN 1 ELSE 0 END), 0) AS blue_vs_none_eye_colour_difference\nFROM public.superhero s\nWHERE s.weight_kg IS NULL OR s.weight_kg = 0"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "superhero",
+    "alignment",
+    "attribute",
+    "gender",
+    "hero_attribute"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.599,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      501,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      3166,
+      255
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.008624
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 0.5,
+   "schema_full_recall": false
+  },
+  {
+   "id": "bird-challenging-037",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(100.0 * COUNT(CASE WHEN a.alignment = 'Good' THEN 1 END) / NULLIF(COUNT(*), 0), 2) AS good_superheroes_percentage\nFROM public.superhero s\nJOIN public.publisher p ON s.publisher_id = p.id\nJOIN public.alignment a ON s.alignment_id = a.id\nWHERE p.publisher_name = 'Marvel Comics'",
+   "attempts": [
+    "SELECT round(100.0 * COUNT(CASE WHEN a.alignment = 'Good' THEN 1 END) / NULLIF(COUNT(*), 0), 2) AS good_superheroes_percentage\nFROM public.superhero s\nJOIN public.publisher p ON s.publisher_id = p.id\nJOIN public.alignment a ON s.alignment_id = a.id\nWHERE p.publisher_name = 'Marvel Comics'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "superhero",
+    "alignment",
+    "attribute",
+    "gender",
+    "publisher",
+    "hero_attribute"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.248,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      482,
+      47
+     ],
+     "gpt-4.1-2025-04-14": [
+      3204,
+      215
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.008396
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-039",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT c.constructorref AS constructor_reference_name, c.url AS website\nFROM results r\nJOIN races ra ON r.raceid = ra.raceid\nJOIN constructors c ON r.constructorid = c.constructorid\nWHERE ra.year = 2009 AND ra.name = 'Singapore Grand Prix' AND r.positionorder = 1\nLIMIT 1",
+   "attempts": [
+    "SELECT c.constructorref AS constructor_reference_name, c.url AS website\nFROM results r\nJOIN races ra ON r.raceid = ra.raceid\nJOIN constructors c ON r.constructorid = c.constructorid\nWHERE ra.year = 2009 AND ra.name = 'Singapore Grand Prix' AND r.positionorder = 1\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "results",
+    "constructors",
+    "qualifying",
+    "races",
+    "constructorstandings",
+    "drivers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.831,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      485,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      4156,
+      230
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.010405
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-041",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.sex\nFROM public.patient p\nJOIN public.examination e ON p.id = e.id\nJOIN public.laboratory l ON p.id = l.id\nWHERE e.diagnosis = 'PSS'\n  AND l.crp = '2+'\n  AND l.cre = 1\n  AND l.ldh = 123\nLIMIT 1",
+   "attempts": [
+    "SELECT p.sex\nFROM public.patient p\nJOIN public.examination e ON p.id = e.id\nJOIN public.laboratory l ON p.id = l.id\nWHERE e.diagnosis = 'PSS'\n  AND l.crp = '2+'\n  AND l.cre = 1\n  AND l.ldh = 123\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "laboratory",
+    "patient",
+    "examination"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.704,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      472,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      4948,
+      296
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.012509
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-044",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "WITH abnormal_patients AS (\n  SELECT l.id,\n         MAX(CASE WHEN l.plt < 100 THEN 1 ELSE 0 END) AS has_low,\n         MAX(CASE WHEN l.plt > 400 THEN 1 ELSE 0 END) AS has_high\n    FROM public.laboratory l\n   WHERE l.plt <= 100 OR l.plt >= 400\n   GROUP BY l.id\n)\nSELECT \n  COUNT(*) FILTER (WHERE has_low = 1) AS patients_with_low_platelet,\n  COUNT(*) FILTER (WHERE has_high = 1) AS patients_with_high_platelet,\n  COUNT(*) FILTER (WHERE has_low = 1) - COUNT(*) FILTER (WHERE has_high = 1) AS difference_low_minus_high\nFROM abnormal_patients",
+   "attempts": [
+    "WITH abnormal_patients AS (\n  SELECT l.id,\n         MAX(CASE WHEN l.plt < 100 THEN 1 ELSE 0 END) AS has_low,\n         MAX(CASE WHEN l.plt > 400 THEN 1 ELSE 0 END) AS has_high\n    FROM public.laboratory l\n   WHERE l.plt <= 100 OR l.plt >= 400\n   GROUP BY l.id\n)\nSELECT \n  COUNT(*) FILTER (WHERE has_low = 1) AS patients_with_low_platelet,\n  COUNT(*) FILTER (WHERE has_high = 1) AS patients_with_high_platelet,\n  COUNT(*) FILTER (WHERE has_low = 1) - COUNT(*) FILTER (WHERE has_high = 1) AS difference_low_minus_high\nFROM abnormal_patients"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "laboratory",
+    "patient",
+    "examination"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 4.38,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      476,
+      39
+     ],
+     "gpt-4.1-2025-04-14": [
+      4956,
+      311
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.012653
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-048",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT e.event_name\nFROM public.event e\nJOIN public.attendance a ON e.event_id = a.link_to_event\nJOIN public.member m ON a.link_to_member = m.member_id\nWHERE e.type = 'Social'\n  AND m.position = 'Vice President'\n  AND e.location = '900 E. Washington St.'",
+   "attempts": [
+    "SELECT e.event_name\nFROM public.event e\nJOIN public.attendance a ON e.event_id = a.link_to_event\nJOIN public.member m ON a.link_to_member = m.member_id\nWHERE e.type = 'Social'\n  AND m.position = 'Vice President'\n  AND e.location = '900 E. Washington St.'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "event",
+    "attendance",
+    "budget",
+    "member"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.86,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      455,
+      46
+     ],
+     "gpt-4.1-2025-04-14": [
+      3948,
+      196
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.00972
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-challenging-050",
+   "difficulty": "challenging",
+   "kind": null,
+   "lang": null,
+   "sql": "WITH member_event_expenses AS (\n  SELECT\n    e.link_to_member,\n    SUM(e.cost) AS total_paid,\n    COUNT(DISTINCT ev.event_id) AS event_count\n  FROM expense e\n  JOIN budget b ON e.link_to_budget = b.budget_id\n  JOIN event ev ON b.link_to_event = ev.event_id\n  GROUP BY e.link_to_member\n),\nqualified_members AS (\n  SELECT link_to_member, total_paid\n  FROM member_event_expenses\n  WHERE event_count > 1\n)\nSELECT\n  m.member_id,\n  m.first_name,\n  m.last_name,\n  qm.total_paid\nFROM qualified_members qm\nJOIN member m ON qm.link_to_member = m.member_id\nORDER BY qm.total_paid DESC\nLIMIT 1",
+   "attempts": [
+    "WITH member_event_expenses AS (\n  SELECT\n    e.link_to_member,\n    SUM(e.cost) AS total_paid,\n    COUNT(DISTINCT ev.event_id) AS event_count\n  FROM expense e\n  JOIN budget b ON e.link_to_budget = b.budget_id\n  JOIN event ev ON b.link_to_event = ev.event_id\n  GROUP BY e.link_to_member\n),\nqualified_members AS (\n  SELECT link_to_member, total_paid\n  FROM member_event_expenses\n  WHERE event_count > 1\n)\nSELECT\n  m.member_id,\n  m.first_name,\n  m.last_name,\n  qm.total_paid\nFROM qualified_members qm\nJOIN member m ON qm.link_to_member = m.member_id\nORDER BY qm.total_paid DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "schema",
+        "span": "members who incurred expenses in more than one event",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "By budget line (event via budget)",
+          "description": "Treat each unique event (via budget.link_to_event) as a separate event for expenses. A member is counted if their expenses are linked to more than one unique event through the budget table."
+         },
+         {
+          "id": "a1o2",
+          "label": "By expense date (event = date)",
+          "description": "Treat each unique expense_date as a separate event, regardless of the event table. A member is counted if they have expenses on more than one unique date."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o1"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "attendance",
+    "expense",
+    "budget",
+    "income",
+    "member",
+    "event"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.443,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      443,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      8611,
+      582
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 4,
+    "cost_usd": 0.022106
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-002",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT\n  frpm.cdscode,\n  frpm.\"School Name\" AS school_name,\n  frpm.\"Enrollment (K-12)\" AS enrollment_k12,\n  frpm.\"Free Meal Count (K-12)\" AS free_meal_count_k12,\n  round((frpm.\"Free Meal Count (K-12)\" / NULLIF(frpm.\"Enrollment (K-12)\", 0))::numeric, 4) AS eligible_free_rate_k12\nFROM public.frpm\nWHERE frpm.\"Enrollment (K-12)\" IS NOT NULL\nORDER BY frpm.\"Enrollment (K-12)\" DESC, frpm.cdscode ASC\nOFFSET 9 LIMIT 2",
+   "attempts": [
+    "SELECT\n  frpm.cdscode,\n  frpm.\"School Name\" AS school_name,\n  frpm.\"Enrollment (K-12)\" AS enrollment_k12,\n  frpm.\"Free Meal Count (K-12)\" AS free_meal_count_k12,\n  round(frpm.\"Free Meal Count (K-12)\" / NULLIF(frpm.\"Enrollment (K-12)\", 0), 4) AS eligible_free_rate_k12\nFROM public.frpm\nWHERE frpm.\"Enrollment (K-12)\" IS NOT NULL\nORDER BY frpm.\"Enrollment (K-12)\" DESC, frpm.cdscode ASC\nOFFSET 9 LIMIT 2",
+    "SELECT\n  frpm.cdscode,\n  frpm.\"School Name\" AS school_name,\n  frpm.\"Enrollment (K-12)\" AS enrollment_k12,\n  frpm.\"Free Meal Count (K-12)\" AS free_meal_count_k12,\n  round(frpm.\"Free Meal Count (K-12)\" / NULLIF(frpm.\"Enrollment (K-12)\", 0)::numeric, 4) AS eligible_free_rate_k12\nFROM public.frpm\nWHERE frpm.\"Enrollment (K-12)\" IS NOT NULL\nORDER BY frpm.\"Enrollment (K-12)\" DESC, frpm.cdscode ASC\nOFFSET 9 LIMIT 2",
+    "SELECT\n  frpm.cdscode,\n  frpm.\"School Name\" AS school_name,\n  frpm.\"Enrollment (K-12)\" AS enrollment_k12,\n  frpm.\"Free Meal Count (K-12)\" AS free_meal_count_k12,\n  round((frpm.\"Free Meal Count (K-12)\" / NULLIF(frpm.\"Enrollment (K-12)\", 0))::numeric, 4) AS eligible_free_rate_k12\nFROM public.frpm\nWHERE frpm.\"Enrollment (K-12)\" IS NOT NULL\nORDER BY frpm.\"Enrollment (K-12)\" DESC, frpm.cdscode ASC\nOFFSET 9 LIMIT 2"
+   ],
+   "n_attempts": 3,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "schools",
+    "frpm",
+    "satscores"
+   ],
+   "validation_failures": [
+    {
+     "level": 4,
+     "message": "Ошибка планировщика: function round(double precision, integer) does not exist\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+    },
+    {
+     "level": 4,
+     "message": "Ошибка планировщика: function round(double precision, integer) does not exist\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+    }
+   ],
+   "answer": "",
+   "latency_s": 0.758,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      449,
+      28
+     ],
+     "gpt-4.1-2025-04-14": [
+      18311,
+      770
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 5,
+    "cost_usd": 0.043006
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-003",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(a.account_id) AS account_count\nFROM public.account a\nJOIN public.district d ON a.district_id = d.district_id\nWHERE a.frequency = 'POPLATEK PO OBRATU'\n  AND d.a3 = 'east Bohemia'",
+   "attempts": [
+    "SELECT COUNT(a.account_id) AS account_count\nFROM public.account a\nJOIN public.district d ON a.district_id = d.district_id\nWHERE a.frequency = 'POPLATEK PO OBRATU'\n  AND d.a3 = 'east Bohemia'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "district",
+    "trans",
+    "account",
+    "order",
+    "loan"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.795,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      441,
+      41
+     ],
+     "gpt-4.1-2025-04-14": [
+      3802,
+      185
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.009326
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-007",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT a.element, COUNT(*) AS element_count\nFROM public.atom a\nJOIN public.molecule m ON a.molecule_id = m.molecule_id\nWHERE m.label = '+'\nGROUP BY a.element\nORDER BY element_count ASC, a.element ASC\nLIMIT 1",
+   "attempts": [
+    "SELECT a.element, COUNT(*) AS element_count\nFROM public.atom a\nJOIN public.molecule m ON a.molecule_id = m.molecule_id\nWHERE m.label = '+'\nGROUP BY a.element\nORDER BY element_count ASC, a.element ASC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "bond",
+    "molecule",
+    "atom",
+    "connected"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.64,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      402,
+      47
+     ],
+     "gpt-4.1-2025-04-14": [
+      2276,
+      176
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.006196
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-008",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "WITH bond_elements AS (\n  SELECT\n    b.bond_id,\n    LEAST(a1.element, a2.element) AS element1,\n    GREATEST(a1.element, a2.element) AS element2\n  FROM public.bond b\n  JOIN public.connected c ON b.bond_id = c.bond_id\n  JOIN public.atom a1 ON c.atom_id = a1.atom_id\n  JOIN public.atom a2 ON c.atom_id2 = a2.atom_id\n),\nmost_common AS (\n  SELECT element1, element2, COUNT(*) AS bond_count\n  FROM bond_elements\n  GROUP BY element1, element2\n  ORDER BY bond_count DESC\n  LIMIT 1\n),\ntotal_bonds AS (\n  SELECT COUNT(*) AS total FROM public.bond\n)\nSELECT\n  round(100.0 * mc.bond_count / tb.total, 2) AS percentage\nFROM most_common mc, total_bonds tb",
+   "attempts": [
+    "WITH bond_elements AS (\n  SELECT\n    b.bond_id,\n    LEAST(a1.element, a2.element) AS element1,\n    GREATEST(a1.element, a2.element) AS element2\n  FROM public.bond b\n  JOIN public.connected c ON b.bond_id = c.bond_id\n  JOIN public.atom a1 ON c.atom_id = a1.atom_id\n  JOIN public.atom a2 ON c.atom_id2 = a2.atom_id\n),\nmost_common AS (\n  SELECT element1, element2, COUNT(*) AS bond_count\n  FROM bond_elements\n  GROUP BY element1, element2\n  ORDER BY bond_count DESC\n  LIMIT 1\n),\ntotal_bonds AS (\n  SELECT COUNT(*) AS total FROM public.bond\n)\nSELECT\n  round(100.0 * mc.bond_count / tb.total, 2) AS percentage\nFROM most_common mc, total_bonds tb"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "bond",
+    "molecule",
+    "connected",
+    "atom"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 4.255,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      414,
+      41
+     ],
+     "gpt-4.1-2025-04-14": [
+      2302,
+      337
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.007531
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-009",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT DISTINCT b.bond_type\nFROM public.atom a\nJOIN public.connected c ON a.atom_id = c.atom_id OR a.atom_id = c.atom_id2\nJOIN public.bond b ON c.bond_id = b.bond_id\nWHERE a.element = 'sn'\nORDER BY b.bond_type",
+   "attempts": [
+    "SELECT DISTINCT b.bond_type\nFROM public.atom a\nJOIN public.connected c ON a.atom_id = c.atom_id OR a.atom_id = c.atom_id2\nJOIN public.bond b ON c.bond_id = b.bond_id\nWHERE a.element = 'sn'\nORDER BY b.bond_type"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "bond",
+    "molecule",
+    "connected",
+    "atom"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.705,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      429,
+      41
+     ],
+     "gpt-4.1-2025-04-14": [
+      2330,
+      243
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.006841
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-012",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.superhero_name\nFROM public.superhero s\nJOIN public.colour c ON s.eye_colour_id = c.id\nWHERE s.height_cm BETWEEN 170 AND 190\n  AND c.colour = 'No Colour'\nORDER BY s.superhero_name",
+   "attempts": [
+    "SELECT s.superhero_name\nFROM public.superhero s\nJOIN public.colour c ON s.eye_colour_id = c.id\nWHERE s.height_cm BETWEEN 170 AND 190\n  AND c.colour = 'No Colour'\nORDER BY s.superhero_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 15,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "superhero",
+    "attribute",
+    "alignment",
+    "gender",
+    "colour",
+    "hero_attribute"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.816,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      460,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      3174,
+      185
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.008073
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-014",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.superhero_name\nFROM public.superhero s\nJOIN public.colour eye_col ON s.eye_colour_id = eye_col.id\nJOIN public.colour hair_col ON s.hair_colour_id = hair_col.id\nWHERE eye_col.colour = 'Black' AND hair_col.colour = 'Black'\nORDER BY s.superhero_name",
+   "attempts": [
+    "SELECT s.superhero_name\nFROM public.superhero s\nJOIN public.colour eye_col ON s.eye_colour_id = eye_col.id\nJOIN public.colour hair_col ON s.hair_colour_id = hair_col.id\nWHERE eye_col.colour = 'Black' AND hair_col.colour = 'Black'\nORDER BY s.superhero_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 11,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "superhero",
+    "alignment",
+    "attribute",
+    "gender",
+    "hero_attribute"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.132,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      454,
+      44
+     ],
+     "gpt-4.1-2025-04-14": [
+      3072,
+      208
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.00806
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 0.5,
+   "schema_full_recall": false
+  },
+  {
+   "id": "bird-moderate-019",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT a.attribute_name, ha.attribute_value\nFROM public.superhero s\nJOIN public.hero_attribute ha ON s.id = ha.hero_id\nJOIN public.attribute a ON ha.attribute_id = a.id\nWHERE s.superhero_name = 'Black Panther'\nORDER BY ha.attribute_value ASC\nLIMIT 1",
+   "attempts": [
+    "SELECT a.attribute_name, ha.attribute_value\nFROM public.superhero s\nJOIN public.hero_attribute ha ON s.id = ha.hero_id\nJOIN public.attribute a ON ha.attribute_id = a.id\nWHERE s.superhero_name = 'Black Panther'\nORDER BY ha.attribute_value ASC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "attribute",
+    "superhero",
+    "alignment",
+    "gender",
+    "hero_attribute"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.733,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      439,
+      31
+     ],
+     "gpt-4.1-2025-04-14": [
+      3042,
+      189
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.007821
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-020",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT d.driverid, d.forename, d.surname, d.dob\nFROM public.results r\nJOIN public.drivers d ON r.driverid = d.driverid\nWHERE r.raceid = 592\n  AND r.time IS NOT NULL\nORDER BY d.dob ASC\nLIMIT 1",
+   "attempts": [
+    "SELECT d.driverid, d.forename, d.surname, d.dob\nFROM public.results r\nJOIN public.drivers d ON r.driverid = d.driverid\nWHERE r.raceid = 592\n  AND r.time IS NOT NULL\nORDER BY d.dob ASC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "results",
+    "driverstandings",
+    "drivers",
+    "qualifying",
+    "races",
+    "constructors"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.842,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      498,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      4184,
+      193
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.010167
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-024",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT \n  round(COUNT(r.resultid) FILTER (WHERE r.time IS NOT NULL)::numeric / COUNT(r.resultid), 2) AS completion_rate\nFROM results r\nJOIN races ra ON r.raceid = ra.raceid\nWHERE ra.year = 2008 AND ra.name = 'Australian Grand Prix'",
+   "attempts": [
+    "SELECT \n  round(COUNT(r.resultid) FILTER (WHERE r.time IS NOT NULL)::numeric / COUNT(r.resultid), 2) AS completion_rate\nFROM results r\nJOIN races ra ON r.raceid = ra.raceid\nWHERE ra.year = 2008 AND ra.name = 'Australian Grand Prix'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "results",
+    "qualifying",
+    "laptimes",
+    "pitstops",
+    "driverstandings",
+    "constructors",
+    "drivers",
+    "races"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.835,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      475,
+      48
+     ],
+     "gpt-4.1-2025-04-14": [
+      4554,
+      201
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.010983
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-028",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT \n  d.forename || ' ' || d.surname AS driver_name,\n  d.dob AS date_of_birth,\n  r.year,\n  r.name AS race_name,\n  r.date AS race_date,\n  r.time AS race_time\nFROM public.drivers d\nJOIN public.qualifying q ON d.driverid = q.driverid\nJOIN public.races r ON q.raceid = r.raceid\nWHERE d.dob = (SELECT MAX(dob) FROM public.drivers)\n  AND r.date = (\n    SELECT MIN(r2.date)\n    FROM public.qualifying q2\n    JOIN public.races r2 ON q2.raceid = r2.raceid\n    WHERE q2.driverid = d.driverid\n  )\nORDER BY r.date ASC, r.time ASC\nLIMIT 1",
+   "attempts": [
+    "SELECT \n  d.forename || ' ' || d.surname AS driver_name,\n  d.dob AS date_of_birth,\n  r.year,\n  r.name AS race_name,\n  r.date AS race_date,\n  r.time AS race_time\nFROM public.drivers d\nJOIN public.qualifying q ON d.driverid = q.driverid\nJOIN public.races r ON q.raceid = r.raceid\nWHERE d.dob = (SELECT MAX(dob) FROM public.drivers)\n  AND r.date = (\n    SELECT MIN(r2.date)\n    FROM public.qualifying q2\n    JOIN public.races r2 ON q2.raceid = r2.raceid\n    WHERE q2.driverid = d.driverid\n  )\nORDER BY r.date ASC, r.time ASC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "races",
+    "qualifying",
+    "results",
+    "drivers",
+    "driverstandings",
+    "laptimes",
+    "pitstops"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.743,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      486,
+      47
+     ],
+     "gpt-4.1-2025-04-14": [
+      4396,
+      357
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.011918
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-030",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "WITH latest_lab AS (\n  SELECT l.id, l.ua, p.sex, l.date,\n         ROW_NUMBER() OVER (PARTITION BY l.id ORDER BY l.date DESC) AS rn\n    FROM laboratory l\n    JOIN patient p ON l.id = p.id\n)\nSELECT round(AVG(latest_lab.ua), 2) AS avg_ua_index\nFROM latest_lab\nWHERE rn = 1\n  AND (\n    (latest_lab.sex = 'M' AND latest_lab.ua < 8.0)\n    OR (latest_lab.sex = 'F' AND latest_lab.ua < 6.5)\n  )",
+   "attempts": [
+    "WITH latest_lab AS (\n  SELECT l.id, l.ua, p.sex, l.date,\n         ROW_NUMBER() OVER (PARTITION BY l.id ORDER BY l.date DESC) AS rn\n    FROM laboratory l\n    JOIN patient p ON l.id = p.id\n)\nSELECT round(AVG(latest_lab.ua), 2) AS avg_ua_index\nFROM latest_lab\nWHERE rn = 1\n  AND (\n    (latest_lab.sex = 'M' AND latest_lab.ua < 8.0)\n    OR (latest_lab.sex = 'F' AND latest_lab.ua < 6.5)\n  )"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "laboratory",
+    "patient",
+    "examination"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.844,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      447,
+      51
+     ],
+     "gpt-4.1-2025-04-14": [
+      4896,
+      291
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.01238
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "pred_error": "UndefinedFunctionError: function round(double precision, integer) does not exist\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+  },
+  {
+   "id": "bird-moderate-031",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.sex, string_agg(DISTINCT l.id::text, ',') AS patient_ids\nFROM laboratory l\nJOIN patient p ON l.id = p.id\nWHERE l.\"T-BIL\" >= 2.0\nGROUP BY p.sex\nORDER BY p.sex",
+   "attempts": [
+    "SELECT p.sex, string_agg(DISTINCT l.id::text, ',') AS patient_ids\nFROM laboratory l\nJOIN patient p ON l.id = p.id\nWHERE l.\"T-BIL\" >= 2.0\nGROUP BY p.sex\nORDER BY p.sex"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "laboratory",
+    "patient",
+    "examination"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 4.012,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      435,
+      39
+     ],
+     "gpt-4.1-2025-04-14": [
+      4874,
+      224
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.011776
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-038",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(DISTINCT e.id) AS patient_count\nFROM public.examination e\nJOIN public.laboratory l ON e.id = l.id\nWHERE e.diagnosis = 'SLE'\n  AND (l.ssb = 'negative' OR l.ssb = '0')",
+   "attempts": [
+    "SELECT COUNT(DISTINCT e.id) AS patient_count\nFROM public.examination e\nJOIN public.laboratory l ON e.id = l.id\nWHERE e.diagnosis = 'SLE'\n  AND (l.ssb = 'negative' OR l.ssb = '0')"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "laboratory",
+    "patient",
+    "examination"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.713,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      451,
+      30
+     ],
+     "gpt-4.1-2025-04-14": [
+      4904,
+      184
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.011508
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-042",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT b.spent AS amount_spent\nFROM public.budget b\nJOIN public.event e ON b.link_to_event = e.event_id\nWHERE b.category = 'Advertisement' AND e.event_name = 'September Meeting'",
+   "attempts": [
+    "SELECT b.spent AS amount_spent\nFROM public.budget b\nJOIN public.event e ON b.link_to_event = e.event_id\nWHERE b.category = 'Advertisement' AND e.event_name = 'September Meeting'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "budget",
+    "expense",
+    "income",
+    "attendance",
+    "event",
+    "member"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.219,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      440,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      5038,
+      169
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.011665
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-044",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT m.first_name || ' ' || m.last_name AS full_name\nFROM public.member m\nJOIN public.major maj ON m.link_to_major = maj.major_id\nWHERE maj.department = 'School of Applied Sciences, Technology and Education'\nORDER BY full_name",
+   "attempts": [
+    "SELECT m.first_name || ' ' || m.last_name AS full_name\nFROM public.member m\nJOIN public.major maj ON m.link_to_major = maj.major_id\nWHERE maj.department = 'School of Applied Sciences, Technology and Education'\nORDER BY full_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 5,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "member",
+    "major",
+    "budget",
+    "expense",
+    "income"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.9,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      437,
+      31
+     ],
+     "gpt-4.1-2025-04-14": [
+      3986,
+      204
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.009828
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-045",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT e.event_name, b.spent AS advertisement_spent\nFROM public.budget b\nJOIN public.event e ON b.link_to_event = e.event_id\nWHERE b.category = 'Advertisement'\nORDER BY b.spent DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT e.event_name, b.spent AS advertisement_spent\nFROM public.budget b\nJOIN public.event e ON b.link_to_event = e.event_id\nWHERE b.category = 'Advertisement'\nORDER BY b.spent DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "budget",
+    "attendance",
+    "event",
+    "income",
+    "expense",
+    "member"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.751,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      434,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      5026,
+      187
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.011781
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-047",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT \n  CASE WHEN total_count = 0 THEN 0 ELSE round(100.0 * amount_50_count / total_count, 2) END AS percentage_amount_50\nFROM (\n  SELECT \n    COUNT(*) FILTER (WHERE i.amount = 50) AS amount_50_count,\n    COUNT(*) AS total_count\n  FROM public.income i\n  JOIN public.member m ON i.link_to_member = m.member_id\n  WHERE m.t_shirt_size = 'Medium' AND m.position = 'Member'\n) sub",
+   "attempts": [
+    "SELECT \n  CASE WHEN total_count = 0 THEN 0 ELSE round(100.0 * amount_50_count / total_count, 2) END AS percentage_amount_50\nFROM (\n  SELECT \n    COUNT(*) FILTER (WHERE i.amount = 50) AS amount_50_count,\n    COUNT(*) AS total_count\n  FROM public.income i\n  JOIN public.member m ON i.link_to_member = m.member_id\n  WHERE m.t_shirt_size = 'Medium' AND m.position = 'Member'\n) sub"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "metric",
+        "span": "percentage of the amount 50 received by the Student_Club",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "Members who paid $50",
+          "description": "Percentage of 'Medium' t-shirt members who have an income record with amount = 50."
+         },
+         {
+          "id": "a1o2",
+          "label": "$50 payments made by 'Medium' members",
+          "description": "Percentage of all $50 income records (amount = 50) among all income records for 'Medium' t-shirt members."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o2"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "member",
+    "income",
+    "budget",
+    "expense",
+    "event",
+    "attendance"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 5.289,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      457,
+      40
+     ],
+     "gpt-4.1-2025-04-14": [
+      8637,
+      525
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 2,
+    "cost_usd": 0.021721
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-048",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT m.phone\nFROM public.member m\nJOIN public.major maj ON m.link_to_major = maj.major_id\nWHERE maj.major_name = 'Business'\n  AND maj.college = 'College of Agriculture and Applied Sciences'\nORDER BY m.phone",
+   "attempts": [
+    "SELECT m.phone\nFROM public.member m\nJOIN public.major maj ON m.link_to_major = maj.major_id\nWHERE maj.major_name = 'Business'\n  AND maj.college = 'College of Agriculture and Applied Sciences'\nORDER BY m.phone"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "major",
+    "member",
+    "expense",
+    "budget",
+    "zip_code"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.63,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      450,
+      40
+     ],
+     "gpt-4.1-2025-04-14": [
+      3982,
+      171
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.009576
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-moderate-050",
+   "difficulty": "moderate",
+   "kind": null,
+   "lang": null,
+   "sql": "WITH customer_spending AS (\n  SELECT\n    t.customerid,\n    SUM(t.amount * t.price) AS total_spent\n  FROM public.transactions_1k t\n  GROUP BY t.customerid\n), top_customer AS (\n  SELECT\n    cs.customerid,\n    cs.total_spent\n  FROM customer_spending cs\n  ORDER BY cs.total_spent DESC\n  LIMIT 1\n)\nSELECT\n  tc.customerid,\n  ROUND(SUM(t.price)::numeric / SUM(t.amount), 2) AS avg_price_per_item,\n  tc.total_spent,\n  c.currency\nFROM public.transactions_1k t\nJOIN top_customer tc ON t.customerid = tc.customerid\nJOIN public.customers c ON t.customerid = c.customerid\nGROUP BY tc.customerid, tc.total_spent, c.currency",
+   "attempts": [
+    "WITH customer_spending AS (\n  SELECT\n    t.customerid,\n    SUM(t.amount * t.price) AS total_spent\n  FROM public.transactions_1k t\n  GROUP BY t.customerid\n), top_customer AS (\n  SELECT\n    cs.customerid,\n    cs.total_spent\n  FROM customer_spending cs\n  ORDER BY cs.total_spent DESC\n  LIMIT 1\n)\nSELECT\n  tc.customerid,\n  round(SUM(t.price) / SUM(t.amount), 2) AS avg_price_per_item,\n  tc.total_spent,\n  c.currency\nFROM public.transactions_1k t\nJOIN top_customer tc ON t.customerid = tc.customerid\nJOIN public.customers c ON t.customerid = c.customerid\nGROUP BY tc.customerid, tc.total_spent, c.currency",
+    "WITH customer_spending AS (\n  SELECT\n    t.customerid,\n    SUM(t.amount * t.price) AS total_spent\n  FROM public.transactions_1k t\n  GROUP BY t.customerid\n), top_customer AS (\n  SELECT\n    cs.customerid,\n    cs.total_spent\n  FROM customer_spending cs\n  ORDER BY cs.total_spent DESC\n  LIMIT 1\n)\nSELECT\n  tc.customerid,\n  ROUND(SUM(t.price)::numeric / SUM(t.amount), 2) AS avg_price_per_item,\n  tc.total_spent,\n  c.currency\nFROM public.transactions_1k t\nJOIN top_customer tc ON t.customerid = tc.customerid\nJOIN public.customers c ON t.customerid = c.customerid\nGROUP BY tc.customerid, tc.total_spent, c.currency"
+   ],
+   "n_attempts": 2,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "transactions_1k",
+    "customers",
+    "gasstations",
+    "yearmonth",
+    "products"
+   ],
+   "validation_failures": [
+    {
+     "level": 4,
+     "message": "Ошибка планировщика: function round(double precision, integer) does not exist\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+    }
+   ],
+   "answer": "",
+   "latency_s": 0.901,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      430,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      3433,
+      599
+     ]
+    },
+    "calls": 4,
+    "cached_calls": 4,
+    "cost_usd": 0.011891
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-001",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.school AS school_name, ss.avgscrwrite AS avg_writing_score, s.charternum AS charter_number\nFROM public.satscores ss\nJOIN public.schools s ON ss.cds = s.cdscode\nWHERE ss.avgscrwrite > 499\n  AND s.charternum IS NOT NULL\nORDER BY ss.avgscrwrite DESC, s.school ASC",
+   "attempts": [
+    "SELECT s.school AS school_name, ss.avgscrwrite AS avg_writing_score, s.charternum AS charter_number\nFROM public.satscores ss\nJOIN public.schools s ON ss.cds = s.cdscode\nWHERE ss.avgscrwrite > 499\n  AND s.charternum IS NOT NULL\nORDER BY ss.avgscrwrite DESC, s.school ASC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 50,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "schools",
+    "satscores",
+    "frpm"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.753,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      411,
+      50
+     ],
+     "gpt-4.1-2025-04-14": [
+      8918,
+      226
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.019888
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-002",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "WITH ranked_virtual_schools AS (\n  SELECT \n    s.cdscode,\n    s.school AS school_name,\n    s.county,\n    sat.avgscrread,\n    ROW_NUMBER() OVER (PARTITION BY s.county ORDER BY sat.avgscrread DESC NULLS LAST) AS county_rank\n  FROM \n    public.schools s\n    JOIN public.satscores sat ON s.cdscode = sat.cds\n  WHERE \n    s.virtual = 'F'\n)\nSELECT \n  school_name,\n  county,\n  avgscrread\nFROM \n  ranked_virtual_schools\nWHERE \n  county_rank <= 5\nORDER BY \n  county,\n  county_rank",
+   "attempts": [
+    "WITH ranked_virtual_schools AS (\n  SELECT \n    s.cdscode,\n    s.school AS school_name,\n    s.county,\n    sat.avgscrread,\n    ROW_NUMBER() OVER (PARTITION BY s.county ORDER BY sat.avgscrread DESC NULLS LAST) AS county_rank\n  FROM \n    public.schools s\n    JOIN public.satscores sat ON s.cdscode = sat.cds\n  WHERE \n    s.virtual = 'F'\n)\nSELECT \n  school_name,\n  county,\n  avgscrread\nFROM \n  ranked_virtual_schools\nWHERE \n  county_rank <= 5\nORDER BY \n  county,\n  county_rank"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 31,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "schools",
+    "frpm",
+    "satscores"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.644,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      420,
+      41
+     ],
+     "gpt-4.1-2025-04-14": [
+      8936,
+      302
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.020522
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-007",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT DISTINCT o.account_id\nFROM public.order o\nJOIN public.account a ON o.account_id = a.account_id\nJOIN public.district d ON a.district_id = d.district_id\nWHERE o.k_symbol = 'SIPO'\n  AND d.a2 = 'Pisek'\nORDER BY o.account_id",
+   "attempts": [
+    "SELECT DISTINCT o.account_id\nFROM public.order o\nJOIN public.account a ON o.account_id = a.account_id\nJOIN public.district d ON a.district_id = d.district_id\nWHERE o.k_symbol = 'SIPO'\n  AND d.a2 = 'Pisek'\nORDER BY o.account_id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 33,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "schema",
+        "span": "in Pisek",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "account district",
+          "description": "Accounts located in the Pisek district (district of the account branch)."
+         },
+         {
+          "id": "a1o2",
+          "label": "client residence",
+          "description": "Accounts belonging to clients who reside in the Pisek district."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o1"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "trans",
+    "order",
+    "account",
+    "loan",
+    "client",
+    "disp",
+    "district"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.458,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      420,
+      45
+     ],
+     "gpt-4.1-2025-04-14": [
+      6705,
+      405
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 4,
+    "cost_usd": 0.01689
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-008",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(DISTINCT a.account_id) AS female_accounts_in_south_bohemia\nFROM public.account a\nJOIN public.district d ON a.district_id = d.district_id\nJOIN public.disp disp ON a.account_id = disp.account_id\nJOIN public.client c ON disp.client_id = c.client_id\nWHERE c.gender = 'F'\n  AND d.a3 = 'south Bohemia'",
+   "attempts": [
+    "SELECT COUNT(DISTINCT a.account_id) AS female_accounts_in_south_bohemia\nFROM public.account a\nJOIN public.district d ON a.district_id = d.district_id\nJOIN public.disp disp ON a.account_id = disp.account_id\nJOIN public.client c ON disp.client_id = c.client_id\nWHERE c.gender = 'F'\n  AND d.a3 = 'south Bohemia'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "district",
+    "client",
+    "account",
+    "disp",
+    "order"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.635,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      432,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      3044,
+      223
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.008098
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-013",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.full_name\nFROM public.superhero s\nJOIN public.hero_power hp ON s.id = hp.hero_id\nGROUP BY s.id, s.full_name\nHAVING COUNT(hp.power_id) > 15\nORDER BY s.full_name",
+   "attempts": [
+    "SELECT s.full_name\nFROM public.superhero s\nJOIN public.hero_power hp ON s.id = hp.hero_id\nGROUP BY s.id, s.full_name\nHAVING COUNT(hp.power_id) > 15\nORDER BY s.full_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 102,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "superhero",
+    "attribute",
+    "alignment",
+    "gender",
+    "hero_power",
+    "hero_attribute"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.656,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      438,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      3242,
+      226
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.008526
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-015",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sp.power_name\nFROM public.hero_power hp\nJOIN public.superpower sp ON hp.power_id = sp.id\nWHERE hp.hero_id = 1\nORDER BY sp.power_name",
+   "attempts": [
+    "SELECT sp.power_name\nFROM public.hero_power hp\nJOIN public.superpower sp ON hp.power_id = sp.id\nWHERE hp.hero_id = 1\nORDER BY sp.power_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 4,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "superhero",
+    "attribute",
+    "alignment",
+    "hero_attribute",
+    "hero_power"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.722,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      440,
+      39
+     ],
+     "gpt-4.1-2025-04-14": [
+      3146,
+      146
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.007698
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 0.5,
+   "schema_full_recall": false
+  },
+  {
+   "id": "bird-simple-017",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT race.race AS race, alignment.alignment AS alignment\nFROM public.superhero s\nLEFT JOIN public.race ON s.race_id = race.id\nLEFT JOIN public.alignment ON s.alignment_id = alignment.id\nWHERE s.superhero_name = 'Cameron Hicks'",
+   "attempts": [
+    "SELECT race.race AS race, alignment.alignment AS alignment\nFROM public.superhero s\nLEFT JOIN public.race ON s.race_id = race.id\nLEFT JOIN public.alignment ON s.alignment_id = alignment.id\nWHERE s.superhero_name = 'Cameron Hicks'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "superhero",
+    "alignment",
+    "attribute",
+    "gender",
+    "race",
+    "hero_attribute"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.81,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      431,
+      30
+     ],
+     "gpt-4.1-2025-04-14": [
+      3168,
+      180
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.007996
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-024",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(*) AS circuit_count\nFROM public.circuits c\nWHERE c.country = 'Australia' AND c.location = 'Adelaide'",
+   "attempts": [
+    "SELECT COUNT(*) AS circuit_count\nFROM public.circuits c\nWHERE c.country = 'Australia' AND c.location = 'Adelaide'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "races",
+    "circuits",
+    "qualifying",
+    "results",
+    "driverstandings"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.737,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      448,
+      31
+     ],
+     "gpt-4.1-2025-04-14": [
+      3908,
+      157
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.009301
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-025",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT d.code\nFROM public.drivers d\nWHERE d.nationality = 'America'\nORDER BY d.code",
+   "attempts": [
+    "SELECT d.code\nFROM public.drivers d\nWHERE d.nationality = 'America'\nORDER BY d.code"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 0,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "drivers",
+    "driverstandings",
+    "qualifying",
+    "results",
+    "constructors"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.884,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      443,
+      42
+     ],
+     "gpt-4.1-2025-04-14": [
+      3686,
+      119
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.008568
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-028",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT \n  MIN(laptimes.milliseconds) AS lap_record_milliseconds\nFROM public.laptimes\nJOIN public.races ON laptimes.raceid = races.raceid\nWHERE races.name ILIKE '%Austrian Grand Prix%'",
+   "attempts": [
+    "SELECT \n  MIN(laptimes.milliseconds) AS lap_record_milliseconds\nFROM public.laptimes\nJOIN public.races ON laptimes.raceid = races.raceid\nWHERE races.name ILIKE '%Austrian Grand Prix%'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "value",
+        "span": "Austrian Grand Prix Circuit",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "Red Bull Ring only",
+          "description": "Only consider laps at the Red Bull Ring circuit (current Austrian GP venue)."
+         },
+         {
+          "id": "a1o2",
+          "label": "All Austrian GP venues",
+          "description": "Include all circuits that have hosted the Austrian Grand Prix, not just the Red Bull Ring."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o2"
+      }
+     ]
+    },
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "metric",
+        "span": "lap record",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "race lap record",
+          "description": "The fastest lap time ever recorded during the race sessions (not qualifying or practice) at any Austrian Grand Prix venue."
+         },
+         {
+          "id": "a1o2",
+          "label": "qualifying lap record",
+          "description": "The fastest lap time ever recorded during qualifying sessions at any Austrian Grand Prix venue."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o1"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "races",
+    "results",
+    "laptimes",
+    "qualifying",
+    "pitstops"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 4.054,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      450,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      7583,
+      527
+     ]
+    },
+    "calls": 6,
+    "cached_calls": 4,
+    "cost_usd": 0.019618
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 0.6667,
+   "schema_full_recall": false
+  },
+  {
+   "id": "bird-simple-030",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(DISTINCT l.id) AS female_patients_with_low_wbc\nFROM laboratory l\nJOIN patient p ON l.id = p.id\nWHERE p.sex = 'F' AND l.wbc < 3.5",
+   "attempts": [
+    "SELECT COUNT(DISTINCT l.id) AS female_patients_with_low_wbc\nFROM laboratory l\nJOIN patient p ON l.id = p.id\nWHERE p.sex = 'F' AND l.wbc < 3.5"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "laboratory",
+    "patient",
+    "examination"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.86,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      423,
+      41
+     ],
+     "gpt-4.1-2025-04-14": [
+      4850,
+      169
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.011287
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-033",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(DISTINCT a.link_to_member) AS attendees_count\nFROM public.attendance a\nJOIN public.event e ON a.link_to_event = e.event_id\nWHERE e.event_name = 'Women''s Soccer'",
+   "attempts": [
+    "SELECT COUNT(DISTINCT a.link_to_member) AS attendees_count\nFROM public.attendance a\nJOIN public.event e ON a.link_to_event = e.event_id\nWHERE e.event_name = 'Women''s Soccer'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "attendance",
+    "event",
+    "budget",
+    "member"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.695,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      422,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      3886,
+      195
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.009554
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-036",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT DISTINCT m.department\nFROM public.major m\nWHERE m.college = 'College of Humanities and Social Sciences'\nORDER BY m.department",
+   "attempts": [
+    "SELECT DISTINCT m.department\nFROM public.major m\nWHERE m.college = 'College of Humanities and Social Sciences'\nORDER BY m.department"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 11,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "major",
+    "event",
+    "budget",
+    "income",
+    "member",
+    "attendance",
+    "expense"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.767,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      409,
+      28
+     ],
+     "gpt-4.1-2025-04-14": [
+      5222,
+      134
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.011724
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-038",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT SUM(budget.spent) AS total_food_spent\nFROM public.budget\nWHERE budget.category = 'Food'",
+   "attempts": [
+    "SELECT SUM(budget.spent) AS total_food_spent\nFROM public.budget\nWHERE budget.category = 'Food'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "expense",
+    "budget",
+    "income",
+    "attendance",
+    "event",
+    "member"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.978,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      430,
+      36
+     ],
+     "gpt-4.1-2025-04-14": [
+      5018,
+      126
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.011274
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-042",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT z.zip_code\nFROM public.zip_code z\nWHERE z.type = 'PO Box'\n  AND z.county = 'San Juan Municipio'\n  AND z.state = 'Puerto Rico'\nORDER BY z.zip_code",
+   "attempts": [
+    "SELECT z.zip_code\nFROM public.zip_code z\nWHERE z.type = 'PO Box'\n  AND z.county = 'San Juan Municipio'\n  AND z.state = 'Puerto Rico'\nORDER BY z.zip_code"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "zip_code",
+    "major",
+    "event",
+    "budget",
+    "expense",
+    "member",
+    "attendance"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.78,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      439,
+      44
+     ],
+     "gpt-4.1-2025-04-14": [
+      5254,
+      154
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.011986
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-043",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(100.0 * COUNT(DISTINCT b.link_to_event) FILTER (WHERE b.remaining < 0) / NULLIF(COUNT(DISTINCT e.event_id), 0), 2) AS over_budget_percentage\nFROM public.event e\nLEFT JOIN public.budget b ON b.link_to_event = e.event_id",
+   "attempts": [
+    "SELECT round(100.0 * COUNT(DISTINCT b.link_to_event) FILTER (WHERE b.remaining < 0) / NULLIF(COUNT(DISTINCT e.event_id), 0), 2) AS over_budget_percentage\nFROM public.event e\nLEFT JOIN public.budget b ON b.link_to_event = e.event_id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "attendance",
+    "budget",
+    "event",
+    "expense",
+    "member"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.826,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      440,
+      43
+     ],
+     "gpt-4.1-2025-04-14": [
+      4686,
+      229
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.011449
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-045",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT\n  t.customerid,\n  SUM(t.amount * t.price) AS total_paid\nFROM\n  public.transactions_1k t\nWHERE\n  t.date = '2012-08-25'\nGROUP BY\n  t.customerid\nORDER BY\n  total_paid DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT\n  t.customerid,\n  SUM(t.amount * t.price) AS total_paid\nFROM\n  public.transactions_1k t\nWHERE\n  t.date = '2012-08-25'\nGROUP BY\n  t.customerid\nORDER BY\n  total_paid DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "transactions_1k",
+    "customers",
+    "gasstations",
+    "yearmonth",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.715,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      424,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      2220,
+      192
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.006205
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-046",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT g.country AS country, t.gasstationid, t.customerid, t.date, t.time\nFROM public.transactions_1k t\nJOIN public.gasstations g ON t.gasstationid = g.gasstationid\nWHERE t.date = '2012-08-25'\nORDER BY t.time ASC, t.transactionid ASC\nLIMIT 1",
+   "attempts": [
+    "SELECT g.country AS country, t.gasstationid, t.customerid, t.date, t.time\nFROM public.transactions_1k t\nJOIN public.gasstations g ON t.gasstationid = g.gasstationid\nWHERE t.date = '2012-08-25'\nORDER BY t.time ASC, t.transactionid ASC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "gasstations",
+    "transactions_1k",
+    "customers",
+    "yearmonth",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.801,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      429,
+      41
+     ],
+     "gpt-4.1-2025-04-14": [
+      2230,
+      265
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.006817
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-049",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT t.customerid, g.country AS nationality\nFROM public.transactions_1k t\nJOIN public.gasstations g ON t.gasstationid = g.gasstationid\nWHERE t.date = '2012-08-24'\nGROUP BY t.customerid, g.country\nHAVING sum(t.amount * t.price) = 548.4",
+   "attempts": [
+    "SELECT t.customerid, g.country AS nationality\nFROM public.transactions_1k t\nJOIN public.gasstations g ON t.gasstationid = g.gasstationid\nWHERE t.date = '2012-08-24'\nGROUP BY t.customerid, g.country\nHAVING sum(t.amount * t.price) = 548.4"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 0,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "schema",
+        "span": "nationality of the customer",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "By gas station country",
+          "description": "Assume customer's nationality is the country of the gas station where the transaction occurred."
+         },
+         {
+          "id": "a1o2",
+          "label": "Not available",
+          "description": "Nationality is not present in the schema; cannot determine nationality."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o1"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "transactions_1k",
+    "gasstations",
+    "customers",
+    "yearmonth",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.715,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      431,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      4227,
+      420
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 4,
+    "cost_usd": 0.012041
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "bird-simple-050",
+   "difficulty": "simple",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.description AS product_name, SUM(t.amount) AS units_sold\nFROM public.transactions_1k t\nJOIN public.products p ON t.productid = p.productid\nGROUP BY p.description\nORDER BY units_sold DESC\nLIMIT 5",
+   "attempts": [
+    "SELECT p.description AS product_name, SUM(t.amount) AS units_sold\nFROM public.transactions_1k t\nJOIN public.products p ON t.productid = p.productid\nGROUP BY p.description\nORDER BY units_sold DESC\nLIMIT 5"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 5,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "metric",
+        "span": "best selling products",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "by revenue",
+          "description": "Top products by total sales revenue (amount × price)"
+         },
+         {
+          "id": "a1o2",
+          "label": "by units sold",
+          "description": "Top products by total quantity sold (amount)"
+         },
+         {
+          "id": "a1o3",
+          "label": "by number of transactions",
+          "description": "Top products by number of transactions"
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o2"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "transactions_1k",
+    "gasstations",
+    "customers",
+    "products",
+    "yearmonth"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.589,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      414,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      4150,
+      375
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 4,
+    "cost_usd": 0.011526
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  }
+ ]
+}

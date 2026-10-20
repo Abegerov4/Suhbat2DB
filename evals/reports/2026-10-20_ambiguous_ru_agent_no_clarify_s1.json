@@ -1,0 +1,5058 @@
+{
+ "meta": {
+  "suite": "ambiguous_ru",
+  "config": {
+   "name": "agent_no_clarify",
+   "description": "Агент без уточнения неоднозначности",
+   "system": "agent",
+   "clarify": false,
+   "schema_linking": true,
+   "semantic_checks": true,
+   "explain": false,
+   "max_attempts": 3,
+   "models": {},
+   "temperatures": {}
+  },
+  "seed": 1,
+  "limit": null,
+  "n": 106,
+  "git_sha": "7490809",
+  "run_id": "ambiguous_ru:agent_no_clarify:s1:20261020193553",
+  "created_at": "2026-10-20T19:36:37+00:00",
+  "models": {
+   "guard": "gpt-4.1-mini",
+   "ambiguity": "gpt-4.1",
+   "generate_sql": "gpt-4.1"
+  },
+  "duration_s": 44.6
+ },
+ "summary": {
+  "n": 106,
+  "ex": 0.6226,
+  "ex_ci95": [
+   0.5283,
+   0.717
+  ],
+  "ex_relaxed": 0.6321,
+  "by_difficulty": {
+   "ambiguous": {
+    "n": 62,
+    "ex": 0.4032,
+    "ex_ci95": [
+     0.2903,
+     0.5323
+    ],
+    "ex_relaxed": 0.4032
+   },
+   "clear": {
+    "n": 44,
+    "ex": 0.9318,
+    "ex_ci95": [
+     0.8636,
+     1.0
+    ],
+    "ex_relaxed": 0.9545
+   }
+  },
+  "first_attempt_ex": 0.6226,
+  "self_correction_gain": 0.0,
+  "attempts_distribution": {
+   "1": 106
+  },
+  "schema_recall": 0.9764,
+  "schema_full_recall": 0.9057,
+  "refusals": 0,
+  "gold_errors": 0,
+  "ambiguity_detection": {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0
+  },
+  "over_clarification_rate": 0.0,
+  "ex_ambiguous": {
+   "n": 62,
+   "ex": 0.4032,
+   "ex_ci95": [
+    0.2903,
+    0.5323
+   ],
+   "ex_relaxed": 0.4032
+  },
+  "ex_clear": {
+   "n": 44,
+   "ex": 0.9318,
+   "ex_ci95": [
+    0.8636,
+    1.0
+   ],
+   "ex_relaxed": 0.9545
+  },
+  "matched_other_interpretation": 25,
+  "cost_usd_total": 0.5204,
+  "cost_usd_per_question": 0.00491,
+  "llm_calls_per_question": 2.0,
+  "latency_p50_s": null,
+  "latency_p95_s": null,
+  "latency_measured_on": 0
+ },
+ "cases": [
+  {
+   "id": "ambiguous_ru-amb-001",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS sales\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS sales\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "products",
+    "fiscal_calendar",
+    "order_items",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.447,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      611,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1787,
+      103
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004702
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-002",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(i.quantity * i.unit_price) AS sales\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'",
+   "attempts": [
+    "SELECT sum(i.quantity * i.unit_price) AS sales\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "fiscal_calendar",
+    "products",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.622,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      611,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      1701,
+      133
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004765
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-003",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS sales\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-03-01' AND o.created_at < '2026-04-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS sales\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-03-01' AND o.created_at < '2026-04-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "fiscal_calendar",
+    "products",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.419,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1696,
+      100
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004493
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-004",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT o.id AS order_id, o.created_at, o.channel, o.status, o.total_amount\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-12-01' AND o.created_at < '2026-01-01'\nORDER BY o.created_at, o.id",
+   "attempts": [
+    "SELECT o.id AS order_id, o.created_at, o.channel, o.status, o.total_amount\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-12-01' AND o.created_at < '2026-01-01'\nORDER BY o.created_at, o.id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1000,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "products",
+    "fiscal_calendar",
+    "order_items",
+    "categories"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.545,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      1706,
+      127
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004726
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-005",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS sales\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-08-01' AND o.created_at < '2026-09-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS sales\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-08-01' AND o.created_at < '2026-09-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "products",
+    "customers",
+    "fiscal_calendar",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.336,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1696,
+      109
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004565
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-006",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT o.id AS order_id, o.created_at, o.channel, o.status, o.total_amount\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-05-01' AND o.created_at < '2025-06-01'\nORDER BY o.created_at, o.id",
+   "attempts": [
+    "SELECT o.id AS order_id, o.created_at, o.channel, o.status, o.total_amount\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-05-01' AND o.created_at < '2025-06-01'\nORDER BY o.created_at, o.id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1000,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "products",
+    "customers",
+    "order_items",
+    "categories"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.486,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1732,
+      135
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004845
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-007",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS sales\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-02-01' AND o.created_at < '2026-03-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS sales\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-02-01' AND o.created_at < '2026-03-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "fiscal_calendar",
+    "products",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.19,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1696,
+      109
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004565
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-008",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT o.id AS order_id, o.created_at, o.total_amount\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-10-01' AND o.created_at < '2025-11-01'\nORDER BY o.created_at, o.id",
+   "attempts": [
+    "SELECT o.id AS order_id, o.created_at, o.total_amount\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-10-01' AND o.created_at < '2025-11-01'\nORDER BY o.created_at, o.id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1000,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "products",
+    "fiscal_calendar",
+    "order_items",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.745,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1705,
+      136
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004799
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-009",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT o.id AS order_id, o.created_at, o.customer_id, o.channel, o.total_amount\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2024-11-01' AND o.created_at < '2024-12-01'\nORDER BY o.created_at, o.id",
+   "attempts": [
+    "SELECT o.id AS order_id, o.created_at, o.customer_id, o.channel, o.total_amount\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2024-11-01' AND o.created_at < '2024-12-01'\nORDER BY o.created_at, o.id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1000,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "products",
+    "fiscal_calendar",
+    "order_items",
+    "payments"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.854,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      1680,
+      142
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004794
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-010",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS sales\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-06-01' AND o.created_at < '2026-07-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS sales\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-06-01' AND o.created_at < '2026-07-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "products",
+    "fiscal_calendar",
+    "order_items",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.997,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      1696,
+      109
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004562
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-011",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(oi.quantity) AS units_sold, sum(oi.quantity * oi.unit_price) AS sales_amount\nFROM order_items oi\nJOIN orders o ON o.id = oi.order_id\nJOIN products p ON p.id = oi.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Смартфоны'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'",
+   "attempts": [
+    "SELECT sum(oi.quantity) AS units_sold, sum(oi.quantity * oi.unit_price) AS sales_amount\nFROM order_items oi\nJOIN orders o ON o.id = oi.order_id\nJOIN products p ON p.id = oi.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Смартфоны'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "categories",
+    "customers",
+    "order_items",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.828,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1657,
+      185
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005098
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-012",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT o.id AS order_id, o.created_at, c.full_name AS customer_name, oi.quantity, oi.unit_price, (oi.quantity * oi.unit_price) AS total_amount\nFROM orders o\nJOIN order_items oi ON oi.order_id = o.id\nJOIN products p ON p.id = oi.product_id\nJOIN categories cat ON cat.id = p.category_id\nJOIN customers c ON c.id = o.customer_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\n  AND cat.name = 'Ноутбуки'\nORDER BY o.created_at, o.id",
+   "attempts": [
+    "SELECT o.id AS order_id, o.created_at, c.full_name AS customer_name, oi.quantity, oi.unit_price, (oi.quantity * oi.unit_price) AS total_amount\nFROM orders o\nJOIN order_items oi ON oi.order_id = o.id\nJOIN products p ON p.id = oi.product_id\nJOIN categories cat ON cat.id = p.category_id\nJOIN customers c ON c.id = o.customer_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\n  AND cat.name = 'Ноутбуки'\nORDER BY o.created_at, o.id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1000,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "categories",
+    "customers",
+    "returns",
+    "order_items",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.397,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      1857,
+      222
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.00579
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-013",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(i.quantity * i.unit_price) AS revenue\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Телевизоры'\n  AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'",
+   "attempts": [
+    "SELECT sum(i.quantity * i.unit_price) AS revenue\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Телевизоры'\n  AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "orders",
+    "customers",
+    "products",
+    "fiscal_calendar",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.605,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      1806,
+      152
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005134
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-014",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT o.id AS order_id, o.created_at, p.name AS product_name, i.quantity, i.unit_price, (i.quantity * i.unit_price) AS total_amount\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE c.name = 'Бытовая техника'\n  AND o.status <> 'cancelled'\n  AND o.created_at >= '2026-07-01' AND o.created_at < '2026-08-01'\nORDER BY o.created_at, o.id, p.name",
+   "attempts": [
+    "SELECT o.id AS order_id, o.created_at, p.name AS product_name, i.quantity, i.unit_price, (i.quantity * i.unit_price) AS total_amount\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE c.name = 'Бытовая техника'\n  AND o.status <> 'cancelled'\n  AND o.created_at >= '2026-07-01' AND o.created_at < '2026-08-01'\nORDER BY o.created_at, o.id, p.name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 348,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "orders",
+    "products",
+    "order_items",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.579,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      36
+     ],
+     "gpt-4.1-2025-04-14": [
+      1649,
+      206
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005249
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-015",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT cat.name AS category, sum(i.quantity) AS units_sold\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories cat ON cat.id = p.category_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'\nGROUP BY cat.name\nORDER BY units_sold DESC",
+   "attempts": [
+    "SELECT cat.name AS category, sum(i.quantity) AS units_sold\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories cat ON cat.id = p.category_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'\nGROUP BY cat.name\nORDER BY units_sold DESC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 10,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "products",
+    "orders",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.173,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1649,
+      155
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004842
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 1
+  },
+  {
+   "id": "ambiguous_ru-amb-016",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT cat.name AS category, sum(i.quantity) AS units_sold\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories cat ON cat.id = p.category_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY cat.name\nORDER BY units_sold DESC",
+   "attempts": [
+    "SELECT cat.name AS category, sum(i.quantity) AS units_sold\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories cat ON cat.id = p.category_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY cat.name\nORDER BY units_sold DESC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 10,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "products",
+    "customers",
+    "orders",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.173,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      36
+     ],
+     "gpt-4.1-2025-04-14": [
+      1674,
+      191
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005178
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-017",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.name AS product, sum(i.quantity) AS units_sold\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY p.name\nORDER BY units_sold DESC\nLIMIT 5",
+   "attempts": [
+    "SELECT p.name AS product, sum(i.quantity) AS units_sold\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY p.name\nORDER BY units_sold DESC\nLIMIT 5"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 5,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "products",
+    "orders",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.322,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      615,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      1654,
+      148
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004792
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-018",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.name AS product, sum(oi.quantity) AS units_sold\nFROM order_items oi\nJOIN orders o ON o.id = oi.order_id\nJOIN products p ON p.id = oi.product_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\nGROUP BY p.name\nORDER BY units_sold DESC\nLIMIT 5",
+   "attempts": [
+    "SELECT p.name AS product, sum(oi.quantity) AS units_sold\nFROM order_items oi\nJOIN orders o ON o.id = oi.order_id\nJOIN products p ON p.id = oi.product_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\nGROUP BY p.name\nORDER BY units_sold DESC\nLIMIT 5"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 5,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "products",
+    "orders",
+    "order_items",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.69,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      615,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1697,
+      171
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005064
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-019",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2026 AND f.calendar_quarter = 1",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2026 AND f.calendar_quarter = 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "payments",
+    "orders",
+    "fiscal_calendar",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.076,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1732,
+      113
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004672
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-020",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2025 AND f.calendar_quarter = 2",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2025 AND f.calendar_quarter = 2"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "payments",
+    "fiscal_calendar",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.202,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      1818,
+      127
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.00495
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-021",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2025 AND f.calendar_quarter = 3",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2025 AND f.calendar_quarter = 3"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "payments",
+    "orders",
+    "fiscal_calendar",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.203,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      1819,
+      110
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004816
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-022",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2025 AND f.calendar_quarter = 4",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2025 AND f.calendar_quarter = 4"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "payments",
+    "fiscal_calendar",
+    "categories",
+    "customers",
+    "order_items",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.376,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      616,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      2084,
+      128
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005493
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-023",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2024 AND f.calendar_quarter = 4",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2024 AND f.calendar_quarter = 4"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "payments",
+    "fiscal_calendar",
+    "categories",
+    "customers",
+    "order_items",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.108,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      616,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      2000,
+      125
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005299
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-024",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2026 AND f.calendar_quarter = 2",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2026 AND f.calendar_quarter = 2"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "payments",
+    "orders",
+    "fiscal_calendar",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.625,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      1818,
+      123
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004918
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-025",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2024 AND f.calendar_quarter = 3",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2024 AND f.calendar_quarter = 3"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "payments",
+    "orders",
+    "fiscal_calendar",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.161,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      1747,
+      117
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004728
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-026",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2025 AND f.calendar_quarter = 1",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2025 AND f.calendar_quarter = 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "payments",
+    "fiscal_calendar",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.203,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1843,
+      126
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004998
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-027",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS orders_count\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE f.calendar_year = 2025 AND f.calendar_quarter = 1",
+   "attempts": [
+    "SELECT count(*) AS orders_count\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE f.calendar_year = 2025 AND f.calendar_quarter = 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "returns",
+    "customers",
+    "fiscal_calendar",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.692,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      617,
+      36
+     ],
+     "gpt-4.1-2025-04-14": [
+      1635,
+      113
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004478
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-028",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS orders_count\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE f.calendar_year = 2025 AND f.calendar_quarter = 3",
+   "attempts": [
+    "SELECT count(*) AS orders_count\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE f.calendar_year = 2025 AND f.calendar_quarter = 3"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "returns",
+    "order_items",
+    "fiscal_calendar",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.545,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      618,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      1636,
+      93
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004314
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-029",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS orders_count\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE f.calendar_year = 2026 AND f.calendar_quarter = 2",
+   "attempts": [
+    "SELECT count(*) AS orders_count\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE f.calendar_year = 2026 AND f.calendar_quarter = 2"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "fiscal_calendar",
+    "order_items",
+    "customers",
+    "returns"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.902,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      617,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      1675,
+      94
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.0044
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-030",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS orders_count\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE f.calendar_year = 2024 AND f.calendar_quarter = 4",
+   "attempts": [
+    "SELECT count(*) AS orders_count\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE f.calendar_year = 2024 AND f.calendar_quarter = 4"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "returns",
+    "fiscal_calendar",
+    "order_items",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.996,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      620,
+      36
+     ],
+     "gpt-4.1-2025-04-14": [
+      1638,
+      96
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.00435
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-031",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS sales\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2025 AND f.calendar_quarter = 2",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS sales\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2025 AND f.calendar_quarter = 2"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "products",
+    "customers",
+    "fiscal_calendar",
+    "payments",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.203,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      1919,
+      106
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004984
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-032",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS sales\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2026 AND f.calendar_quarter = 1",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS sales\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.calendar_year = 2026 AND f.calendar_quarter = 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "fiscal_calendar",
+    "customers",
+    "products",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.176,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      40
+     ],
+     "gpt-4.1-2025-04-14": [
+      1663,
+      127
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004651
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-033",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\n  AND ci.name = 'Алматы'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\n  AND ci.name = 'Алматы'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "regions",
+    "cities",
+    "fiscal_calendar",
+    "payments",
+    "products",
+    "managers",
+    "orders",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.141,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      2320,
+      150
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.006144
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 0.75,
+   "schema_full_recall": false
+  },
+  {
+   "id": "ambiguous_ru-amb-034",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nJOIN regions r ON r.id = m.region_id\nWHERE o.status <> 'cancelled'\n  AND r.name = 'Алматы'\n  AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nJOIN regions r ON r.id = m.region_id\nWHERE o.status <> 'cancelled'\n  AND r.name = 'Алматы'\n  AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "regions",
+    "cities",
+    "fiscal_calendar",
+    "payments",
+    "products",
+    "managers",
+    "orders",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.009,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      2223,
+      147
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005928
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 0.75,
+   "schema_full_recall": false
+  },
+  {
+   "id": "ambiguous_ru-amb-035",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS orders_count\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nWHERE o.status <> 'cancelled'\n  AND ci.name = 'Алматы'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'",
+   "attempts": [
+    "SELECT count(*) AS orders_count\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nWHERE o.status <> 'cancelled'\n  AND ci.name = 'Алматы'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "regions",
+    "cities",
+    "orders",
+    "fiscal_calendar",
+    "order_items",
+    "managers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.304,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      616,
+      42
+     ],
+     "gpt-4.1-2025-04-14": [
+      1872,
+      157
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005314
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 0.75,
+   "schema_full_recall": false
+  },
+  {
+   "id": "ambiguous_ru-amb-036",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(avg(o.total_amount), 2) AS avg_check\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nWHERE o.status <> 'cancelled'\n  AND ci.name = 'Алматы'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'",
+   "attempts": [
+    "SELECT round(avg(o.total_amount), 2) AS avg_check\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nWHERE o.status <> 'cancelled'\n  AND ci.name = 'Алматы'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "regions",
+    "cities",
+    "payments",
+    "fiscal_calendar",
+    "products",
+    "managers",
+    "orders",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.283,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      2256,
+      165
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.006128
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 0.75,
+   "schema_full_recall": false,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-037",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON o.manager_id = m.id\nJOIN regions r ON m.region_id = r.id\nWHERE o.status <> 'cancelled'\n  AND r.name = 'Алматы'\n  AND o.created_at >= '2026-09-01' AND o.created_at < '2026-10-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON o.manager_id = m.id\nJOIN regions r ON m.region_id = r.id\nWHERE o.status <> 'cancelled'\n  AND r.name = 'Алматы'\n  AND o.created_at >= '2026-09-01' AND o.created_at < '2026-10-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "regions",
+    "cities",
+    "fiscal_calendar",
+    "payments",
+    "products",
+    "managers",
+    "orders",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.784,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      2169,
+      155
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.005878
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 0.75,
+   "schema_full_recall": false
+  },
+  {
+   "id": "ambiguous_ru-amb-038",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nJOIN regions r ON r.id = m.region_id\nWHERE o.status <> 'cancelled' AND r.name = 'Алматы' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nJOIN regions r ON r.id = m.region_id\nWHERE o.status <> 'cancelled' AND r.name = 'Алматы' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "regions",
+    "cities",
+    "fiscal_calendar",
+    "payments",
+    "products",
+    "managers",
+    "orders",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.783,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      2198,
+      144
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.005852
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 0.75,
+   "schema_full_recall": false
+  },
+  {
+   "id": "ambiguous_ru-amb-039",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS orders_count\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nWHERE o.status <> 'cancelled'\n  AND ci.name = 'Алматы'\n  AND date_trunc('year', o.created_at AT TIME ZONE 'Asia/Almaty') = date_trunc('year', TIMESTAMP WITH TIME ZONE '2025-01-01' AT TIME ZONE 'Asia/Almaty')",
+   "attempts": [
+    "SELECT count(*) AS orders_count\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nWHERE o.status <> 'cancelled'\n  AND ci.name = 'Алматы'\n  AND date_trunc('year', o.created_at AT TIME ZONE 'Asia/Almaty') = date_trunc('year', TIMESTAMP WITH TIME ZONE '2025-01-01' AT TIME ZONE 'Asia/Almaty')"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "regions",
+    "cities",
+    "orders",
+    "fiscal_calendar",
+    "order_items",
+    "managers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.603,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      616,
+      41
+     ],
+     "gpt-4.1-2025-04-14": [
+      1764,
+      180
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.00528
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 0.75,
+   "schema_full_recall": false
+  },
+  {
+   "id": "ambiguous_ru-amb-040",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS customers_count\nFROM customers c\nJOIN cities ci ON ci.id = c.city_id\nWHERE ci.name = 'Алматы'",
+   "attempts": [
+    "SELECT count(*) AS customers_count\nFROM customers c\nJOIN cities ci ON ci.id = c.city_id\nWHERE ci.name = 'Алматы'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "regions",
+    "cities",
+    "customers",
+    "orders",
+    "products",
+    "managers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.906,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      607,
+      27
+     ],
+     "gpt-4.1-2025-04-14": [
+      1985,
+      72
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004832
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-041",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "cities",
+    "customers",
+    "managers",
+    "categories",
+    "regions",
+    "order_items",
+    "orders",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.299,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      2272,
+      159
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.00612
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-042",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "customers",
+    "cities",
+    "managers",
+    "regions",
+    "fiscal_calendar",
+    "orders"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.269,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1974,
+      162
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005545
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-043",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 5",
+   "attempts": [
+    "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 5"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 5,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "customers",
+    "managers",
+    "cities",
+    "orders",
+    "order_items",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.437,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      1977,
+      169
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005602
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-044",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 3",
+   "attempts": [
+    "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 3"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 3,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "customers",
+    "managers",
+    "cities",
+    "fiscal_calendar",
+    "order_items",
+    "orders",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.766,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      2178,
+      173
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.006036
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-045",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nJOIN regions r ON r.id = m.region_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\n  AND r.name = 'Астана'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nJOIN regions r ON r.id = m.region_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\n  AND r.name = 'Астана'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "cities",
+    "regions",
+    "managers",
+    "fiscal_calendar",
+    "orders",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.582,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      615,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      2088,
+      178
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005897
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-046",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nJOIN regions r ON r.id = m.region_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\n  AND r.name = 'Шымкент'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nJOIN regions r ON r.id = m.region_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\n  AND r.name = 'Шымкент'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "cities",
+    "regions",
+    "managers",
+    "fiscal_calendar",
+    "orders",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.628,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      616,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      1978,
+      187
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005753
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-047",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS customers_count\nFROM customers c",
+   "attempts": [
+    "SELECT count(*) AS customers_count\nFROM customers c"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "customers",
+    "orders",
+    "managers",
+    "order_items",
+    "payments"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.812,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      607,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      1654,
+      41
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.00393
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-048",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS b2b_customers_count\nFROM customers c\nWHERE c.segment = 'b2b'",
+   "attempts": [
+    "SELECT count(*) AS b2b_customers_count\nFROM customers c\nWHERE c.segment = 'b2b'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "customers",
+    "orders",
+    "order_items",
+    "payments",
+    "managers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.637,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      609,
+      31
+     ],
+     "gpt-4.1-2025-04-14": [
+      1656,
+      53
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004029
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-049",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS b2c_customers_count\nFROM customers c\nWHERE c.segment = 'b2c'",
+   "attempts": [
+    "SELECT count(*) AS b2c_customers_count\nFROM customers c\nWHERE c.segment = 'b2c'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "customers",
+    "payments",
+    "orders",
+    "order_items",
+    "managers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.537,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      608,
+      27
+     ],
+     "gpt-4.1-2025-04-14": [
+      1655,
+      54
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004028
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-050",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS customers_count\nFROM customers c\nJOIN cities ci ON ci.id = c.city_id\nWHERE ci.name = 'Шымкент'",
+   "attempts": [
+    "SELECT count(*) AS customers_count\nFROM customers c\nJOIN cities ci ON ci.id = c.city_id\nWHERE ci.name = 'Шымкент'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "cities",
+    "regions",
+    "customers",
+    "orders",
+    "products",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.632,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      610,
+      27
+     ],
+     "gpt-4.1-2025-04-14": [
+      1860,
+      83
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004671
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-051",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS customers_count\nFROM customers c\nJOIN cities ci ON ci.id = c.city_id\nJOIN regions r ON r.id = ci.region_id\nWHERE r.name = 'Карагандинская область'",
+   "attempts": [
+    "SELECT count(*) AS customers_count\nFROM customers c\nJOIN cities ci ON ci.id = c.city_id\nJOIN regions r ON r.id = ci.region_id\nWHERE r.name = 'Карагандинская область'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "regions",
+    "cities",
+    "customers",
+    "orders",
+    "products",
+    "managers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.548,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1990,
+      105
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.005124
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-052",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS customers_count\nFROM customers c\nJOIN cities ci ON ci.id = c.city_id\nWHERE ci.name = 'Астана'",
+   "attempts": [
+    "SELECT count(*) AS customers_count\nFROM customers c\nJOIN cities ci ON ci.id = c.city_id\nWHERE ci.name = 'Астана'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "cities",
+    "regions",
+    "customers",
+    "orders",
+    "products",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.702,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      609,
+      27
+     ],
+     "gpt-4.1-2025-04-14": [
+      1857,
+      76
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004609
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-053",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(avg(i.unit_price), 2) AS avg_sold_price\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Смартфоны'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'",
+   "attempts": [
+    "SELECT round(avg(i.unit_price), 2) AS avg_sold_price\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Смартфоны'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "orders",
+    "products",
+    "returns",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.765,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      42
+     ],
+     "gpt-4.1-2025-04-14": [
+      1747,
+      163
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.005111
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-054",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(avg(i.unit_price), 2) AS avg_sold_price\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\n  AND c.name = 'Ноутбуки'",
+   "attempts": [
+    "SELECT round(avg(i.unit_price), 2) AS avg_sold_price\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\n  AND c.name = 'Ноутбуки'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "orders",
+    "returns",
+    "products",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.723,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      615,
+      43
+     ],
+     "gpt-4.1-2025-04-14": [
+      1748,
+      168
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.005155
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-055",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(avg(i.unit_price), 2) AS avg_sold_price\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Телевизоры'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'",
+   "attempts": [
+    "SELECT round(avg(i.unit_price), 2) AS avg_sold_price\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Телевизоры'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "orders",
+    "products",
+    "order_items",
+    "fiscal_calendar"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.801,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      43
+     ],
+     "gpt-4.1-2025-04-14": [
+      1657,
+      169
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.00498
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-056",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(avg(oi.unit_price), 2) AS avg_sold_price\nFROM order_items oi\nJOIN orders o ON o.id = oi.order_id\nJOIN products p ON p.id = oi.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE c.name = 'Игровые консоли'\n  AND o.status <> 'cancelled'\n  AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'",
+   "attempts": [
+    "SELECT round(avg(oi.unit_price), 2) AS avg_sold_price\nFROM order_items oi\nJOIN orders o ON o.id = oi.order_id\nJOIN products p ON p.id = oi.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE c.name = 'Игровые консоли'\n  AND o.status <> 'cancelled'\n  AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "returns",
+    "products",
+    "orders",
+    "fiscal_calendar",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.663,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      616,
+      44
+     ],
+     "gpt-4.1-2025-04-14": [
+      1863,
+      169
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.005395
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-057",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(sum(i.unit_price * i.quantity)::numeric / sum(i.quantity), 2) AS avg_sold_price\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Фото и видео'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'",
+   "attempts": [
+    "SELECT round(sum(i.unit_price * i.quantity)::numeric / sum(i.quantity), 2) AS avg_sold_price\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Фото и видео'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "products",
+    "orders",
+    "order_items",
+    "returns"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.531,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      617,
+      51
+     ],
+     "gpt-4.1-2025-04-14": [
+      1750,
+      179
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.00526
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-058",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(avg(i.unit_price), 2) AS avg_sold_price\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Аксессуары'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'",
+   "attempts": [
+    "SELECT round(avg(i.unit_price), 2) AS avg_sold_price\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Аксессуары'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "products",
+    "orders",
+    "returns",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.732,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      615,
+      43
+     ],
+     "gpt-4.1-2025-04-14": [
+      1666,
+      164
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004959
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-059",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(p.amount) AS total_received\nFROM payments p\nWHERE p.paid_at >= '2026-09-01' AND p.paid_at < '2026-10-01'",
+   "attempts": [
+    "SELECT sum(p.amount) AS total_received\nFROM payments p\nWHERE p.paid_at >= '2026-09-01' AND p.paid_at < '2026-10-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "payments",
+    "returns",
+    "fiscal_calendar",
+    "customers",
+    "orders"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.796,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      1806,
+      94
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004661
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-060",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(p.amount) AS total_payments\nFROM payments p\nWHERE p.paid_at >= '2025-12-01' AND p.paid_at < '2026-01-01'",
+   "attempts": [
+    "SELECT sum(p.amount) AS total_payments\nFROM payments p\nWHERE p.paid_at >= '2025-12-01' AND p.paid_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "returns",
+    "payments",
+    "fiscal_calendar",
+    "orders",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.575,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1839,
+      110
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.00486
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-amb-061",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(p.amount) AS payments_received\nFROM payments p\nWHERE p.paid_at >= '2026-03-01' AND p.paid_at < '2026-04-01'",
+   "attempts": [
+    "SELECT sum(p.amount) AS payments_received\nFROM payments p\nWHERE p.paid_at >= '2026-03-01' AND p.paid_at < '2026-04-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "returns",
+    "payments",
+    "fiscal_calendar",
+    "orders",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.741,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      1715,
+      107
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004583
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-amb-062",
+   "difficulty": "ambiguous",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(p.amount) AS total_received\nFROM payments p\nWHERE p.paid_at >= '2025-06-01' AND p.paid_at < '2025-07-01'",
+   "attempts": [
+    "SELECT sum(p.amount) AS total_received\nFROM payments p\nWHERE p.paid_at >= '2025-06-01' AND p.paid_at < '2025-07-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "payments",
+    "returns",
+    "fiscal_calendar",
+    "orders",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.588,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1839,
+      122
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004956
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "matched_interpretation": 0
+  },
+  {
+   "id": "ambiguous_ru-clear-063",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "categories",
+    "fiscal_calendar",
+    "products",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.968,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      610,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      1961,
+      107
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005076
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-064",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "payments",
+    "orders",
+    "fiscal_calendar",
+    "order_items",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.634,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      610,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1840,
+      110
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004863
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-065",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.fiscal_year = 2025",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.fiscal_year = 2025"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "payments",
+    "fiscal_calendar",
+    "customers",
+    "categories",
+    "order_items",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.597,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      2096,
+      111
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.005378
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-066",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.fiscal_year = 2024",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.fiscal_year = 2024"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "payments",
+    "orders",
+    "fiscal_calendar",
+    "order_items",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.623,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      1745,
+      105
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004628
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-067",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2026-01-01'\n  AND o.created_at < '2026-04-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2026-01-01'\n  AND o.created_at < '2026-04-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "payments",
+    "orders",
+    "fiscal_calendar",
+    "customers",
+    "returns"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.742,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      615,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      1785,
+      108
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004734
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-068",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.fiscal_year = 2025 AND f.fiscal_quarter = 2",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN fiscal_calendar f ON f.date = o.created_at::date\nWHERE o.status <> 'cancelled' AND f.fiscal_year = 2025 AND f.fiscal_quarter = 2"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "payments",
+    "fiscal_calendar",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.708,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      615,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1845,
+      107
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004848
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-069",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS orders_count\nFROM orders o\nWHERE o.created_at >= '2026-09-01' AND o.created_at < '2026-10-01'",
+   "attempts": [
+    "SELECT count(*) AS orders_count\nFROM orders o\nWHERE o.created_at >= '2026-09-01' AND o.created_at < '2026-10-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "returns",
+    "customers",
+    "order_items",
+    "payments"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.629,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      1683,
+      100
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004463
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-070",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS orders_count\nFROM orders o\nWHERE o.created_at >= '2025-01-01' AND o.created_at < '2025-02-01'",
+   "attempts": [
+    "SELECT count(*) AS orders_count\nFROM orders o\nWHERE o.created_at >= '2025-01-01' AND o.created_at < '2025-02-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "returns",
+    "customers",
+    "order_items",
+    "fiscal_calendar"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.808,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      615,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1644,
+      91
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004321
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-071",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS cancelled_orders_count\nFROM orders o\nWHERE o.status = 'cancelled'\n  AND o.created_at >= '2025-01-01'\n  AND o.created_at < '2026-01-01'",
+   "attempts": [
+    "SELECT count(*) AS cancelled_orders_count\nFROM orders o\nWHERE o.status = 'cancelled'\n  AND o.created_at >= '2025-01-01'\n  AND o.created_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "returns",
+    "order_items",
+    "fiscal_calendar",
+    "payments"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.791,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      42
+     ],
+     "gpt-4.1-2025-04-14": [
+      1586,
+      106
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004333
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-072",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(i.quantity) AS units_sold\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'",
+   "attempts": [
+    "SELECT sum(i.quantity) AS units_sold\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "products",
+    "order_items",
+    "customers",
+    "returns"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.83,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      1772,
+      136
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004932
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-073",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(oi.quantity) AS units_sold\nFROM order_items oi\nJOIN orders o ON o.id = oi.order_id\nJOIN products p ON p.id = oi.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Смартфоны'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'",
+   "attempts": [
+    "SELECT sum(oi.quantity) AS units_sold\nFROM order_items oi\nJOIN orders o ON o.id = oi.order_id\nJOIN products p ON p.id = oi.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE o.status <> 'cancelled'\n  AND c.name = 'Смартфоны'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "customers",
+    "categories",
+    "order_items",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.721,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      615,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1640,
+      166
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.00491
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-074",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT r.name AS region, count(o.id) AS orders_count\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nJOIN regions r ON r.id = ci.region_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'\nGROUP BY r.name\nORDER BY orders_count DESC",
+   "attempts": [
+    "SELECT r.name AS region, count(o.id) AS orders_count\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nJOIN regions r ON r.id = ci.region_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'\nGROUP BY r.name\nORDER BY orders_count DESC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 12,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "customers",
+    "regions",
+    "fiscal_calendar",
+    "order_items",
+    "managers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.855,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      617,
+      43
+     ],
+     "gpt-4.1-2025-04-14": [
+      1901,
+      190
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.005638
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 0.75,
+   "schema_full_recall": false
+  },
+  {
+   "id": "ambiguous_ru-clear-075",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\n  AND ci.name = 'Алматы'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\n  AND ci.name = 'Алматы'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "regions",
+    "cities",
+    "fiscal_calendar",
+    "orders",
+    "returns",
+    "managers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.849,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      617,
+      40
+     ],
+     "gpt-4.1-2025-04-14": [
+      2091,
+      134
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.005565
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 0.75,
+   "schema_full_recall": false
+  },
+  {
+   "id": "ambiguous_ru-clear-076",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nJOIN regions r ON r.id = ci.region_id\nWHERE o.status <> 'cancelled'\n  AND r.name = 'Алматинская область'\n  AND ci.name <> 'Алматы'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nJOIN regions r ON r.id = ci.region_id\nWHERE o.status <> 'cancelled'\n  AND r.name = 'Алматинская область'\n  AND ci.name <> 'Алматы'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "regions",
+    "cities",
+    "fiscal_calendar",
+    "orders",
+    "products",
+    "managers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.574,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      619,
+      44
+     ],
+     "gpt-4.1-2025-04-14": [
+      2122,
+      174
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.005954
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 0.75,
+   "schema_full_recall": false
+  },
+  {
+   "id": "ambiguous_ru-clear-077",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\n  AND ci.name = 'Астана'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nJOIN cities ci ON ci.id = c.city_id\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\n  AND ci.name = 'Астана'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "cities",
+    "regions",
+    "fiscal_calendar",
+    "payments",
+    "products",
+    "customers",
+    "orders",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.802,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      2363,
+      145
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.006188
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-078",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT o.channel, round(avg(o.total_amount), 2) AS avg_check\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY o.channel\nORDER BY avg_check DESC",
+   "attempts": [
+    "SELECT o.channel, round(avg(o.total_amount), 2) AS avg_check\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY o.channel\nORDER BY avg_check DESC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "payments",
+    "customers",
+    "order_items",
+    "fiscal_calendar"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.644,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      615,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1709,
+      141
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004848
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-079",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(avg(o.total_amount), 2) AS avg_check\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'",
+   "attempts": [
+    "SELECT round(avg(o.total_amount), 2) AS avg_check\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "payments",
+    "customers",
+    "orders",
+    "order_items",
+    "fiscal_calendar"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.947,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      610,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      1707,
+      128
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004728
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-080",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT date_trunc('month', o.created_at)::date AS month, count(*) AS orders_count\nFROM orders o\nWHERE o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY 1\nORDER BY 1",
+   "attempts": [
+    "SELECT date_trunc('month', o.created_at)::date AS month, count(*) AS orders_count\nFROM orders o\nWHERE o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'\nGROUP BY 1\nORDER BY 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 12,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "returns",
+    "order_items",
+    "fiscal_calendar",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.538,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      622,
+      42
+     ],
+     "gpt-4.1-2025-04-14": [
+      1693,
+      120
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004662
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-081",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT o.channel, count(*) AS orders_count\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\nGROUP BY o.channel\nORDER BY orders_count DESC",
+   "attempts": [
+    "SELECT o.channel, count(*) AS orders_count\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\nGROUP BY o.channel\nORDER BY orders_count DESC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "customers",
+    "order_items",
+    "fiscal_calendar",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.851,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      1702,
+      125
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.00471
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-082",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.method, count(*) AS payments_count\nFROM payments p\nGROUP BY p.method\nORDER BY payments_count DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT p.method, count(*) AS payments_count\nFROM payments p\nGROUP BY p.method\nORDER BY payments_count DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "payments",
+    "customers",
+    "order_items",
+    "returns"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.83,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      1661,
+      72
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.00419
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-083",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.method, sum(p.amount) AS paid_amount\nFROM payments p\nWHERE p.paid_at >= '2025-01-01' AND p.paid_at < '2026-01-01'\nGROUP BY p.method\nORDER BY paid_amount DESC",
+   "attempts": [
+    "SELECT p.method, sum(p.amount) AS paid_amount\nFROM payments p\nWHERE p.paid_at >= '2025-01-01' AND p.paid_at < '2026-01-01'\nGROUP BY p.method\nORDER BY paid_amount DESC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 4,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "payments",
+    "fiscal_calendar",
+    "returns",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.985,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      616,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1838,
+      118
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004922
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-084",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(r.id) AS returns_count\nFROM returns r\nWHERE r.returned_at >= '2025-01-01' AND r.returned_at < '2026-01-01'",
+   "attempts": [
+    "SELECT count(r.id) AS returns_count\nFROM returns r\nWHERE r.returned_at >= '2025-01-01' AND r.returned_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "returns",
+    "fiscal_calendar",
+    "orders",
+    "customers",
+    "payments"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.822,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1958,
+      103
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005044
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-085",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT r.reason, count(*) AS returns_count\nFROM returns r\nWHERE r.returned_at >= '2026-01-01' AND r.returned_at < '2027-01-01'\nGROUP BY r.reason\nORDER BY returns_count DESC",
+   "attempts": [
+    "SELECT r.reason, count(*) AS returns_count\nFROM returns r\nWHERE r.returned_at >= '2026-01-01' AND r.returned_at < '2027-01-01'\nGROUP BY r.reason\nORDER BY returns_count DESC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 4,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "returns",
+    "orders",
+    "payments",
+    "customers",
+    "fiscal_calendar"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.993,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      616,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1862,
+      112
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004922
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-086",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS returns_count, sum(r.amount) AS total_refunded\nFROM returns r\nWHERE r.reason = 'defect'\n  AND r.returned_at >= '2026-01-01' AND r.returned_at < '2027-01-01'",
+   "attempts": [
+    "SELECT count(*) AS returns_count, sum(r.amount) AS total_refunded\nFROM returns r\nWHERE r.reason = 'defect'\n  AND r.returned_at >= '2026-01-01' AND r.returned_at < '2027-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "returns",
+    "customers",
+    "fiscal_calendar",
+    "orders",
+    "payments"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.99,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      617,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      1863,
+      108
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.00489
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-087",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS customers_count FROM customers",
+   "attempts": [
+    "SELECT count(*) AS customers_count FROM customers"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "customers",
+    "order_items",
+    "payments",
+    "returns"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.607,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      608,
+      25
+     ],
+     "gpt-4.1-2025-04-14": [
+      1639,
+      36
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.003849
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-088",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(DISTINCT o.customer_id) AS customers_with_orders\nFROM orders o",
+   "attempts": [
+    "SELECT count(DISTINCT o.customer_id) AS customers_with_orders\nFROM orders o"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "customers",
+    "order_items",
+    "returns",
+    "payments"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.761,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      610,
+      28
+     ],
+     "gpt-4.1-2025-04-14": [
+      1705,
+      52
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004115
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-089",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS active_customers\nFROM customers c\nWHERE c.is_active = true",
+   "attempts": [
+    "SELECT count(*) AS active_customers\nFROM customers c\nWHERE c.is_active = true"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "customers",
+    "payments",
+    "order_items",
+    "managers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.697,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      607,
+      28
+     ],
+     "gpt-4.1-2025-04-14": [
+      1654,
+      56
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004044
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-090",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS b2b_customers_count\nFROM customers c\nWHERE c.segment = 'b2b'",
+   "attempts": [
+    "SELECT count(*) AS b2b_customers_count\nFROM customers c\nWHERE c.segment = 'b2b'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "customers",
+    "order_items",
+    "payments",
+    "products"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.602,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      616,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      1707,
+      72
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004297
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-091",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS customers_registered\nFROM customers c\nWHERE c.registered_at >= '2025-01-01' AND c.registered_at < '2026-01-01'",
+   "attempts": [
+    "SELECT count(*) AS customers_registered\nFROM customers c\nWHERE c.registered_at >= '2025-01-01' AND c.registered_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "customers",
+    "fiscal_calendar",
+    "payments",
+    "managers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.001,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      613,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      1753,
+      104
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004636
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-092",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT m.full_name AS manager, sum(o.total_amount) AS revenue\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\nGROUP BY m.full_name\nORDER BY revenue DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "customers",
+    "managers",
+    "fiscal_calendar",
+    "products",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.708,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      618,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1847,
+      157
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.005256
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-093",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT m.full_name AS manager, count(o.id) AS orders_count\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\nGROUP BY m.full_name\nORDER BY orders_count DESC\nLIMIT 3",
+   "attempts": [
+    "SELECT m.full_name AS manager, count(o.id) AS orders_count\nFROM orders o\nJOIN managers m ON m.id = o.manager_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\nGROUP BY m.full_name\nORDER BY orders_count DESC\nLIMIT 3"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 3,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "managers",
+    "customers",
+    "order_items",
+    "fiscal_calendar"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.183,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      618,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      1745,
+      148
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004976
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-094",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS fired_managers_count\nFROM managers m\nWHERE m.fired_at IS NOT NULL",
+   "attempts": [
+    "SELECT count(*) AS fired_managers_count\nFROM managers m\nWHERE m.fired_at IS NOT NULL"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "returns",
+    "managers",
+    "products",
+    "customers",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.596,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      609,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      1764,
+      52
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004234
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-095",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT r.name AS region, count(*) AS fired_managers_count\nFROM managers m\nJOIN regions r ON r.id = m.region_id\nWHERE m.fired_at IS NOT NULL\nGROUP BY r.name\nORDER BY fired_managers_count DESC",
+   "attempts": [
+    "SELECT r.name AS region, count(*) AS fired_managers_count\nFROM managers m\nJOIN regions r ON r.id = m.region_id\nWHERE m.fired_at IS NOT NULL\nGROUP BY r.name\nORDER BY fired_managers_count DESC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 7,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "regions",
+    "managers",
+    "orders",
+    "customers",
+    "returns",
+    "cities"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.871,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      28
+     ],
+     "gpt-4.1-2025-04-14": [
+      1983,
+      108
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.00512
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-096",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS discontinued_products_count\nFROM products p\nWHERE p.is_discontinued = true",
+   "attempts": [
+    "SELECT count(*) AS discontinued_products_count\nFROM products p\nWHERE p.is_discontinued = true"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "returns",
+    "categories",
+    "products",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.796,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      609,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      1527,
+      65
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.003869
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-097",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT c.name AS category, count(p.id) AS products_count\nFROM categories c\nLEFT JOIN products p ON p.category_id = c.id\nGROUP BY c.name\nORDER BY products_count DESC, c.name",
+   "attempts": [
+    "SELECT c.name AS category, count(p.id) AS products_count\nFROM categories c\nLEFT JOIN products p ON p.category_id = c.id\nGROUP BY c.name\nORDER BY products_count DESC, c.name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 10,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "orders",
+    "products",
+    "order_items",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.786,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      608,
+      26
+     ],
+     "gpt-4.1-2025-04-14": [
+      1586,
+      103
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004281
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-098",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(avg(p.price), 2) AS avg_current_price\nFROM products p\nJOIN categories c ON c.id = p.category_id\nWHERE c.name = 'Смартфоны' AND p.is_discontinued = false",
+   "attempts": [
+    "SELECT round(avg(p.price), 2) AS avg_current_price\nFROM products p\nJOIN categories c ON c.id = p.category_id\nWHERE c.name = 'Смартфоны' AND p.is_discontinued = false"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "orders",
+    "products",
+    "order_items",
+    "payments"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.696,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      612,
+      36
+     ],
+     "gpt-4.1-2025-04-14": [
+      1564,
+      101
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004238
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-099",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(avg(oi.unit_price), 2) AS avg_sale_price\nFROM order_items oi\nJOIN orders o ON o.id = oi.order_id\nJOIN products p ON p.id = oi.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE c.name = 'Ноутбуки'\n  AND o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'",
+   "attempts": [
+    "SELECT round(avg(oi.unit_price), 2) AS avg_sale_price\nFROM order_items oi\nJOIN orders o ON o.id = oi.order_id\nJOIN products p ON p.id = oi.product_id\nJOIN categories c ON c.id = p.category_id\nWHERE c.name = 'Ноутбуки'\n  AND o.status <> 'cancelled'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "order_items",
+    "products",
+    "categories",
+    "fiscal_calendar"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.704,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      619,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      1713,
+      173
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.005104
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-100",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.name AS product, p.price AS price\nFROM products p\nORDER BY p.price DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT p.name AS product, p.price AS price\nFROM products p\nORDER BY p.price DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "orders",
+    "products",
+    "order_items",
+    "payments"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.597,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      611,
+      27
+     ],
+     "gpt-4.1-2025-04-14": [
+      1587,
+      65
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.003982
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-101",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.discount_amount) AS total_discount\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'",
+   "attempts": [
+    "SELECT sum(o.discount_amount) AS total_discount\nFROM orders o\nWHERE o.status <> 'cancelled' AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "returns",
+    "order_items",
+    "customers",
+    "payments"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.98,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      615,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      1878,
+      91
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004781
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-102",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.channel = 'online'\n  AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nWHERE o.status <> 'cancelled'\n  AND o.channel = 'online'\n  AND o.created_at >= '2024-01-01' AND o.created_at < '2025-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "payments",
+    "order_items",
+    "returns",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.967,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      614,
+      41
+     ],
+     "gpt-4.1-2025-04-14": [
+      1747,
+      125
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 1,
+    "cost_usd": 0.004805
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-103",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS shipped_orders_count\nFROM orders o\nWHERE o.status = 'shipped'",
+   "attempts": [
+    "SELECT count(*) AS shipped_orders_count\nFROM orders o\nWHERE o.status = 'shipped'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "orders",
+    "returns",
+    "order_items",
+    "payments",
+    "customers"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.71,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      616,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      1645,
+      64
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004103
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-104",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT cat.name AS category, sum(i.quantity * i.unit_price) AS revenue\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories cat ON cat.id = p.category_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\nGROUP BY cat.name\nORDER BY revenue DESC",
+   "attempts": [
+    "SELECT cat.name AS category, sum(i.quantity * i.unit_price) AS revenue\nFROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nJOIN categories cat ON cat.id = p.category_id\nWHERE o.status <> 'cancelled' AND o.created_at >= '2026-01-01' AND o.created_at < '2027-01-01'\nGROUP BY cat.name\nORDER BY revenue DESC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 10,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "categories",
+    "orders",
+    "products",
+    "order_items",
+    "fiscal_calendar"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.812,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      619,
+      39
+     ],
+     "gpt-4.1-2025-04-14": [
+      1651,
+      170
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004972
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-105",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT count(*) AS cities_count FROM cities",
+   "attempts": [
+    "SELECT count(*) AS cities_count FROM cities"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "cities",
+    "regions",
+    "customers",
+    "managers",
+    "order_items",
+    "orders"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.886,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      608,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      1801,
+      34
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.004164
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "ambiguous_ru-clear-106",
+   "difficulty": "clear",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nWHERE o.status <> 'cancelled'\n  AND c.segment = 'b2b'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'",
+   "attempts": [
+    "SELECT sum(o.total_amount) AS revenue\nFROM orders o\nJOIN customers c ON c.id = o.customer_id\nWHERE o.status <> 'cancelled'\n  AND c.segment = 'b2b'\n  AND o.created_at >= '2025-01-01' AND o.created_at < '2026-01-01'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "customers",
+    "orders",
+    "categories",
+    "products",
+    "fiscal_calendar",
+    "order_items"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.021,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      617,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1968,
+      119
+     ]
+    },
+    "calls": 2,
+    "cached_calls": 2,
+    "cost_usd": 0.005194
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  }
+ ]
+}

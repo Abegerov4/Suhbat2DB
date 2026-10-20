@@ -1,0 +1,85 @@
+name: evals
+
+# Smoke-eval с настоящим LLM: 50 вопросов, пороги регрессии (backend/evals/smoke.py).
+# Стоит ~$0,4 за прогон, поэтому запускается только при изменении агента, валидатора
+# или наборов и только если в репозитории задан секрет OPENAI_API_KEY.
+on:
+  pull_request:
+    paths:
+      - "backend/app/agent/**"
+      - "backend/app/validator/**"
+      - "backend/evals/**"
+      - "evals/datasets/**"
+      - "evals/baselines/**"
+      - ".github/workflows/evals.yml"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    steps:
+      - name: Skip without API key
+        id: key
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "Секрет OPENAI_API_KEY не задан — smoke-eval пропущен"
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.key.outputs.enabled == 'true'
+
+      - name: Generate .env
+        if: steps.key.outputs.enabled == 'true'
+        run: |
+          ./scripts/init-env.sh
+          echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> .env
+
+      - name: Start databases and Qdrant
+        if: steps.key.outputs.enabled == 'true'
+        run: docker compose up -d --wait app-db target-db qdrant
+
+      - uses: astral-sh/setup-uv@v10.3.0  # плавающего тега v10 у setup-uv нет
+        if: steps.key.outputs.enabled == 'true'
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            backend/uv.lock
+            demo_db/uv.lock
+
+      - name: Seed demo DB
+        if: steps.key.outputs.enabled == 'true'
+        working-directory: demo_db
+        run: |
+          uv sync --locked
+          uv run python seed.py --scale 1.0
+
+      - name: Cache benchmark archives
+        if: steps.key.outputs.enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: evals/data/raw
+          key: eval-benchmarks-spider1-bird20240627
+
+      - name: Load Spider / BIRD databases
+        if: steps.key.outputs.enabled == 'true'
+        run: |
+          (cd backend && uv sync --locked)
+          ./scripts/eval-data.sh
+
+      - name: Smoke eval
+        if: steps.key.outputs.enabled == 'true'
+        working-directory: backend
+        run: uv run python -m evals.smoke
+
+      - uses: actions/upload-artifact@v7
+        if: always() && steps.key.outputs.enabled == 'true'
+        with:
+          name: smoke-reports
+          path: evals/reports/smoke_*.json
+          retention-days: 14

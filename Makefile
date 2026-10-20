@@ -1,4 +1,4 @@
-.PHONY: help env up up-lite up-langfuse down logs ps test test-backend test-demo-db test-frontend test-e2e lint format seed migrate index smoke prompts eval-smoke
+.PHONY: help env up up-lite up-langfuse down logs ps test test-backend test-demo-db test-frontend test-e2e lint format seed migrate index smoke prompts eval-smoke eval eval-data
 
 APP_SERVICES := app-db target-db qdrant backend frontend
 
@@ -47,7 +47,7 @@ test-e2e:  ## E2E-тесты Playwright (стек с AGENT_MODE=fake)
 	E2E_BASE_URL=$${E2E_BASE_URL:-http://localhost:$${FRONTEND_PORT:-3000}} npm run test:e2e
 
 lint:  ## Линтеры и проверка типов
-	cd backend && uv run ruff check . && uv run ruff format --check . && uv run mypy app tests
+	cd backend && uv run ruff check . && uv run ruff format --check . && uv run mypy app tests evals
 	cd demo_db && uv run ruff check . && uv run ruff format --check . && uv run mypy seed.py tests
 	cd frontend && npm run lint && npm run typecheck && npm run format:check
 
@@ -72,5 +72,11 @@ smoke:  ## Smoke-тест агента с настоящим LLM на 10 воп�
 prompts:  ## Загрузить промпты в Langfuse (новая версия — только при изменении текста)
 	cd backend && uv run python -m scripts.push_prompts "$(MSG)"
 
-eval-smoke:  ## Быстрый прогон evals (роль 7)
-	@echo "Будет реализовано в роли 7 (docs/roles/07_evals.md)"
+eval-smoke:  ## Smoke-eval: 50 вопросов, пороги регрессии (нужен OPENAI_API_KEY, ~$0,4)
+	cd backend && uv run python -m evals.smoke
+
+eval:  ## Прогон набора: make eval SUITE=spider_subset CONFIG=agent SEED=1 [LIMIT=20]
+	cd backend && uv run python -m evals.run --suite $(SUITE) --config $(CONFIG) --seed $(or $(SEED),1) $(if $(LIMIT),--limit $(LIMIT))
+
+eval-data:  ## Скачать Spider/BIRD, загрузить базы в target-db, собрать наборы
+	./scripts/eval-data.sh

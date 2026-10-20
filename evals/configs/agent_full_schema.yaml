@@ -1,0 +1,3 @@
+# Эксперимент 3: вся схема в промпте вместо отбора таблиц (schema linking)
+description: Агент с полной схемой вместо schema linking
+schema_linking: false

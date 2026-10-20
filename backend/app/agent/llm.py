@@ -60,9 +60,17 @@ def supports_temperature(model: str) -> bool:
 
 
 class LangChainLLM:
-    def __init__(self, settings: Settings, overrides: dict[NodeKey, str] | None = None) -> None:
+    def __init__(
+        self,
+        settings: Settings,
+        overrides: dict[NodeKey, str] | None = None,
+        temperatures: dict[NodeKey, float] | None = None,
+        seed: int | None = None,
+    ) -> None:
         self.settings = settings
-        self.overrides = overrides or {}
+        self.overrides = overrides or {}  # модель на узел (эксперимент 5, evals)
+        self.temperatures = temperatures or {}
+        self.seed = seed  # OpenAI seed: повторяемость прогонов evals
         providers = [settings.llm_primary_provider]
         if settings.llm_fallback_provider and settings.llm_fallback_provider not in providers:
             providers.append(settings.llm_fallback_provider)
@@ -92,7 +100,9 @@ class LangChainLLM:
 
     def _chat(self, provider: str, node: NodeKey) -> BaseChatModel:
         cfg, model = NODE_CONFIG[node], self._model_id(provider, node)
-        temperature = cfg.temperature if supports_temperature(model) else None
+        temperature = (
+            self.temperatures.get(node, cfg.temperature) if supports_temperature(model) else None
+        )
         if provider == "openai":
             from langchain_openai import ChatOpenAI
 
@@ -100,6 +110,7 @@ class LangChainLLM:
             return ChatOpenAI(
                 model=model,
                 temperature=temperature,
+                seed=self.seed,
                 max_completion_tokens=cfg.max_tokens,
                 timeout=self.settings.llm_timeout_s,
                 max_retries=2,

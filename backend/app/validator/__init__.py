@@ -33,8 +33,17 @@ def apply_limit(expression: exp.Expr, max_rows: int) -> exp.Expr:
     return exp.select("*").from_(expression.subquery("limited")).limit(cap)
 
 
-def validate(sql: str, snapshot: SchemaSnapshot, limits: Limits | None = None) -> ValidationReport:
-    """Уровни 1–3. Проверка останавливается на первом непройденном уровне."""
+def validate(
+    sql: str,
+    snapshot: SchemaSnapshot,
+    limits: Limits | None = None,
+    *,
+    schema_check: bool = True,
+) -> ValidationReport:
+    """Уровни 1–3. Проверка останавливается на первом непройденном уровне.
+
+    schema_check=False — только для ablation-эксперимента (evals): уровень 3 пропускается.
+    """
     limits = limits or Limits()
     level1, expression = check_syntax(sql)
     if expression is None:
@@ -44,13 +53,16 @@ def validate(sql: str, snapshot: SchemaSnapshot, limits: Limits | None = None) -
     if not level2.passed:
         return ValidationReport(passed=False, levels=[level1, level2])
 
-    level3 = check_schema(expression, snapshot)
-    if not level3.passed:
-        return ValidationReport(passed=False, levels=[level1, level2, level3])
+    levels = [level1, level2]
+    if schema_check:
+        level3 = check_schema(expression, snapshot)
+        levels.append(level3)
+        if not level3.passed:
+            return ValidationReport(passed=False, levels=levels)
 
     normalized = apply_limit(expression.copy(), limits.max_rows)
     return ValidationReport(
         passed=True,
-        levels=[level1, level2, level3],
+        levels=levels,
         normalized_sql=normalized.sql(dialect=DIALECT, pretty=True, comments=False),
     )

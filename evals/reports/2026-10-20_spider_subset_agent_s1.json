@@ -1,0 +1,4811 @@
+{
+ "meta": {
+  "suite": "spider_subset",
+  "config": {
+   "name": "agent",
+   "description": "LangGraph-агент — schema linking, уточнение, 5 уровней проверки, самокоррекция",
+   "system": "agent",
+   "clarify": true,
+   "schema_linking": true,
+   "semantic_checks": true,
+   "explain": false,
+   "max_attempts": 3,
+   "models": {},
+   "temperatures": {}
+  },
+  "seed": 1,
+  "limit": 100,
+  "n": 100,
+  "git_sha": "7490809",
+  "run_id": "spider_subset:agent:s1:20261020194049",
+  "created_at": "2026-10-20T19:41:54+00:00",
+  "models": {
+   "guard": "gpt-4.1-mini",
+   "ambiguity": "gpt-4.1",
+   "generate_sql": "gpt-4.1"
+  },
+  "duration_s": 65.5
+ },
+ "summary": {
+  "n": 100,
+  "ex": 0.63,
+  "ex_ci95": [
+   0.53,
+   0.72
+  ],
+  "ex_relaxed": 0.75,
+  "by_difficulty": {
+   "easy": {
+    "n": 25,
+    "ex": 0.84,
+    "ex_ci95": [
+     0.68,
+     0.96
+    ],
+    "ex_relaxed": 0.92
+   },
+   "extra": {
+    "n": 25,
+    "ex": 0.4,
+    "ex_ci95": [
+     0.2,
+     0.6
+    ],
+    "ex_relaxed": 0.6
+   },
+   "hard": {
+    "n": 25,
+    "ex": 0.52,
+    "ex_ci95": [
+     0.32,
+     0.72
+    ],
+    "ex_relaxed": 0.6
+   },
+   "medium": {
+    "n": 25,
+    "ex": 0.76,
+    "ex_ci95": [
+     0.6,
+     0.92
+    ],
+    "ex_relaxed": 0.88
+   }
+  },
+  "first_attempt_ex": 0.63,
+  "self_correction_gain": 0.0,
+  "attempts_distribution": {
+   "1": 96,
+   "2": 2
+  },
+  "schema_recall": 0.9949,
+  "schema_full_recall": 0.9898,
+  "refusals": 2,
+  "gold_errors": 0,
+  "clarification_rate": 0.09,
+  "cost_usd_total": 0.7659,
+  "cost_usd_per_question": 0.00766,
+  "llm_calls_per_question": 3.16,
+  "latency_p50_s": null,
+  "latency_p95_s": null,
+  "latency_measured_on": 0
+ },
+ "cases": [
+  {
+   "id": "spider-easy-001",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT DISTINCT s.country\nFROM public.singer s\nWHERE s.age > 20\nORDER BY s.country",
+   "attempts": [
+    "SELECT DISTINCT s.country\nFROM public.singer s\nWHERE s.age > 20\nORDER BY s.country"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 3,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "singer",
+    "concert",
+    "singer_in_concert"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.895,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      396,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      2066,
+      113
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.00525
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-002",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(DISTINCT pets.pettype) AS pet_type_count\nFROM pets",
+   "attempts": [
+    "SELECT COUNT(DISTINCT pets.pettype) AS pet_type_count\nFROM pets"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "student",
+    "pets",
+    "has_pet"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.97,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      385,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1788,
+      96
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.004554
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-004",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(*) AS airline_count\nFROM public.airlines\nWHERE airlines.country = 'USA'",
+   "attempts": [
+    "SELECT COUNT(*) AS airline_count\nFROM public.airlines\nWHERE airlines.country = 'USA'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "airlines",
+    "airports",
+    "flights"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.035,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      384,
+      30
+     ],
+     "gpt-4.1-2025-04-14": [
+      1932,
+      96
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.004834
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-006",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT SUM(evaluation.bonus) AS total_bonus\nFROM public.evaluation",
+   "attempts": [
+    "SELECT SUM(evaluation.bonus) AS total_bonus\nFROM public.evaluation"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "employee",
+    "hiring",
+    "evaluation"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.476,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      388,
+      31
+     ],
+     "gpt-4.1-2025-04-14": [
+      1930,
+      103
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.004889
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-008",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(DISTINCT shop.location) AS location_count\nFROM public.shop",
+   "attempts": [
+    "SELECT COUNT(DISTINCT shop.location) AS location_count\nFROM public.shop"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "shop",
+    "employee",
+    "hiring"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.302,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      387,
+      30
+     ],
+     "gpt-4.1-2025-04-14": [
+      2350,
+      107
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005759
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-010",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(*) AS template_count\nFROM public.templates",
+   "attempts": [
+    "SELECT COUNT(*) AS template_count\nFROM public.templates"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "templates",
+    "ref_template_types",
+    "documents"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.955,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      387,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      2698,
+      84
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.006269
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-011",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT rtt.template_type_code\nFROM public.ref_template_types rtt\nLEFT JOIN public.templates t ON rtt.template_type_code = t.template_type_code\nGROUP BY rtt.template_type_code\nHAVING COUNT(t.template_id) < 3\nORDER BY rtt.template_type_code",
+   "attempts": [
+    "SELECT rtt.template_type_code\nFROM public.ref_template_types rtt\nLEFT JOIN public.templates t ON rtt.template_type_code = t.template_type_code\nGROUP BY rtt.template_type_code\nHAVING COUNT(t.template_id) < 3\nORDER BY rtt.template_type_code"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "templates",
+    "ref_template_types",
+    "documents"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.813,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      396,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      2716,
+      183
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.007101
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-012",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(*) AS total_paragraphs\nFROM public.paragraphs",
+   "attempts": [
+    "SELECT COUNT(*) AS total_paragraphs\nFROM public.paragraphs"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "paragraphs",
+    "documents",
+    "templates"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.82,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      387,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      2754,
+      87
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.00641
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-013",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.document_id\nFROM public.paragraphs p\nGROUP BY p.document_id\nHAVING COUNT(p.paragraph_id) >= 2\nORDER BY p.document_id",
+   "attempts": [
+    "SELECT p.document_id\nFROM public.paragraphs p\nGROUP BY p.document_id\nHAVING COUNT(p.paragraph_id) >= 2\nORDER BY p.document_id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 4,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "paragraphs",
+    "documents"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.851,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      391,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      1898,
+      154
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005245
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-015",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT t.name\nFROM public.teacher t\nORDER BY CAST(t.age AS integer) ASC",
+   "attempts": [
+    "SELECT t.name\nFROM public.teacher t\nORDER BY CAST(t.age AS integer) ASC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 7,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "teacher",
+    "course",
+    "course_arrange"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.905,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      389,
+      28
+     ],
+     "gpt-4.1-2025-04-14": [
+      2024,
+      122
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005224
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-016",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT t.name\nFROM public.teacher t\nWHERE t.hometown <> 'Little Lever Urban District'\nORDER BY t.name",
+   "attempts": [
+    "SELECT t.name\nFROM public.teacher t\nWHERE t.hometown <> 'Little Lever Urban District'\nORDER BY t.name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 6,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "teacher",
+    "course",
+    "course_arrange"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.835,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      395,
+      28
+     ],
+     "gpt-4.1-2025-04-14": [
+      2036,
+      110
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005155
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-021",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT m.tourney_name\nFROM public.matches m\nGROUP BY m.tourney_name\nHAVING COUNT(*) > 10\nORDER BY m.tourney_name",
+   "attempts": [
+    "SELECT m.tourney_name\nFROM public.matches m\nGROUP BY m.tourney_name\nHAVING COUNT(*) > 10\nORDER BY m.tourney_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 9,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "matches",
+    "rankings"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.038,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      389,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      2044,
+      172
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005672
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-022",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT c.course_name, c.course_description\nFROM public.courses c\nWHERE c.course_name = 'math'",
+   "attempts": [
+    "SELECT c.course_name, c.course_description\nFROM public.courses c\nWHERE c.course_name = 'math'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "courses",
+    "student_enrolment_courses",
+    "sections",
+    "semesters",
+    "degree_programs",
+    "student_enrolment"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.651,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      427,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      2694,
+      128
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.006629
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-024",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.section_name\nFROM public.sections s\nORDER BY s.section_name DESC",
+   "attempts": [
+    "SELECT s.section_name\nFROM public.sections s\nORDER BY s.section_name DESC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 15,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "sections",
+    "semesters",
+    "students",
+    "courses",
+    "departments",
+    "student_enrolment",
+    "student_enrolment_courses",
+    "degree_programs"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.025,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      429,
+      31
+     ],
+     "gpt-4.1-2025-04-14": [
+      4796,
+      94
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.010565
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-028",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(*) AS english_language_channel_count\nFROM public.tv_channel\nWHERE tv_channel.language = 'English'",
+   "attempts": [
+    "SELECT COUNT(*) AS english_language_channel_count\nFROM public.tv_channel\nWHERE tv_channel.language = 'English'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "tv_channel",
+    "tv_series",
+    "cartoon"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.204,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      385,
+      36
+     ],
+     "gpt-4.1-2025-04-14": [
+      3566,
+      110
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.008224
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-029",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT tv_series.air_date\nFROM public.tv_series\nWHERE tv_series.episode = 'A Love of a Lifetime'",
+   "attempts": [
+    "SELECT tv_series.air_date\nFROM public.tv_series\nWHERE tv_series.episode = 'A Love of a Lifetime'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "tv_series",
+    "cartoon",
+    "tv_channel"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.866,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      395,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      3584,
+      117
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.008318
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-034",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(DISTINCT area_code_state.state) AS state_count\nFROM public.area_code_state",
+   "attempts": [
+    "SELECT COUNT(DISTINCT area_code_state.state) AS state_count\nFROM public.area_code_state"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "schema",
+        "span": "states",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "from votes",
+          "description": "Count distinct states from the votes table (states that have at least one vote)."
+         },
+         {
+          "id": "a1o2",
+          "label": "from area_code_state",
+          "description": "Count distinct states from the area_code_state table (all states with area codes, regardless of voting activity)."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o2"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "votes",
+    "contestants",
+    "area_code_state"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 4.094,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      383,
+      26
+     ],
+     "gpt-4.1-2025-04-14": [
+      3626,
+      283
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 2,
+    "cost_usd": 0.009711
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-035",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT MAX(v.created) AS last_vote_created\nFROM public.votes v\nWHERE v.state = 'CA'",
+   "attempts": [
+    "SELECT MAX(v.created) AS last_vote_created\nFROM public.votes v\nWHERE v.state = 'CA'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "votes",
+    "contestants",
+    "area_code_state"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.091,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      391,
+      39
+     ],
+     "gpt-4.1-2025-04-14": [
+      1922,
+      121
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005031
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-037",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT c.continent\nFROM public.country c\nWHERE c.name = 'Anguilla'",
+   "attempts": [
+    "SELECT c.continent\nFROM public.country c\nWHERE c.name = 'Anguilla'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.224,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      384,
+      39
+     ],
+     "gpt-4.1-2025-04-14": [
+      1842,
+      123
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.004884
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-039",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(DISTINCT countrylanguage.language) AS unique_languages_count\nFROM public.countrylanguage",
+   "attempts": [
+    "SELECT COUNT(DISTINCT countrylanguage.language) AS unique_languages_count\nFROM public.countrylanguage"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.843,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      386,
+      28
+     ],
+     "gpt-4.1-2025-04-14": [
+      1846,
+      124
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.004883
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-041",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT DISTINCT cl.countrycode\nFROM public.countrylanguage cl\nWHERE cl.language <> 'English'\nORDER BY cl.countrycode",
+   "attempts": [
+    "SELECT DISTINCT cl.countrycode\nFROM public.countrylanguage cl\nWHERE cl.language <> 'English'\nORDER BY cl.countrycode"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 223,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.305,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      391,
+      28
+     ],
+     "gpt-4.1-2025-04-14": [
+      1856,
+      142
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005049
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-044",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT city.name\nFROM public.city\nWHERE city.population BETWEEN 160000 AND 900000\nORDER BY city.name",
+   "attempts": [
+    "SELECT city.name\nFROM public.city\nWHERE city.population BETWEEN 160000 AND 900000\nORDER BY city.name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1000,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "country",
+    "city",
+    "countrylanguage"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.808,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      394,
+      39
+     ],
+     "gpt-4.1-2025-04-14": [
+      1862,
+      126
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.004952
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-047",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT h.id, h.name, h.grade\nFROM public.highschooler h\nORDER BY h.grade, h.name",
+   "attempts": [
+    "SELECT h.id, h.name, h.grade\nFROM public.highschooler h\nORDER BY h.grade, h.name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 16,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "highschooler",
+    "likes",
+    "friend"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.877,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      387,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1724,
+      123
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.004646
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-048",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT MAX(CAST(dogs.age AS integer)) AS oldest_dog_age\nFROM public.dogs",
+   "attempts": [
+    "SELECT MAX(CAST(dogs.age AS integer)) AS oldest_dog_age\nFROM public.dogs"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "metric",
+        "span": "age of the oldest dog",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "age column",
+          "description": "Use the value from the 'age' column as the dog's age."
+         },
+         {
+          "id": "a1o2",
+          "label": "calculate from birthdate",
+          "description": "Calculate the age based on the current date and the 'date_of_birth' column."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o1"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "dogs",
+    "treatments"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 6.456,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      405,
+      31
+     ],
+     "gpt-4.1-2025-04-14": [
+      6686,
+      306
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 1,
+    "cost_usd": 0.016032
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-easy-050",
+   "difficulty": "easy",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(*) AS total_available_features\nFROM public.other_available_features",
+   "attempts": [
+    "SELECT COUNT(*) AS total_available_features\nFROM public.other_available_features"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "other_available_features",
+    "other_property_features",
+    "properties",
+    "ref_feature_types"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.164,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      400,
+      30
+     ],
+     "gpt-4.1-2025-04-14": [
+      3854,
+      94
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.008668
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-002",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.stuid, s.major, s.age\nFROM public.student s\nWHERE NOT EXISTS (\n    SELECT 1\n    FROM public.has_pet hp\n    JOIN public.pets p ON hp.petid = p.petid\n    WHERE hp.stuid = s.stuid AND p.pettype = 'cat'\n)\nORDER BY s.stuid",
+   "attempts": [
+    "SELECT s.stuid, s.major, s.age\nFROM public.student s\nWHERE NOT EXISTS (\n    SELECT 1\n    FROM public.has_pet hp\n    JOIN public.pets p ON hp.petid = p.petid\n    WHERE hp.stuid = s.stuid AND p.pettype = 'cat'\n)\nORDER BY s.stuid"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 33,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "student",
+    "pets",
+    "has_pet"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.891,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      398,
+      42
+     ],
+     "gpt-4.1-2025-04-14": [
+      1814,
+      210
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005534
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-003",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.fname\nFROM public.student s\nWHERE EXISTS (\n    SELECT 1\n    FROM public.has_pet hp\n    JOIN public.pets p ON hp.petid = p.petid\n    WHERE hp.stuid = s.stuid AND p.pettype = 'dog'\n)\nAND NOT EXISTS (\n    SELECT 1\n    FROM public.has_pet hp2\n    JOIN public.pets p2 ON hp2.petid = p2.petid\n    WHERE hp2.stuid = s.stuid AND p2.pettype = 'cat'\n)\nORDER BY s.fname",
+   "attempts": [
+    "SELECT s.fname\nFROM public.student s\nWHERE EXISTS (\n    SELECT 1\n    FROM public.has_pet hp\n    JOIN public.pets p ON hp.petid = p.petid\n    WHERE hp.stuid = s.stuid AND p.pettype = 'dog'\n)\nAND NOT EXISTS (\n    SELECT 1\n    FROM public.has_pet hp2\n    JOIN public.pets p2 ON hp2.petid = p2.petid\n    WHERE hp2.stuid = s.stuid AND p2.pettype = 'cat'\n)\nORDER BY s.fname"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "student",
+    "pets",
+    "has_pet"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.881,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      395,
+      42
+     ],
+     "gpt-4.1-2025-04-14": [
+      1808,
+      261
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005929
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-007",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT c.countryname\nFROM public.countries c\nJOIN public.continents ct ON c.continent = ct.contid\nJOIN public.car_makers m ON m.country = c.countryid\nWHERE ct.continent = 'europe'\nGROUP BY c.countryname\nHAVING COUNT(m.id) >= 3\nORDER BY c.countryname",
+   "attempts": [
+    "SELECT c.countryname\nFROM public.countries c\nJOIN public.continents ct ON c.continent = ct.contid\nJOIN public.car_makers m ON m.country = c.countryid\nWHERE ct.continent = 'europe'\nGROUP BY c.countryname\nHAVING COUNT(m.id) >= 3\nORDER BY c.countryname"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "countries",
+    "car_makers",
+    "cars_data",
+    "car_names",
+    "continents"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.382,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      407,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      1950,
+      206
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005757
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-008",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT cn.make, MAX(CAST(cd.horsepower AS double precision)) AS max_horsepower\nFROM public.cars_data cd\nJOIN public.car_names cn ON cd.id = cn.makeid\nWHERE cd.cylinders = 3\nGROUP BY cn.make\nORDER BY max_horsepower DESC",
+   "attempts": [
+    "SELECT cn.make, MAX(CAST(cd.horsepower AS double precision)) AS max_horsepower\nFROM public.cars_data cd\nJOIN public.car_names cn ON cd.id = cn.makeid\nWHERE cd.cylinders = 3\nGROUP BY cn.make\nORDER BY max_horsepower DESC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 4,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "countries",
+    "cars_data",
+    "car_makers",
+    "car_names",
+    "model_list"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.672,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      409,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      1932,
+      196
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005642
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-009",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT cd.id AS make_id, cn.model AS model_name\nFROM public.cars_data cd\nJOIN public.car_names cn ON cd.id = cn.makeid\nWHERE cd.cylinders < 4\n  AND cd.horsepower ~ '^\\\\d+$'\n  AND CAST(cd.horsepower AS integer) > (\n    SELECT MIN(CAST(horsepower AS integer))\n    FROM public.cars_data\n    WHERE horsepower ~ '^\\\\d+$'\n  )\nORDER BY cd.id",
+   "attempts": [
+    "SELECT cd.id AS make_id, cn.model AS model_name\nFROM public.cars_data cd\nJOIN public.car_names cn ON cd.id = cn.makeid\nWHERE cd.cylinders < 4\n  AND cd.horsepower <> (\n    SELECT MIN(CAST(NULLIF(TRIM(horsepower), '') AS integer))\n    FROM public.cars_data\n    WHERE horsepower ~ '^\\\\d+$'\n  )\n  AND cd.horsepower ~ '^\\\\d+$'",
+    "SELECT cd.id AS make_id, cn.model AS model_name\nFROM public.cars_data cd\nJOIN public.car_names cn ON cd.id = cn.makeid\nWHERE cd.cylinders < 4\n  AND cd.horsepower ~ '^\\\\d+$'\n  AND CAST(cd.horsepower AS integer) > (\n    SELECT MIN(CAST(horsepower AS integer))\n    FROM public.cars_data\n    WHERE horsepower ~ '^\\\\d+$'\n  )\nORDER BY cd.id"
+   ],
+   "n_attempts": 2,
+   "executed": true,
+   "row_count": 0,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "countries",
+    "cars_data",
+    "car_makers",
+    "car_names",
+    "model_list"
+   ],
+   "validation_failures": [
+    {
+     "level": 4,
+     "message": "Ошибка планировщика: operator does not exist: text <> integer\nHINT:  No operator matches the given name and argument types. You might need to add explicit type casts."
+    }
+   ],
+   "answer": "",
+   "latency_s": 0.774,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      420,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      2940,
+      420
+     ]
+    },
+    "calls": 4,
+    "cached_calls": 4,
+    "cost_usd": 0.009464
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-012",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT airport_code\nFROM (\n  SELECT a.airportcode AS airport_code, \n         COUNT(f.flightno) AS total_flights\n  FROM public.airports a\n  LEFT JOIN public.flights f ON a.airportcode = f.sourceairport OR a.airportcode = f.destairport\n  GROUP BY a.airportcode\n  ORDER BY total_flights DESC\n  LIMIT 1\n) sub",
+   "attempts": [
+    "SELECT airport_code\nFROM (\n  SELECT a.airportcode AS airport_code, \n         COUNT(f.flightno) AS total_flights\n  FROM public.airports a\n  LEFT JOIN public.flights f ON a.airportcode = f.sourceairport OR a.airportcode = f.destairport\n  GROUP BY a.airportcode\n  ORDER BY total_flights DESC\n  LIMIT 1\n) sub"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "airlines",
+    "airports",
+    "flights"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.919,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      389,
+      39
+     ],
+     "gpt-4.1-2025-04-14": [
+      1942,
+      241
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.00603
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-014",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT a.airline\nFROM public.airlines a\nJOIN public.flights f ON a.uid = f.airline\nWHERE f.sourceairport IN ('APG', 'CVO')\nGROUP BY a.airline\nHAVING COUNT(DISTINCT f.sourceairport) = 2\nORDER BY a.airline",
+   "attempts": [
+    "SELECT a.airline\nFROM public.airlines a\nJOIN public.flights f ON a.uid = f.airline\nWHERE f.sourceairport IN ('APG', 'CVO')\nGROUP BY a.airline\nHAVING COUNT(DISTINCT f.sourceairport) = 2\nORDER BY a.airline"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 0,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "airlines",
+    "airports",
+    "flights"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.077,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      393,
+      43
+     ],
+     "gpt-4.1-2025-04-14": [
+      1950,
+      213
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.00583
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-018",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT d.degree_program_id, d.degree_summary_name, COUNT(se.student_enrolment_id) AS student_count\nFROM public.degree_programs d\nLEFT JOIN public.student_enrolment se ON d.degree_program_id = se.degree_program_id\nGROUP BY d.degree_program_id, d.degree_summary_name\nORDER BY student_count DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT d.degree_program_id, d.degree_summary_name, COUNT(se.student_enrolment_id) AS student_count\nFROM public.degree_programs d\nLEFT JOIN public.student_enrolment se ON d.degree_program_id = se.degree_program_id\nGROUP BY d.degree_program_id, d.degree_summary_name\nORDER BY student_count DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "degree_programs",
+    "student_enrolment",
+    "students",
+    "student_enrolment_courses",
+    "transcript_contents"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.343,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      435,
+      41
+     ],
+     "gpt-4.1-2025-04-14": [
+      3818,
+      185
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.009356
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-019",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.student_id, s.first_name, s.middle_name, s.last_name, COUNT(se.student_enrolment_id) AS enrolment_count\nFROM public.students s\nJOIN public.student_enrolment se ON s.student_id = se.student_id\nGROUP BY s.student_id, s.first_name, s.middle_name, s.last_name\nORDER BY enrolment_count DESC, s.student_id\nLIMIT 1",
+   "attempts": [
+    "SELECT s.student_id, s.first_name, s.middle_name, s.last_name, COUNT(se.student_enrolment_id) AS enrolment_count\nFROM public.students s\nJOIN public.student_enrolment se ON s.student_id = se.student_id\nGROUP BY s.student_id, s.first_name, s.middle_name, s.last_name\nORDER BY enrolment_count DESC, s.student_id\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "students",
+    "student_enrolment",
+    "student_enrolment_courses",
+    "degree_programs",
+    "semesters"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.914,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      451,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      4066,
+      237
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.010269
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-020",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT a.address_id, a.line_1, a.line_2\nFROM public.addresses a\nWHERE a.address_id = (\n    SELECT s.current_address_id\n    FROM public.students s\n    GROUP BY s.current_address_id\n    ORDER BY COUNT(*) DESC\n    LIMIT 1\n)",
+   "attempts": [
+    "SELECT a.address_id, a.line_1, a.line_2\nFROM public.addresses a\nWHERE a.address_id = (\n    SELECT s.current_address_id\n    FROM public.students s\n    GROUP BY s.current_address_id\n    ORDER BY COUNT(*) DESC\n    LIMIT 1\n)"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "schema",
+        "span": "address with the most students",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "current address",
+          "description": "Count students by their current_address_id field."
+         },
+         {
+          "id": "a1o2",
+          "label": "permanent address",
+          "description": "Count students by their permanent_address_id field."
+         },
+         {
+          "id": "a1o3",
+          "label": "either address",
+          "description": "Count students by both current_address_id and permanent_address_id (i.e., for each address, count how many students have it as either current or permanent address)."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o1"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "addresses",
+    "students",
+    "student_enrolment",
+    "student_enrolment_courses",
+    "transcript_contents"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.401,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      438,
+      40
+     ],
+     "gpt-4.1-2025-04-14": [
+      7760,
+      461
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 4,
+    "cost_usd": 0.019447
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-023",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT c.continent, COUNT(DISTINCT cl.language) AS language_count\nFROM public.country c\nJOIN public.countrylanguage cl ON c.code = cl.countrycode\nGROUP BY c.continent\nORDER BY language_count DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT c.continent, COUNT(DISTINCT cl.language) AS language_count\nFROM public.country c\nJOIN public.countrylanguage cl ON c.code = cl.countrycode\nGROUP BY c.continent\nORDER BY language_count DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.392,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      383,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      1840,
+      213
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005588
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-024",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT c.name AS country_name\nFROM public.country c\nJOIN public.countrylanguage cl1 ON c.code = cl1.countrycode AND cl1.language = 'English'\nJOIN public.countrylanguage cl2 ON c.code = cl2.countrycode AND cl2.language = 'French'\nORDER BY c.name",
+   "attempts": [
+    "SELECT c.name AS country_name\nFROM public.country c\nJOIN public.countrylanguage cl1 ON c.code = cl1.countrycode AND cl1.language = 'English'\nJOIN public.countrylanguage cl2 ON c.code = cl2.countrycode AND cl2.language = 'French'\nORDER BY c.name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 6,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.681,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      388,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1850,
+      201
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005519
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-025",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT c.name AS country_name\nFROM public.country c\nJOIN public.countrylanguage cl_en ON c.code = cl_en.countrycode AND cl_en.language = 'English' AND cl_en.isofficial = 'T'\nJOIN public.countrylanguage cl_fr ON c.code = cl_fr.countrycode AND cl_fr.language = 'French' AND cl_fr.isofficial = 'T'\nORDER BY c.name",
+   "attempts": [
+    "SELECT c.name AS country_name\nFROM public.country c\nJOIN public.countrylanguage cl_en ON c.code = cl_en.countrycode AND cl_en.language = 'English' AND cl_en.isofficial = 'T'\nJOIN public.countrylanguage cl_fr ON c.code = cl_fr.countrycode AND cl_fr.language = 'French' AND cl_fr.isofficial = 'T'\nORDER BY c.name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 3,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.878,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      391,
+      31
+     ],
+     "gpt-4.1-2025-04-14": [
+      1856,
+      201
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005526
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-026",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT c.name AS country_name\nFROM public.country c\nJOIN public.countrylanguage cl_en ON c.code = cl_en.countrycode AND cl_en.language = 'English' AND cl_en.isofficial = 'T'\nJOIN public.countrylanguage cl_fr ON c.code = cl_fr.countrycode AND cl_fr.language = 'French' AND cl_fr.isofficial = 'T'\nORDER BY c.name",
+   "attempts": [
+    "SELECT c.name AS country_name\nFROM public.country c\nJOIN public.countrylanguage cl_en ON c.code = cl_en.countrycode AND cl_en.language = 'English' AND cl_en.isofficial = 'T'\nJOIN public.countrylanguage cl_fr ON c.code = cl_fr.countrycode AND cl_fr.language = 'French' AND cl_fr.isofficial = 'T'\nORDER BY c.name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 3,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.46,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      389,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      1852,
+      217
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005647
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-027",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT cl.language, COUNT(*) AS official_country_count\nFROM countrylanguage cl\nJOIN country c ON cl.countrycode = c.code\nWHERE c.continent = 'Asia' AND cl.isofficial = 'T'\nGROUP BY cl.language\nORDER BY official_country_count DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT cl.language, COUNT(*) AS official_country_count\nFROM countrylanguage cl\nJOIN country c ON cl.countrycode = c.code\nWHERE c.continent = 'Asia' AND cl.isofficial = 'T'\nGROUP BY cl.language\nORDER BY official_country_count DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "metric",
+        "span": "most popular",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "by speakers",
+          "description": "The language with the highest total number of speakers (weighted by country population and language percentage)."
+         },
+         {
+          "id": "a1o2",
+          "label": "by official status",
+          "description": "The language that is official in the most Asian countries."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o2"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 6.012,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      387,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      3646,
+      359
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 1,
+    "cost_usd": 0.010378
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-028",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": null,
+   "attempts": [],
+   "n_attempts": 0,
+   "executed": false,
+   "row_count": null,
+   "error": {
+    "code": "out_of_scope",
+    "message": "Я отвечаю только на вопросы о данных подключённой базы."
+   },
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.005,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      391,
+      31
+     ]
+    },
+    "calls": 1,
+    "cached_calls": 1,
+    "cost_usd": 0.000206
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false
+  },
+  {
+   "id": "spider-extra-030",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT cty.name AS city_name, cty.population, ctry.name AS country_name\nFROM public.city cty\nJOIN public.countrylanguage cl ON cty.countrycode = cl.countrycode\nJOIN public.country ctry ON cty.countrycode = ctry.code\nWHERE cl.language = 'English'\nORDER BY cty.population DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT cty.name AS city_name, cty.population, ctry.name AS country_name\nFROM public.city cty\nJOIN public.countrylanguage cl ON cty.countrycode = cl.countrycode\nJOIN public.country ctry ON cty.countrycode = ctry.code\nWHERE cl.language = 'English'\nORDER BY cty.population DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "schema",
+        "span": "city that speaks English",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "Official language only",
+          "description": "Only consider cities in countries where English is an official language."
+         },
+         {
+          "id": "a1o2",
+          "label": "Any presence of English",
+          "description": "Consider cities in countries where English is spoken by any percentage of the population, regardless of official status."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o2"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 4.796,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      386,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      3610,
+      395
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 2,
+    "cost_usd": 0.010594
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-031",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(avg(c.lifeexpectancy), 2) AS avg_life_expectancy\nFROM public.country c\nWHERE c.code NOT IN (\n    SELECT cl.countrycode\n    FROM public.countrylanguage cl\n    WHERE cl.language = 'English' AND cl.isofficial = 'T'\n) AND c.lifeexpectancy IS NOT NULL",
+   "attempts": [
+    "SELECT round(avg(c.lifeexpectancy), 2) AS avg_life_expectancy\nFROM public.country c\nWHERE c.code NOT IN (\n    SELECT cl.countrycode\n    FROM public.countrylanguage cl\n    WHERE cl.language = 'English' AND cl.isofficial = 'T'\n) AND c.lifeexpectancy IS NOT NULL"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.676,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      392,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      1858,
+      215
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005654
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true,
+   "pred_error": "UndefinedFunctionError: function round(double precision, integer) does not exist\nHINT:  No function matches the given name and argument types. You might need to add explicit type casts."
+  },
+  {
+   "id": "spider-extra-038",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.professional_id, p.last_name, p.cell_number\nFROM public.professionals p\nLEFT JOIN (\n    SELECT t.professional_id, COUNT(*) AS treatment_count\n    FROM public.treatments t\n    GROUP BY t.professional_id\n) tc ON p.professional_id = tc.professional_id\nWHERE p.state = 'Indiana' OR COALESCE(tc.treatment_count, 0) > 2\nORDER BY p.professional_id",
+   "attempts": [
+    "SELECT p.professional_id, p.last_name, p.cell_number\nFROM public.professionals p\nLEFT JOIN (\n    SELECT t.professional_id, COUNT(*) AS treatment_count\n    FROM public.treatments t\n    GROUP BY t.professional_id\n) tc ON p.professional_id = tc.professional_id\nWHERE p.state = 'Indiana' OR COALESCE(tc.treatment_count, 0) > 2\nORDER BY p.professional_id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 3,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "professionals",
+    "treatments",
+    "owners",
+    "treatment_types",
+    "dogs"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.854,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      423,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      7594,
+      264
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.017525
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-042",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT o.owner_id, o.zip_code\nFROM public.owners o\nJOIN public.dogs d ON o.owner_id = d.owner_id\nJOIN public.treatments t ON d.dog_id = t.dog_id\nGROUP BY o.owner_id, o.zip_code\nORDER BY SUM(t.cost_of_treatment) DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT o.owner_id, o.zip_code\nFROM public.owners o\nJOIN public.dogs d ON o.owner_id = d.owner_id\nJOIN public.treatments t ON d.dog_id = t.dog_id\nGROUP BY o.owner_id, o.zip_code\nORDER BY SUM(t.cost_of_treatment) DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "owners",
+    "dogs",
+    "professionals",
+    "treatments"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 4.143,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      419,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      7464,
+      197
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.016731
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-044",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT DISTINCT p.first_name, p.last_name\nFROM public.treatments t\nJOIN public.professionals p ON t.professional_id = p.professional_id\nWHERE t.cost_of_treatment < (\n    SELECT AVG(cost_of_treatment) FROM public.treatments\n)\nORDER BY p.last_name, p.first_name",
+   "attempts": [
+    "SELECT DISTINCT p.first_name, p.last_name\nFROM public.treatments t\nJOIN public.professionals p ON t.professional_id = p.professional_id\nWHERE t.cost_of_treatment < (\n    SELECT AVG(cost_of_treatment) FROM public.treatments\n)\nORDER BY p.last_name, p.first_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 5,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "professionals",
+    "treatments",
+    "treatment_types",
+    "owners",
+    "dogs"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.924,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      418,
+      30
+     ],
+     "gpt-4.1-2025-04-14": [
+      7584,
+      197
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.016959
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-045",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "WITH breed_counts AS (\n  SELECT d.breed_code, COUNT(*) AS breed_count\n  FROM public.dogs d\n  GROUP BY d.breed_code\n),\nrarest_breed AS (\n  SELECT bc.breed_code\n  FROM breed_counts bc\n  WHERE bc.breed_count = (\n    SELECT MIN(breed_count) FROM breed_counts\n  )\n)\nSELECT d.name AS dog_name, t.date_of_treatment\nFROM public.dogs d\nJOIN rarest_breed rb ON d.breed_code = rb.breed_code\nLEFT JOIN public.treatments t ON d.dog_id = t.dog_id\nORDER BY d.name, t.date_of_treatment",
+   "attempts": [
+    "WITH breed_counts AS (\n  SELECT d.breed_code, COUNT(*) AS breed_count\n  FROM public.dogs d\n  GROUP BY d.breed_code\n),\nrarest_breed AS (\n  SELECT bc.breed_code\n  FROM breed_counts bc\n  WHERE bc.breed_count = (\n    SELECT MIN(breed_count) FROM breed_counts\n  )\n)\nSELECT d.name AS dog_name, t.date_of_treatment\nFROM public.dogs d\nJOIN rarest_breed rb ON d.breed_code = rb.breed_code\nLEFT JOIN public.treatments t ON d.dog_id = t.dog_id\nORDER BY d.name, t.date_of_treatment"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 12,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "dogs",
+    "treatments",
+    "breeds",
+    "treatment_types"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.726,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      412,
+      39
+     ],
+     "gpt-4.1-2025-04-14": [
+      4200,
+      297
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.011003
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-047",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT o.last_name AS owner_last_name\nFROM public.dogs d\nJOIN public.owners o ON d.owner_id = o.owner_id\nWHERE CAST(d.age AS integer) = (SELECT MIN(CAST(age AS integer)) FROM public.dogs)\nLIMIT 1",
+   "attempts": [
+    "SELECT o.last_name AS owner_last_name\nFROM public.dogs d\nJOIN public.owners o ON d.owner_id = o.owner_id\nWHERE d.age = (SELECT MIN(CAST(age AS integer)) FROM public.dogs)\nLIMIT 1",
+    "SELECT o.last_name AS owner_last_name\nFROM public.dogs d\nJOIN public.owners o ON d.owner_id = o.owner_id\nWHERE CAST(d.age AS integer) = (SELECT MIN(CAST(age AS integer)) FROM public.dogs)\nLIMIT 1"
+   ],
+   "n_attempts": 2,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "dogs",
+    "owners",
+    "professionals",
+    "treatments"
+   ],
+   "validation_failures": [
+    {
+     "level": 4,
+     "message": "Ошибка планировщика: operator does not exist: text = integer\nHINT:  No operator matches the given name and argument types. You might need to add explicit type casts."
+    }
+   ],
+   "answer": "",
+   "latency_s": 5.678,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      410,
+      28
+     ],
+     "gpt-4.1-2025-04-14": [
+      11132,
+      314
+     ]
+    },
+    "calls": 4,
+    "cached_calls": 1,
+    "cost_usd": 0.024985
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-048",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(*) AS dogs_without_treatment\nFROM public.dogs d\nLEFT JOIN public.treatments t ON d.dog_id = t.dog_id\nWHERE t.treatment_id IS NULL",
+   "attempts": [
+    "SELECT COUNT(*) AS dogs_without_treatment\nFROM public.dogs d\nLEFT JOIN public.treatments t ON d.dog_id = t.dog_id\nWHERE t.treatment_id IS NULL"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "treatments",
+    "dogs",
+    "treatment_types"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.978,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      406,
+      36
+     ],
+     "gpt-4.1-2025-04-14": [
+      4068,
+      161
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.009644
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-extra-050",
+   "difficulty": "extra",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(*) AS professionals_without_treatments\nFROM public.professionals p\nLEFT JOIN public.treatments t ON p.professional_id = t.professional_id\nWHERE t.treatment_id IS NULL",
+   "attempts": [
+    "SELECT COUNT(*) AS professionals_without_treatments\nFROM public.professionals p\nLEFT JOIN public.treatments t ON p.professional_id = t.professional_id\nWHERE t.treatment_id IS NULL"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "professionals",
+    "dogs",
+    "treatments"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.944,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      408,
+      42
+     ],
+     "gpt-4.1-2025-04-14": [
+      5844,
+      141
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.013046
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-001",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.song_name\nFROM public.singer s\nWHERE s.age > (SELECT AVG(age) FROM public.singer)\nORDER BY s.song_name",
+   "attempts": [
+    "SELECT s.song_name\nFROM public.singer s\nWHERE s.age > (SELECT AVG(age) FROM public.singer)\nORDER BY s.song_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 3,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "singer",
+    "concert",
+    "singer_in_concert",
+    "stadium"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.57,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      393,
+      32
+     ],
+     "gpt-4.1-2025-04-14": [
+      2350,
+      148
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.006092
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-002",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": null,
+   "attempts": [],
+   "n_attempts": 0,
+   "executed": false,
+   "row_count": null,
+   "error": {
+    "code": "out_of_scope",
+    "message": "Я отвечаю только на вопросы о данных подключённой базы."
+   },
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.007,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      396,
+      29
+     ]
+    },
+    "calls": 1,
+    "cached_calls": 1,
+    "cost_usd": 0.000205
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false
+  },
+  {
+   "id": "spider-hard-004",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.lname AS last_name\nFROM public.student s\nJOIN public.has_pet hp ON s.stuid = hp.stuid\nJOIN public.pets p ON hp.petid = p.petid\nWHERE p.pettype = 'cat' AND p.pet_age = 3",
+   "attempts": [
+    "SELECT s.lname AS last_name\nFROM public.student s\nJOIN public.has_pet hp ON s.stuid = hp.stuid\nJOIN public.pets p ON hp.petid = p.petid\nWHERE p.pettype = 'cat' AND p.pet_age = 3"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "student",
+    "pets",
+    "has_pet"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.265,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      395,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      1808,
+      188
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005331
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-007",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(DISTINCT ml.modelid) AS model_count\nFROM public.model_list ml\nJOIN public.car_makers cm ON ml.maker = cm.id\nJOIN public.countries c ON cm.country = c.countryid\nWHERE c.countryname = 'united states'",
+   "attempts": [
+    "SELECT COUNT(DISTINCT ml.modelid) AS model_count\nFROM public.model_list ml\nJOIN public.car_makers cm ON ml.maker = cm.id\nJOIN public.countries c ON cm.country = c.countryid\nWHERE c.countryname = 'united states'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "value",
+        "span": "United States",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "usa_country_only",
+          "description": "Count only models where the country is exactly 'united states' in countries.countryname."
+         },
+         {
+          "id": "a1o2",
+          "label": "usa_and_territories",
+          "description": "Include models from the United States and its territories if present in the data (e.g., Puerto Rico, Guam)."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o1"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "countries",
+    "cars_data",
+    "car_makers",
+    "model_list",
+    "car_names"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.222,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      406,
+      41
+     ],
+     "gpt-4.1-2025-04-14": [
+      3731,
+      401
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 4,
+    "cost_usd": 0.010898
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-008",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT cn.model, COUNT(*) AS versions_count\nFROM public.car_names cn\nGROUP BY cn.model\nORDER BY versions_count DESC, cn.model ASC\nLIMIT 1",
+   "attempts": [
+    "SELECT cn.model, COUNT(*) AS versions_count\nFROM public.car_names cn\nGROUP BY cn.model\nORDER BY versions_count DESC, cn.model ASC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "schema",
+        "span": "model has the most different versions",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "model name in car_names",
+          "description": "Count the number of distinct 'make' values for each 'model' in car_names; the model with the most different 'make' values is the answer."
+         },
+         {
+          "id": "a1o2",
+          "label": "model in model_list",
+          "description": "Count the number of distinct entries in car_names for each model in model_list (joining model_list to car_names via model name); the model with the most different versions is the answer."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "free_text": "Посчитать количество строк в car_names для каждого model и выбрать тот, у которого больше всего строк."
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "countries",
+    "cars_data",
+    "car_makers",
+    "car_names",
+    "model_list"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 4.943,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      400,
+      27
+     ],
+     "gpt-4.1-2025-04-14": [
+      3775,
+      409
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 2,
+    "cost_usd": 0.011025
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-011",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT a.airportcode, a.airportname, a.city\nFROM public.airports a\nLEFT JOIN public.flights f_depart ON a.airportcode = f_depart.sourceairport\nLEFT JOIN public.flights f_arrive ON a.airportcode = f_arrive.destairport\nWHERE f_depart.flightno IS NULL AND f_arrive.flightno IS NULL\nORDER BY a.airportcode",
+   "attempts": [
+    "SELECT a.airportcode, a.airportname, a.city\nFROM public.airports a\nLEFT JOIN public.flights f_depart ON a.airportcode = f_depart.sourceairport\nLEFT JOIN public.flights f_arrive ON a.airportcode = f_arrive.destairport\nWHERE f_depart.flightno IS NULL AND f_arrive.flightno IS NULL\nORDER BY a.airportcode"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 100,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "airlines",
+    "airports",
+    "flights"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.174,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      385,
+      41
+     ],
+     "gpt-4.1-2025-04-14": [
+      1934,
+      189
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.0056
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-013",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.district\nFROM public.shop s\nGROUP BY s.district\nHAVING SUM(CASE WHEN s.number_products < 3000 THEN 1 ELSE 0 END) > 0\n   AND SUM(CASE WHEN s.number_products > 10000 THEN 1 ELSE 0 END) > 0",
+   "attempts": [
+    "SELECT s.district\nFROM public.shop s\nGROUP BY s.district\nHAVING SUM(CASE WHEN s.number_products < 3000 THEN 1 ELSE 0 END) > 0\n   AND SUM(CASE WHEN s.number_products > 10000 THEN 1 ELSE 0 END) > 0"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 0,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "shop",
+    "employee",
+    "hiring"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.78,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      401,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      2378,
+      201
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.006577
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-015",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT d.document_id\nFROM public.documents d\nJOIN public.paragraphs p1 ON d.document_id = p1.document_id AND p1.paragraph_text = 'Brazil'\nJOIN public.paragraphs p2 ON d.document_id = p2.document_id AND p2.paragraph_text = 'Ireland'\nORDER BY d.document_id",
+   "attempts": [
+    "SELECT d.document_id\nFROM public.documents d\nJOIN public.paragraphs p1 ON d.document_id = p1.document_id AND p1.paragraph_text = 'Brazil'\nJOIN public.paragraphs p2 ON d.document_id = p2.document_id AND p2.paragraph_text = 'Ireland'\nORDER BY d.document_id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "paragraphs",
+    "documents"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.136,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      400,
+      43
+     ],
+     "gpt-4.1-2025-04-14": [
+      1914,
+      192
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005593
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-017",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT t.name\nFROM public.teacher t\nLEFT JOIN public.course_arrange ca ON t.teacher_id = ca.teacher_id\nWHERE ca.teacher_id IS NULL\nORDER BY t.name",
+   "attempts": [
+    "SELECT t.name\nFROM public.teacher t\nLEFT JOIN public.course_arrange ca ON t.teacher_id = ca.teacher_id\nWHERE ca.teacher_id IS NULL\nORDER BY t.name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "teacher",
+    "course",
+    "course_arrange"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.342,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      391,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      2028,
+      171
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.00564
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-019",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT m.name AS museum_name\nFROM public.museum m\nLEFT JOIN public.visit v ON m.museum_id = v.museum_id\nWHERE v.museum_id IS NULL",
+   "attempts": [
+    "SELECT m.name AS museum_name\nFROM public.museum m\nLEFT JOIN public.visit v ON m.museum_id = v.museum_id\nWHERE v.museum_id IS NULL"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 4,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "museum",
+    "visitor",
+    "visit"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.021,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      388,
+      30
+     ],
+     "gpt-4.1-2025-04-14": [
+      1904,
+      154
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005243
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-020",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.first_name, p.country_code\nFROM players p\nJOIN (\n    SELECT r.player_id, SUM(r.tours) AS total_tours\n    FROM rankings r\n    GROUP BY r.player_id\n    ORDER BY total_tours DESC\n    LIMIT 1\n) t ON p.player_id = t.player_id",
+   "attempts": [
+    "SELECT p.first_name, p.country_code\nFROM players p\nJOIN (\n    SELECT r.player_id, SUM(r.tours) AS total_tours\n    FROM rankings r\n    GROUP BY r.player_id\n    ORDER BY total_tours DESC\n    LIMIT 1\n) t ON p.player_id = t.player_id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "matches",
+    "players",
+    "rankings"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.963,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      393,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      2170,
+      192
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.006086
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-024",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.semester_name\nFROM public.semesters s\nLEFT JOIN public.student_enrolment se ON s.semester_id = se.semester_id\nWHERE se.student_enrolment_id IS NULL\nORDER BY s.semester_name",
+   "attempts": [
+    "SELECT s.semester_name\nFROM public.semesters s\nLEFT JOIN public.student_enrolment se ON s.semester_id = se.semester_id\nWHERE se.student_enrolment_id IS NULL\nORDER BY s.semester_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 6,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "semesters",
+    "student_enrolment",
+    "student_enrolment_courses",
+    "students",
+    "transcript_contents"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.133,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      431,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      3878,
+      177
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.0094
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-025",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "WITH course_transcript_counts AS (\n  SELECT \n    sec.course_id, \n    COUNT(DISTINCT tc.transcript_id) AS transcript_count\n  FROM public.student_enrolment_courses sec\n  JOIN public.transcript_contents tc ON sec.student_course_id = tc.student_course_id\n  GROUP BY sec.course_id\n), max_count AS (\n  SELECT MAX(transcript_count) AS max_transcript_count FROM course_transcript_counts\n)\nSELECT \n  ctc.course_id, \n  ctc.transcript_count AS max_transcript_count\nFROM course_transcript_counts ctc\nJOIN max_count mc ON ctc.transcript_count = mc.max_transcript_count\nORDER BY ctc.course_id",
+   "attempts": [
+    "WITH course_transcript_counts AS (\n  SELECT \n    sec.course_id, \n    COUNT(DISTINCT tc.transcript_id) AS transcript_count\n  FROM public.student_enrolment_courses sec\n  JOIN public.transcript_contents tc ON sec.student_course_id = tc.student_course_id\n  GROUP BY sec.course_id\n), max_count AS (\n  SELECT MAX(transcript_count) AS max_transcript_count FROM course_transcript_counts\n)\nSELECT \n  ctc.course_id, \n  ctc.transcript_count AS max_transcript_count\nFROM course_transcript_counts ctc\nJOIN max_count mc ON ctc.transcript_count = mc.max_transcript_count\nORDER BY ctc.course_id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "metric",
+        "span": "that course's enrollment id",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "student_enrolment_id",
+          "description": "Return the student_enrolment_id associated with the course occurrence(s) with the maximum transcript count."
+         },
+         {
+          "id": "a1o2",
+          "label": "course_id",
+          "description": "Return the course_id itself, as the unique identifier for the course with the maximum transcript count."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o2"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "transcripts",
+    "courses",
+    "student_enrolment",
+    "student_enrolment_courses",
+    "transcript_contents"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 7.151,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      441,
+      30
+     ],
+     "gpt-4.1-2025-04-14": [
+      4425,
+      477
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 1,
+    "cost_usd": 0.01289
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-028",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT language, COUNT(*) AS channel_count\nFROM public.tv_channel\nGROUP BY language\nHAVING COUNT(*) = (\n    SELECT MIN(cnt) FROM (\n        SELECT COUNT(*) AS cnt\n        FROM public.tv_channel\n        GROUP BY language\n    ) sub\n)\nORDER BY language",
+   "attempts": [
+    "SELECT language, COUNT(*) AS channel_count\nFROM public.tv_channel\nGROUP BY language\nHAVING COUNT(*) = (\n    SELECT MIN(cnt) FROM (\n        SELECT COUNT(*) AS cnt\n        FROM public.tv_channel\n        GROUP BY language\n    ) sub\n)\nORDER BY language"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "tv_channel",
+    "tv_series",
+    "cartoon"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.799,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      396,
+      36
+     ],
+     "gpt-4.1-2025-04-14": [
+      3588,
+      207
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.009048
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-030",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT pp.money_rank\nFROM public.poker_player pp\nJOIN public.people p ON pp.people_id = p.people_id\nORDER BY p.height DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT pp.money_rank\nFROM public.poker_player pp\nJOIN public.people p ON pp.people_id = p.people_id\nORDER BY p.height DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "people",
+    "poker_player"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.701,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      383,
+      31
+     ],
+     "gpt-4.1-2025-04-14": [
+      1884,
+      160
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005251
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-033",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT DISTINCT c.region\nFROM public.countrylanguage cl\nJOIN public.country c ON cl.countrycode = c.code\nWHERE cl.language IN ('English', 'Dutch')\nORDER BY c.region",
+   "attempts": [
+    "SELECT DISTINCT c.region\nFROM public.countrylanguage cl\nJOIN public.country c ON cl.countrycode = c.code\nWHERE cl.language IN ('English', 'Dutch')\nORDER BY c.region"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 20,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.725,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      386,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1846,
+      179
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005338
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-036",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT c.code\nFROM public.country c\nWHERE NOT EXISTS (\n  SELECT 1\n  FROM public.countrylanguage cl\n  WHERE cl.countrycode = c.code AND cl.language = 'English'\n)\nORDER BY c.code",
+   "attempts": [
+    "SELECT c.code\nFROM public.country c\nWHERE NOT EXISTS (\n  SELECT 1\n  FROM public.countrylanguage cl\n  WHERE cl.countrycode = c.code AND cl.language = 'English'\n)\nORDER BY c.code"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 179,
+   "error": null,
+   "clarifications": [
+    {
+     "request": {
+      "question": "Уточните, пожалуйста, как понимать вопрос:",
+      "ambiguities": [
+       {
+        "id": "a1",
+        "type": "metric",
+        "span": "do not speak English",
+        "options": [
+         {
+          "id": "a1o1",
+          "label": "No official English",
+          "description": "Countries where English is not an official language."
+         },
+         {
+          "id": "a1o2",
+          "label": "No English at all",
+          "description": "Countries where English is not spoken at all (officially or unofficially)."
+         }
+        ]
+       }
+      ]
+     },
+     "answers": [
+      {
+       "ambiguity_id": "a1",
+       "option_id": "a1o2"
+      }
+     ]
+    }
+   ],
+   "asked_clarification": true,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 6.498,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      389,
+      36
+     ],
+     "gpt-4.1-2025-04-14": [
+      3596,
+      358
+     ]
+    },
+    "calls": 5,
+    "cached_calls": 1,
+    "cost_usd": 0.010269
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-037",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT c.code\nFROM public.country c\nWHERE c.code NOT IN (\n    SELECT cl.countrycode\n    FROM public.countrylanguage cl\n    WHERE cl.language = 'English'\n)",
+   "attempts": [
+    "SELECT c.code\nFROM public.country c\nWHERE c.code NOT IN (\n    SELECT cl.countrycode\n    FROM public.countrylanguage cl\n    WHERE cl.language = 'English'\n)"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 179,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.826,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      388,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      1850,
+      156
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005164
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-038",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT c.code\nFROM public.country c\nWHERE c.governmentform <> 'Republic'\n  AND NOT EXISTS (\n    SELECT 1\n    FROM public.countrylanguage cl\n    WHERE cl.countrycode = c.code AND cl.language = 'English'\n  )\nORDER BY c.code",
+   "attempts": [
+    "SELECT c.code\nFROM public.country c\nWHERE c.governmentform <> 'Republic'\n  AND NOT EXISTS (\n    SELECT 1\n    FROM public.countrylanguage cl\n    WHERE cl.countrycode = c.code AND cl.language = 'English'\n  )\nORDER BY c.code"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 69,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "country",
+    "countrylanguage",
+    "city"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.764,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      396,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1866,
+      193
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.00549
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-042",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT h.name AS friend_name\nFROM public.highschooler h\nJOIN public.friend f ON h.id = f.friend_id\nJOIN public.highschooler k ON k.id = f.student_id\nWHERE k.name = 'Kyle'\nUNION\nSELECT h2.name AS friend_name\nFROM public.highschooler h2\nJOIN public.friend f2 ON h2.id = f2.student_id\nJOIN public.highschooler k2 ON k2.id = f2.friend_id\nWHERE k2.name = 'Kyle'\nORDER BY friend_name",
+   "attempts": [
+    "SELECT h.name AS friend_name\nFROM public.highschooler h\nJOIN public.friend f ON h.id = f.friend_id\nJOIN public.highschooler k ON k.id = f.student_id\nWHERE k.name = 'Kyle'\nUNION\nSELECT h2.name AS friend_name\nFROM public.highschooler h2\nJOIN public.friend f2 ON h2.id = f2.student_id\nJOIN public.highschooler k2 ON k2.id = f2.friend_id\nWHERE k2.name = 'Kyle'\nORDER BY friend_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 3,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "highschooler",
+    "friend",
+    "likes"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.696,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      391,
+      36
+     ],
+     "gpt-4.1-2025-04-14": [
+      1734,
+      255
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005722
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-043",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT h.id\nFROM public.highschooler h\nLEFT JOIN public.friend f ON h.id = f.student_id OR h.id = f.friend_id\nWHERE f.student_id IS NULL",
+   "attempts": [
+    "SELECT h.id\nFROM public.highschooler h\nLEFT JOIN public.friend f ON h.id = f.student_id OR h.id = f.friend_id\nWHERE f.student_id IS NULL"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 0,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "highschooler",
+    "friend",
+    "likes"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.817,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      389,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1728,
+      177
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005084
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-045",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT round(avg(h.grade), 2) AS average_grade_with_friends\nFROM public.highschooler h\nWHERE EXISTS (\n  SELECT 1 FROM public.friend f\n  WHERE f.student_id = h.id OR f.friend_id = h.id\n)",
+   "attempts": [
+    "SELECT round(avg(h.grade), 2) AS average_grade_with_friends\nFROM public.highschooler h\nWHERE EXISTS (\n  SELECT 1 FROM public.friend f\n  WHERE f.student_id = h.id OR f.friend_id = h.id\n)"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "highschooler",
+    "friend",
+    "likes"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.713,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      389,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      1728,
+      201
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005266
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-046",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT state\nFROM public.owners\nINTERSECT\nSELECT state\nFROM public.professionals\nORDER BY state",
+   "attempts": [
+    "SELECT state\nFROM public.owners\nINTERSECT\nSELECT state\nFROM public.professionals\nORDER BY state"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 3,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "professionals",
+    "owners",
+    "treatments",
+    "dogs"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.382,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      406,
+      40
+     ],
+     "gpt-4.1-2025-04-14": [
+      7438,
+      141
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.01623
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-049",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.name\nFROM public.singer s\nLEFT JOIN public.song so ON s.singer_id = so.singer_id\nWHERE so.song_id IS NULL\nORDER BY s.name",
+   "attempts": [
+    "SELECT s.name\nFROM public.singer s\nLEFT JOIN public.song so ON s.singer_id = so.singer_id\nWHERE so.song_id IS NULL\nORDER BY s.name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "singer",
+    "song"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.848,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      383,
+      38
+     ],
+     "gpt-4.1-2025-04-14": [
+      1848,
+      157
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005166
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-hard-050",
+   "difficulty": "hard",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.property_name\nFROM public.properties p\nWHERE p.property_type_code IN ('Apartment', 'House')\n  AND p.room_count > 1\nORDER BY p.property_name",
+   "attempts": [
+    "SELECT p.property_name\nFROM public.properties p\nWHERE p.property_type_code IN ('Apartment', 'House')\n  AND p.room_count > 1\nORDER BY p.property_name"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 7,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "properties",
+    "ref_property_types",
+    "other_property_features"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.283,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      410,
+      31
+     ],
+     "gpt-4.1-2025-04-14": [
+      3738,
+      146
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.008858
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-005",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.pettype, p.weight\nFROM public.pets p\nWHERE p.pet_age = (SELECT MIN(p2.pet_age) FROM public.pets p2)",
+   "attempts": [
+    "SELECT p.pettype, p.weight\nFROM public.pets p\nWHERE p.pet_age = (SELECT MIN(p2.pet_age) FROM public.pets p2)"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "student",
+    "pets",
+    "has_pet"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.205,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      386,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      1790,
+      143
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.004933
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-007",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.fname, s.sex\nFROM public.student s\nJOIN public.has_pet hp ON s.stuid = hp.stuid\nGROUP BY s.stuid, s.fname, s.sex\nHAVING COUNT(hp.petid) > 1\nORDER BY s.fname, s.sex",
+   "attempts": [
+    "SELECT s.fname, s.sex\nFROM public.student s\nJOIN public.has_pet hp ON s.stuid = hp.stuid\nGROUP BY s.stuid, s.fname, s.sex\nHAVING COUNT(hp.petid) > 1\nORDER BY s.fname, s.sex"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "student",
+    "pets",
+    "has_pet"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 1.154,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      395,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1808,
+      204
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005462
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-009",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT cd.accelerate\nFROM public.cars_data cd\nJOIN public.car_names cn ON cd.id = cn.makeid\nWHERE cn.make = 'amc hornet sportabout (sw)'",
+   "attempts": [
+    "SELECT cd.accelerate\nFROM public.cars_data cd\nJOIN public.car_names cn ON cd.id = cn.makeid\nWHERE cn.make = 'amc hornet sportabout (sw)'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "countries",
+    "cars_data",
+    "continents",
+    "car_makers",
+    "car_names"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.835,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      409,
+      28
+     ],
+     "gpt-4.1-2025-04-14": [
+      1960,
+      156
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005376
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-010",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(DISTINCT cm.id) AS makers_count\nFROM public.car_makers cm\nJOIN public.countries c ON cm.country = c.countryid\nWHERE c.countryname = 'france'",
+   "attempts": [
+    "SELECT COUNT(DISTINCT cm.id) AS makers_count\nFROM public.car_makers cm\nJOIN public.countries c ON cm.country = c.countryid\nWHERE c.countryname = 'france'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "countries",
+    "cars_data",
+    "car_makers",
+    "car_names",
+    "model_list"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.771,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      403,
+      33
+     ],
+     "gpt-4.1-2025-04-14": [
+      1920,
+      146
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005222
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-011",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(DISTINCT cn.model) AS model_count\nFROM public.car_makers cm\nJOIN public.car_names cn ON cm.maker = cn.make\nWHERE cm.fullname = 'American Motor Company'",
+   "attempts": [
+    "SELECT COUNT(DISTINCT cn.model) AS model_count\nFROM public.car_makers cm\nJOIN public.car_names cn ON cm.maker = cn.make\nWHERE cm.fullname = 'American Motor Company'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "countries",
+    "cars_data",
+    "car_makers",
+    "continents",
+    "car_names"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.776,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      408,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      1958,
+      184
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.00561
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 0.5,
+   "schema_full_recall": false
+  },
+  {
+   "id": "spider-medium-015",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT f.flightno AS flight_number\nFROM public.flights f\nJOIN public.airports a ON f.destairport = a.airportcode\nWHERE a.city = 'Aberdeen'\nORDER BY f.flightno",
+   "attempts": [
+    "SELECT f.flightno AS flight_number\nFROM public.flights f\nJOIN public.airports a ON f.destairport = a.airportcode\nWHERE a.city = 'Aberdeen'\nORDER BY f.flightno"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 0,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "airlines",
+    "airports",
+    "flights"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.765,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      385,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      1934,
+      165
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.005388
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-016",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.name, s.location, s.district\nFROM public.shop s\nORDER BY s.number_products DESC",
+   "attempts": [
+    "SELECT s.name, s.location, s.district\nFROM public.shop s\nORDER BY s.number_products DESC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 9,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "shop",
+    "hiring",
+    "employee"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.806,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      397,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      2370,
+      111
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005846
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-017",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT d.document_id, d.document_name, d.document_description\nFROM public.documents d\nORDER BY d.document_id",
+   "attempts": [
+    "SELECT d.document_id, d.document_name, d.document_description\nFROM public.documents d\nORDER BY d.document_id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 15,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "documents",
+    "ref_template_types",
+    "paragraphs",
+    "templates"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.722,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      394,
+      28
+     ],
+     "gpt-4.1-2025-04-14": [
+      2904,
+      99
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.006802
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-019",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT t.version_number, t.template_type_code\nFROM public.templates t\nWHERE t.version_number > 5\nORDER BY t.version_number",
+   "attempts": [
+    "SELECT t.version_number, t.template_type_code\nFROM public.templates t\nWHERE t.version_number > 5\nORDER BY t.version_number"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 9,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "templates",
+    "ref_template_types",
+    "documents"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.505,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      401,
+      44
+     ],
+     "gpt-4.1-2025-04-14": [
+      2726,
+      124
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.006675
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-021",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT\n  rtt.template_type_code,\n  COUNT(d.document_id) AS document_count\nFROM public.ref_template_types rtt\nLEFT JOIN public.templates t ON rtt.template_type_code = t.template_type_code\nLEFT JOIN public.documents d ON t.template_id = d.template_id\nGROUP BY rtt.template_type_code\nORDER BY rtt.template_type_code",
+   "attempts": [
+    "SELECT\n  rtt.template_type_code,\n  COUNT(d.document_id) AS document_count\nFROM public.ref_template_types rtt\nLEFT JOIN public.templates t ON rtt.template_type_code = t.template_type_code\nLEFT JOIN public.documents d ON t.template_id = d.template_id\nGROUP BY rtt.template_type_code\nORDER BY rtt.template_type_code"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 5,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "documents",
+    "ref_template_types",
+    "templates",
+    "paragraphs"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.214,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      397,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      2910,
+      217
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.007774
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-023",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT COUNT(p.paragraph_id) AS paragraph_count\nFROM public.documents d\nJOIN public.paragraphs p ON d.document_id = p.document_id\nWHERE d.document_name = 'Summer Show'",
+   "attempts": [
+    "SELECT COUNT(p.paragraph_id) AS paragraph_count\nFROM public.documents d\nJOIN public.paragraphs p ON d.document_id = p.document_id\nWHERE d.document_name = 'Summer Show'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "documents",
+    "paragraphs"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.877,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      394,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      1902,
+      144
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.00517
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-025",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT v.name, v.level_of_membership\nFROM public.visitor v\nWHERE v.level_of_membership > 4\nORDER BY v.level_of_membership DESC",
+   "attempts": [
+    "SELECT v.name, v.level_of_membership\nFROM public.visitor v\nWHERE v.level_of_membership > 4\nORDER BY v.level_of_membership DESC"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 3,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "museum",
+    "visitor",
+    "visit"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.761,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      402,
+      44
+     ],
+     "gpt-4.1-2025-04-14": [
+      1932,
+      121
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005063
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-027",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT a.address_id, a.line_1, a.line_2\nFROM public.addresses a\nORDER BY a.address_id",
+   "attempts": [
+    "SELECT a.address_id, a.line_1, a.line_2\nFROM public.addresses a\nORDER BY a.address_id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 15,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "addresses",
+    "students"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.623,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      431,
+      28
+     ],
+     "gpt-4.1-2025-04-14": [
+      4210,
+      130
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.009677
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-028",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT a.line_1, a.line_2\nFROM public.addresses a\nORDER BY a.line_1, a.line_2",
+   "attempts": [
+    "SELECT a.line_1, a.line_2\nFROM public.addresses a\nORDER BY a.line_1, a.line_2"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 15,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "addresses",
+    "students"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.749,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      428,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      4204,
+      127
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.009642
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-029",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT s.student_id, s.first_name, s.middle_name, s.last_name\nFROM public.student_enrolment se\nJOIN public.students s ON se.student_id = s.student_id\nGROUP BY s.student_id, s.first_name, s.middle_name, s.last_name, se.semester_id\nHAVING COUNT(DISTINCT se.degree_program_id) = 2\nORDER BY s.last_name, s.first_name, s.middle_name, s.student_id",
+   "attempts": [
+    "SELECT s.student_id, s.first_name, s.middle_name, s.last_name\nFROM public.student_enrolment se\nJOIN public.students s ON se.student_id = s.student_id\nGROUP BY s.student_id, s.first_name, s.middle_name, s.last_name, se.semester_id\nHAVING COUNT(DISTINCT se.degree_program_id) = 2\nORDER BY s.last_name, s.first_name, s.middle_name, s.student_id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "degree_programs",
+    "students",
+    "student_enrolment",
+    "semesters",
+    "student_enrolment_courses"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.978,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      443,
+      45
+     ],
+     "gpt-4.1-2025-04-14": [
+      4050,
+      252
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.010365
+   },
+   "correct": false,
+   "correct_relaxed": false,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-032",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT MAX(tv_series.share) AS max_share, MIN(tv_series.share) AS min_share\nFROM public.tv_series",
+   "attempts": [
+    "SELECT MAX(tv_series.share) AS max_share, MIN(tv_series.share) AS min_share\nFROM public.tv_series"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "tv_series",
+    "tv_channel"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.783,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      389,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      2902,
+      120
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.006974
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-034",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT ts.episode\nFROM public.tv_series ts\nJOIN public.tv_channel tc ON ts.channel = tc.id\nWHERE tc.series_name = 'Sky Radio'\nORDER BY ts.air_date",
+   "attempts": [
+    "SELECT ts.episode\nFROM public.tv_series ts\nJOIN public.tv_channel tc ON ts.channel = tc.id\nWHERE tc.series_name = 'Sky Radio'\nORDER BY ts.air_date"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "tv_series",
+    "tv_channel"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.552,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      391,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      2898,
+      179
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.007439
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-035",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT\n  cartoon.directed_by AS director,\n  COUNT(cartoon.id) AS cartoon_count\nFROM\n  public.cartoon\nGROUP BY\n  cartoon.directed_by\nORDER BY\n  cartoon_count DESC, director",
+   "attempts": [
+    "SELECT\n  cartoon.directed_by AS director,\n  COUNT(cartoon.id) AS cartoon_count\nFROM\n  public.cartoon\nGROUP BY\n  cartoon.directed_by\nORDER BY\n  cartoon_count DESC, director"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 3,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "cartoon"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.047,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      385,
+      45
+     ],
+     "gpt-4.1-2025-04-14": [
+      2086,
+      156
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.005646
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-036",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT tv_channel.package_option AS package_option, tv_channel.series_name AS series_name\nFROM public.tv_channel\nWHERE tv_channel.hight_definition_tv = 'yes'",
+   "attempts": [
+    "SELECT tv_channel.package_option AS package_option, tv_channel.series_name AS series_name\nFROM public.tv_channel\nWHERE tv_channel.hight_definition_tv = 'yes'"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "tv_channel",
+    "tv_series",
+    "cartoon"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.669,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      394,
+      35
+     ],
+     "gpt-4.1-2025-04-14": [
+      3584,
+      122
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.008358
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-038",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.nationality, COUNT(*) AS people_count\nFROM public.people p\nGROUP BY p.nationality\nORDER BY p.nationality",
+   "attempts": [
+    "SELECT p.nationality, COUNT(*) AS people_count\nFROM public.people p\nGROUP BY p.nationality\nORDER BY p.nationality"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "people",
+    "poker_player"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 2.742,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      381,
+      29
+     ],
+     "gpt-4.1-2025-04-14": [
+      1880,
+      109
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.004831
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-042",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT c.name AS conductor_name, o.orchestra AS orchestra_name\nFROM public.conductor c\nJOIN public.orchestra o ON c.conductor_id = o.conductor_id\nORDER BY c.name, o.orchestra",
+   "attempts": [
+    "SELECT c.name AS conductor_name, o.orchestra AS orchestra_name\nFROM public.conductor c\nJOIN public.orchestra o ON c.conductor_id = o.conductor_id\nORDER BY c.name, o.orchestra"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 12,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "conductor",
+    "orchestra",
+    "performance"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.344,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      393,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      2606,
+      144
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.00658
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-043",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT h.grade, COUNT(*) AS highschooler_count\nFROM public.highschooler h\nGROUP BY h.grade\nORDER BY h.grade",
+   "attempts": [
+    "SELECT h.grade, COUNT(*) AS highschooler_count\nFROM public.highschooler h\nGROUP BY h.grade\nORDER BY h.grade"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 4,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "highschooler",
+    "likes",
+    "friend"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 0.729,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      387,
+      42
+     ],
+     "gpt-4.1-2025-04-14": [
+      1724,
+      120
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 3,
+    "cost_usd": 0.00463
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-045",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT DISTINCT d.dog_id, d.date_arrived, d.date_departed\nFROM public.dogs d\nJOIN public.treatments t ON d.dog_id = t.dog_id\nORDER BY d.dog_id",
+   "attempts": [
+    "SELECT DISTINCT d.dog_id, d.date_arrived, d.date_departed\nFROM public.dogs d\nJOIN public.treatments t ON d.dog_id = t.dog_id\nORDER BY d.dog_id"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 9,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "dogs",
+    "treatments",
+    "treatment_types"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.391,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      412,
+      42
+     ],
+     "gpt-4.1-2025-04-14": [
+      4080,
+      188
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.009896
+   },
+   "correct": false,
+   "correct_relaxed": true,
+   "first_attempt_correct": false,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-046",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT p.email_address\nFROM public.professionals p\nWHERE p.state IN ('Hawaii', 'Wisconsin')\nORDER BY p.email_address",
+   "attempts": [
+    "SELECT p.email_address\nFROM public.professionals p\nWHERE p.state IN ('Hawaii', 'Wisconsin')\nORDER BY p.email_address"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 2,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "professionals",
+    "owners",
+    "treatments",
+    "dogs"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.058,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      416,
+      37
+     ],
+     "gpt-4.1-2025-04-14": [
+      7450,
+      127
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.016142
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  },
+  {
+   "id": "spider-medium-048",
+   "difficulty": "medium",
+   "kind": null,
+   "lang": null,
+   "sql": "SELECT t.cost_of_treatment\nFROM public.treatments t\nORDER BY t.date_of_treatment DESC\nLIMIT 1",
+   "attempts": [
+    "SELECT t.cost_of_treatment\nFROM public.treatments t\nORDER BY t.date_of_treatment DESC\nLIMIT 1"
+   ],
+   "n_attempts": 1,
+   "executed": true,
+   "row_count": 1,
+   "error": null,
+   "clarifications": [],
+   "asked_clarification": false,
+   "linked_tables": [
+    "treatments",
+    "treatment_types",
+    "charges",
+    "owners",
+    "dogs"
+   ],
+   "validation_failures": [],
+   "answer": "",
+   "latency_s": 3.01,
+   "usage": {
+    "tokens": {
+     "gpt-4.1-mini-2025-04-14": [
+      407,
+      34
+     ],
+     "gpt-4.1-2025-04-14": [
+      5760,
+      127
+     ]
+    },
+    "calls": 3,
+    "cached_calls": 1,
+    "cost_usd": 0.012753
+   },
+   "correct": true,
+   "correct_relaxed": true,
+   "first_attempt_correct": true,
+   "schema_recall": 1.0,
+   "schema_full_recall": true
+  }
+ ]
+}

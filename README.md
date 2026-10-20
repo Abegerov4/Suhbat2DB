@@ -386,11 +386,13 @@ cd frontend && npm run dev   # BACKEND_URL=http://localhost:8000 по умолч
 
 Pre-commit хуки (ruff, prettier, gitleaks) ставятся командой `uv tool install pre-commit && pre-commit install`.
 
-**Запуск оценки:**
+**Запуск оценки** (методика и результаты — [EVALS.md](EVALS.md)):
 
 ```bash
-docker compose exec backend python -m evals.runners.run --suite spider_subset --config agent
-docker compose exec backend python -m evals.runners.run --suite spider_subset --config baseline
+make eval-data                                   # Spider и BIRD → PostgreSQL
+make eval SUITE=spider_subset CONFIG=agent LIMIT=100
+make eval SUITE=spider_subset CONFIG=baseline LIMIT=100
+make eval-smoke                                  # 50 вопросов с порогами регрессии
 ```
 
 ## 15. Применённые техники LLM Engineering

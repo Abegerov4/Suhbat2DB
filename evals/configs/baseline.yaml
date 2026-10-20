@@ -1,0 +1,3 @@
+# Эксперимент 1: SQL одним вызовом LLM по полной схеме (app/agent/baseline.py)
+description: Baseline — полная схема, один вызов, без уточнения и самокоррекции
+system: baseline

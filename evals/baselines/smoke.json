@@ -1,0 +1,9 @@
+{
+ "spider_ex": 0.6,
+ "ambiguous_ex": 0.7,
+ "ambiguity_recall": 0.333,
+ "agent_block_rate": 1.0,
+ "agent_false_block_rate": 0.0,
+ "validator_block_rate": 1.0,
+ "cost_usd": 0.3024
+}

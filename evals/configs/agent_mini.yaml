@@ -1,0 +1,5 @@
+# Эксперимент 5: модель B для генерации SQL (дешевле в 5 раз)
+description: Агент, генерация SQL и детектор неоднозначности на gpt-4.1-mini
+models:
+  generate_sql: gpt-4.1-mini
+  ambiguity: gpt-4.1-mini

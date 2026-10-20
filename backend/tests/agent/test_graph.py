@@ -167,3 +167,30 @@ async def test_clarification_rounds_are_limited(
     _events, interrupted = await run(graph, Command(resume=free), agent_context)
     assert interrupted is None  # второй раунд не запрашивается, хотя LLM снова «сомневается»
     assert "выручка без возвратов" in llm.prompts("generate_sql")[0]
+
+
+async def test_experiment_toggles(store: SchemaStore, agent_context: AgentContext) -> None:
+    """Переключатели evals: без уточнения, полная схема, без уровней 3–4, без пояснения."""
+    llm = FakeLLM(generate_sql=[sql("SELECT sum(o.total) FROM orders o"), sql(GOOD_SQL)])
+    graph = make_graph(
+        llm,
+        store,
+        clarify_enabled=False,
+        schema_linking_enabled=False,
+        semantic_checks=False,
+        explain_enabled=False,
+    )
+    events, interrupted = await run(graph, new_turn("Продажи за квартал"), agent_context)
+
+    assert interrupted is None
+    assert llm.prompts("ambiguity") == []  # детектор неоднозначности не вызывался
+    assert llm.prompts("explain") == []
+    # без уровня 3 ошибка в столбце ловится только при выполнении (уровень 5)
+    levels = [(v["level"], v["passed"]) for v in of_type(events, "validation")]
+    assert levels[:3] == [(1, True), (2, True), (5, False)]
+    assert 3 not in {lv for lv, _ in levels} and 4 not in {lv for lv, _ in levels}
+    # полная схема: в промпт попали все таблицы тестовой БД
+    prompt = llm.prompts("generate_sql")[0]
+    for table in ("orders", "regions", "events"):
+        assert f"TABLE public.{table}" in prompt
+    assert of_type(events, "result") and not of_type(events, "answer")

@@ -23,7 +23,7 @@ from pydantic import BaseModel
 from app.agent.charts import choose_chart
 from app.agent.llm import LLM, NodeKey
 from app.agent.prompts import PromptName, PromptRegistry
-from app.agent.retrieval.linker import SchemaLinker
+from app.agent.retrieval.linker import SchemaLinker, full_schema
 from app.agent.retrieval.store import SchemaStore
 from app.agent.state import AgentContext, AgentState, Clarification, Feedback, Turn
 from app.schemas.agent import (
@@ -166,6 +166,11 @@ class AgentNodes:
     few_shot: int = 3
     max_attempts: int = 3
     max_clarification_rounds: int = 2
+    # Переключатели экспериментов (evals, docs/roles/07_evals.md); в работе всё включено
+    clarify_enabled: bool = True  # эксперимент 2: агент без уточнения
+    schema_linking_enabled: bool = True  # эксперимент 3: полная схема вместо отбора
+    semantic_checks: bool = True  # эксперимент 4: без уровней 3 (схема) и 4 (EXPLAIN)
+    explain_enabled: bool = True  # пояснение не влияет на метрики evals и не оплачивается
 
     def _messages(
         self, name: PromptName, user: str, **variables: str
@@ -214,7 +219,11 @@ class AgentNodes:
         if history and len(state["question"]) < 60:  # короткий follow-up: «а по месяцам?»
             query = f"{history[-1]['question']}\n{query}"
         snapshot = runtime.context.snapshot
-        linked = await self.linker.link(query, snapshot)
+        linked = (
+            await self.linker.link(query, snapshot)
+            if self.schema_linking_enabled
+            else full_schema(snapshot)
+        )
         examples = await self.store.search_examples(
             snapshot.datasource_id, state["resolved_question"], self.few_shot
         )
@@ -229,6 +238,8 @@ class AgentNodes:
     async def detect_ambiguity(
         self, state: AgentState, runtime: Runtime[AgentContext], config: RunnableConfig
     ) -> Update:
+        if not self.clarify_enabled:
+            return {"route": "generate", "_detail": "Уточнение отключено"}
         if state.get("clarification_rounds", 0) >= self.max_clarification_rounds:
             return {"route": "generate", "_detail": "Лимит уточнений исчерпан"}
         user = "\n\n".join(
@@ -370,7 +381,9 @@ class AgentNodes:
         self, state: AgentState, runtime: Runtime[AgentContext], config: RunnableConfig
     ) -> Update:
         context = runtime.context
-        report = validate(state["sql"] or "", context.snapshot, context.limits)
+        report = validate(
+            state["sql"] or "", context.snapshot, context.limits, schema_check=self.semantic_checks
+        )
         for level in report.levels:
             emit("validation", level)
         failed = next((lv for lv in report.levels if not lv.passed), None)
@@ -382,11 +395,12 @@ class AgentNodes:
         assert report.normalized_sql is not None
         if context.pool is None:
             return refusal("no_connection")
-        async with context.pool.acquire() as conn:
-            plan = await explain(report.normalized_sql, conn, context.limits)
-        emit("validation", plan)
-        if not plan.passed:
-            return self._retry_or_give_up(state, plan)
+        if self.semantic_checks:
+            async with context.pool.acquire() as conn:
+                plan = await explain(report.normalized_sql, conn, context.limits)
+            emit("validation", plan)
+            if not plan.passed:
+                return self._retry_or_give_up(state, plan)
         return {"route": "execute", "normalized_sql": report.normalized_sql}
 
     @step("self_correct")
@@ -428,6 +442,14 @@ class AgentNodes:
         chart = choose_chart(result)
         if chart is not None:
             emit("chart", chart)
+        if not self.explain_enabled:
+            return {
+                "answer": "",
+                "chart": chart.model_dump(mode="json") if chart else None,
+                "history": [
+                    Turn(question=state["question"], sql=state["normalized_sql"], answer="")
+                ],
+            }
 
         payload = {
             "columns": [c.name for c in result.columns],

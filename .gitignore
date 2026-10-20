@@ -37,3 +37,9 @@ htmlcov/
 frontend/test-results/
 frontend/playwright-report/
 frontend/blob-report/
+
+# Бенчмарки Spider/BIRD: скачиваются scripts (evals/README), не версионируются
+evals/data/
+
+# отчёты smoke-eval — артефакты CI, не версионируются
+evals/reports/smoke_*.json

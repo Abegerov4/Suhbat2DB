@@ -1,0 +1,4 @@
+# Эксперимент 5: temperature генератора SQL
+description: Агент, temperature генерации SQL = 0.7
+temperatures:
+  generate_sql: 0.7
