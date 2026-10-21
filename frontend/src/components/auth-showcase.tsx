@@ -1,5 +1,3 @@
-"use client";
-
 import {
   ChartColumn,
   Database,
@@ -7,51 +5,23 @@ import {
   FileCode2,
   FileSpreadsheet,
   FolderOpen,
-  type LucideIcon,
   MessageSquareText,
   Server,
   ShieldCheck,
   Table2,
 } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
 
-import { Logo } from "@/components/layout/logo";
+import { AnimatedLogo } from "@/components/layout/animated-logo";
 import { OrbitingCircles } from "@/components/ui/orbiting-circles";
 import { Ripple } from "@/components/ui/ripple";
+import { ToneIcon, type Tone } from "@/components/ui/tone-icon";
 
-/** Иконка на орбите; цвет — из категориальной палитры графиков. */
-function OrbitIcon({ icon: Icon, tone }: { icon: LucideIcon; tone: number }) {
+function OrbitIcon(props: { icon: typeof Database; tone: Tone }) {
   return (
-    <span
-      style={{
-        color: `var(--chart-${tone})`,
-        background: `color-mix(in oklab, var(--chart-${tone}) 16%, var(--card))`,
-        borderColor: `color-mix(in oklab, var(--chart-${tone}) 35%, transparent)`,
-      }}
-      className="flex size-full items-center justify-center rounded-2xl border shadow-lg backdrop-blur-sm"
-    >
-      <Icon className="size-1/2" strokeWidth={1.75} />
-    </span>
-  );
-}
-
-/** Логотип, который медленно «парит» и мягко светится. */
-function AnimatedLogo() {
-  const reduced = useReducedMotion();
-  return (
-    <motion.div
-      className="relative"
-      animate={reduced ? undefined : { y: [0, -8, 0] }}
-      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-    >
-      <motion.div
-        aria-hidden
-        className="absolute inset-0 rounded-full bg-primary blur-2xl"
-        animate={reduced ? { opacity: 0.3 } : { opacity: [0.2, 0.45, 0.2] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <Logo className="relative size-24" />
-    </motion.div>
+    <ToneIcon
+      {...props}
+      className="size-full rounded-2xl shadow-lg backdrop-blur-sm"
+    />
   );
 }
 

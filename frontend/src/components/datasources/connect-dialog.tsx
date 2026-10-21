@@ -21,7 +21,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { GlowInput } from "@/components/ui/glow-input";
 import { Spinner } from "@/components/ui/spinner";
 import { ApiError } from "@/lib/api/client";
 import { useCreateDatasource } from "@/lib/queries";
@@ -82,7 +82,7 @@ export function ConnectDialog() {
             )}
             <Field>
               <FieldLabel htmlFor="ds-name">Название</FieldLabel>
-              <Input
+              <GlowInput
                 id="ds-name"
                 name="name"
                 required
@@ -92,7 +92,7 @@ export function ConnectDialog() {
             </Field>
             <Field>
               <FieldLabel htmlFor="ds-url">Строка подключения</FieldLabel>
-              <Input
+              <GlowInput
                 id="ds-url"
                 name="connection_url"
                 required

@@ -5,7 +5,6 @@ import Link from "next/link";
 
 import { ActivityChart } from "@/components/dashboard/activity-chart";
 import { GettingStarted } from "@/components/dashboard/getting-started";
-import { Hero } from "@/components/dashboard/hero";
 import { RecentSessions } from "@/components/dashboard/recent-sessions";
 import { SourcesCard } from "@/components/dashboard/sources-card";
 import { StatCards } from "@/components/dashboard/stat-cards";
@@ -42,7 +41,6 @@ export default function OverviewPage() {
             <AlertDescription>{stats.error.message}</AlertDescription>
           </Alert>
         )}
-        <Hero />
         {stats.data?.questions === 0 && <GettingStarted />}
         <StatCards stats={stats.data} />
         <ActivityChart activity={stats.data?.activity} />

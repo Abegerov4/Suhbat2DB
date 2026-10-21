@@ -9,10 +9,17 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { Skeleton } from "@/components/ui/skeleton";
+import { type Tone, ToneIcon } from "@/components/ui/tone-icon";
 import type { Stats } from "@/lib/api/types";
 import { formatNumber, percent, plural } from "@/lib/format";
 
-type Stat = { label: string; value: number; hint: string; icon: LucideIcon };
+type Stat = {
+  label: string;
+  value: number;
+  hint: string;
+  icon: LucideIcon;
+  tone: Tone;
+};
 
 function toStats(s: Stats): Stat[] {
   const turns = s.answered + s.clarifications + s.refused;
@@ -23,24 +30,28 @@ function toStats(s: Stats): Stat[] {
       value: s.questions,
       hint: `в ${s.sessions} ${plural(s.sessions, ["диалоге", "диалогах", "диалогах"])}`,
       icon: MessagesSquare,
+      tone: 1,
     },
     {
       label: "Ответов с данными",
       value: s.answered,
       hint: `${percent(s.answered, turns)}% ходов агента`,
       icon: CircleCheck,
+      tone: 3,
     },
     {
       label: "Уточнений",
       value: s.clarifications,
       hint: "агент переспросил неоднозначный вопрос",
       icon: MessageCircleQuestion,
+      tone: 4,
     },
     {
       label: "SQL заблокировано",
       value: s.queries_blocked,
       hint: `из ${formatNumber(queries)} проверенных запросов`,
       icon: ShieldCheck,
+      tone: 8,
     },
   ];
 }
@@ -61,7 +72,7 @@ export function StatCards({ stats }: { stats?: Stats }) {
         <Card key={stat.label}>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-medium">{stat.label}</CardTitle>
-            <stat.icon aria-hidden className="size-5 text-muted-foreground" />
+            <ToneIcon icon={stat.icon} tone={stat.tone} className="size-9" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">
