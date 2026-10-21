@@ -3,6 +3,10 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { registerAndLogin, startChat } from "./helpers";
 
+// Без анимаций появления: иначе axe может замерить контраст полупрозрачного текста
+// посреди перехода. Заодно проверяется режим prefers-reduced-motion.
+test.use({ contextOptions: { reducedMotion: "reduce" } });
+
 /** Нарушения WCAG 2.1 AA уровня serious/critical (тот же движок axe, что у Lighthouse). */
 async function violations(page: Page) {
   const { violations } = await new AxeBuilder({ page })
