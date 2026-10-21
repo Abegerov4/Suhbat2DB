@@ -4,6 +4,7 @@ import { ArrowUp, Square } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { GlowBorder } from "@/components/ui/glow-input";
 import { Kbd } from "@/components/ui/kbd";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -42,49 +43,51 @@ export function Composer({
         submit();
       }}
     >
-      <div className="relative rounded-xl border bg-background shadow-xs focus-within:ring-2 focus-within:ring-ring/50">
-        <Textarea
-          value={text}
-          onChange={(e) => setText(e.target.value.slice(0, MAX))}
-          onKeyDown={(e) => {
-            if (
-              e.key === "Enter" &&
-              !e.shiftKey &&
-              !e.nativeEvent.isComposing
-            ) {
-              e.preventDefault();
-              submit();
-            }
-          }}
-          placeholder={placeholder}
-          aria-label="Вопрос к данным"
-          disabled={disabled}
-          rows={2}
-          className="max-h-48 min-h-14 resize-none border-0 bg-transparent pr-14 shadow-none focus-visible:ring-0 dark:bg-transparent"
-        />
-        <div className="absolute right-2 bottom-2">
-          {busy ? (
-            <Button
-              type="button"
-              size="icon-sm"
-              variant="secondary"
-              onClick={onStop}
-              aria-label="Остановить ответ"
-            >
-              <Square className="fill-current" aria-hidden />
-            </Button>
-          ) : (
-            <Button
-              type="submit"
-              size="icon-sm"
-              disabled={!canSend}
-              aria-label="Отправить"
-            >
-              <ArrowUp aria-hidden />
-            </Button>
-          )}
+      <GlowBorder className="rounded-xl">
+        <div className="relative rounded-[10px] border bg-background shadow-xs focus-within:ring-2 focus-within:ring-ring/50 group-hover/input:border-transparent">
+          <Textarea
+            value={text}
+            onChange={(e) => setText(e.target.value.slice(0, MAX))}
+            onKeyDown={(e) => {
+              if (
+                e.key === "Enter" &&
+                !e.shiftKey &&
+                !e.nativeEvent.isComposing
+              ) {
+                e.preventDefault();
+                submit();
+              }
+            }}
+            placeholder={placeholder}
+            aria-label="Вопрос к данным"
+            disabled={disabled}
+            rows={2}
+            className="max-h-48 min-h-14 resize-none border-0 bg-transparent pr-14 shadow-none focus-visible:ring-0 dark:bg-transparent"
+          />
+          <div className="absolute right-2 bottom-2">
+            {busy ? (
+              <Button
+                type="button"
+                size="icon-sm"
+                variant="secondary"
+                onClick={onStop}
+                aria-label="Остановить ответ"
+              >
+                <Square className="fill-current" aria-hidden />
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                size="icon-sm"
+                disabled={!canSend}
+                aria-label="Отправить"
+              >
+                <ArrowUp aria-hidden />
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      </GlowBorder>
       <p className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-muted-foreground">
         <span>
           {hint ?? (

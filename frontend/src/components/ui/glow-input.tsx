@@ -6,18 +6,29 @@ import {
   useMotionValue,
   useReducedMotion,
 } from "motion/react";
-import { type ComponentProps, useState } from "react";
+import { type ComponentProps, type ReactNode, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-/** Поле ввода с подсветкой рамки, которая следует за курсором (по мотивам Aceternity UI). */
-export function GlowInput({ className, ...props }: ComponentProps<"input">) {
+/**
+ * Рамка с подсветкой, которая следует за курсором (по мотивам Aceternity UI).
+ * Оборачивает любое поле: input, textarea или составной блок.
+ */
+export function GlowBorder({
+  children,
+  className,
+  radius = 110,
+}: {
+  children: ReactNode;
+  className?: string;
+  radius?: number;
+}) {
   const reduced = useReducedMotion();
   const [hovered, setHovered] = useState(false);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const radius = hovered && !reduced ? 110 : 0;
-  const background = useMotionTemplate`radial-gradient(${radius}px circle at ${x}px ${y}px, var(--primary), transparent 80%)`;
+  const size = hovered && !reduced ? radius : 0;
+  const background = useMotionTemplate`radial-gradient(${size}px circle at ${x}px ${y}px, var(--primary), transparent 80%)`;
 
   return (
     <motion.div
@@ -29,8 +40,20 @@ export function GlowInput({ className, ...props }: ComponentProps<"input">) {
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="group/input rounded-lg p-0.5 transition duration-300"
+      className={cn(
+        "group/input rounded-lg p-0.5 transition duration-300",
+        className,
+      )}
     >
+      {children}
+    </motion.div>
+  );
+}
+
+/** Поле ввода с подсветкой рамки за курсором. */
+export function GlowInput({ className, ...props }: ComponentProps<"input">) {
+  return (
+    <GlowBorder>
       <input
         className={cn(
           "flex h-11 w-full rounded-md border-none bg-muted px-3 py-2 text-sm text-foreground shadow-[0_0_0_1px_var(--border)] transition duration-300 placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 group-hover/input:shadow-none",
@@ -38,6 +61,6 @@ export function GlowInput({ className, ...props }: ComponentProps<"input">) {
         )}
         {...props}
       />
-    </motion.div>
+    </GlowBorder>
   );
 }

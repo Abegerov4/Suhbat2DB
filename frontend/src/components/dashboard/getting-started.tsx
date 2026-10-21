@@ -1,9 +1,8 @@
 import { MessageSquarePlus } from "lucide-react";
-import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ToneIcon } from "@/components/ui/tone-icon";
 
 const STEPS = [
   {
@@ -20,15 +19,20 @@ const STEPS = [
   },
 ];
 
-/** Первые шаги — пока у пользователя нет ни одного вопроса. */
+/**
+ * Первые шаги, пока у пользователя нет ни одного вопроса. Своей кнопки нет:
+ * главное действие экрана одно, «Новый диалог» в шапке.
+ */
 export function GettingStarted() {
   return (
     <Card>
       <CardContent className="flex flex-col gap-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-            <MessageSquarePlus className="size-6 text-brand-text" aria-hidden />
-          </span>
+          <ToneIcon
+            icon={MessageSquarePlus}
+            tone={1}
+            className="size-14 rounded-xl"
+          />
           <div className="flex-1">
             <p className="text-xs font-semibold tracking-[0.14em] text-brand-text uppercase">
               От вопроса к ответу
@@ -37,13 +41,10 @@ export function GettingStarted() {
               Начните первый диалог
             </h2>
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-              Демо-база с продажами в Казахстане уже подключена — можно
-              спрашивать сразу.
+              Демо-база с продажами в Казахстане уже подключена. Нажмите «Новый
+              диалог» вверху и спросите о данных своими словами.
             </p>
           </div>
-          <Button asChild className="self-start sm:self-center">
-            <Link href="/chat">Задать вопрос</Link>
-          </Button>
         </div>
         <Separator />
         <ol className="grid gap-6 sm:grid-cols-3">

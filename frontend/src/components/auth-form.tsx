@@ -58,8 +58,8 @@ async function login(email: string, password: string) {
 function BottomGradient() {
   return (
     <>
-      <span className="absolute inset-x-0 -bottom-px block h-px w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
-      <span className="absolute inset-x-10 -bottom-px mx-auto block h-px w-1/2 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 blur-sm transition duration-500 group-hover/btn:opacity-100" />
+      <span className="absolute inset-x-0 -bottom-px block h-px w-full bg-gradient-to-r from-transparent via-cyan-300 to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
+      <span className="absolute inset-x-10 -bottom-px mx-auto block h-px w-1/2 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 blur-sm transition duration-500 group-hover/btn:opacity-100" />
     </>
   );
 }
@@ -189,7 +189,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
           <button
             type="submit"
             disabled={pending}
-            className="group/btn relative flex h-11 w-full items-center justify-center gap-2 rounded-md bg-gradient-to-br from-zinc-200 to-zinc-200 font-medium text-black shadow-[0_1px_0_0_#ffffff40_inset,0_-1px_0_0_#ffffff40_inset] transition hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-70 dark:from-zinc-900 dark:to-zinc-900 dark:text-white dark:shadow-[0_1px_0_0_var(--color-zinc-800)_inset,0_-1px_0_0_var(--color-zinc-800)_inset]"
+            className="group/btn relative flex h-11 w-full items-center justify-center gap-2 rounded-md bg-primary font-medium text-primary-foreground shadow-[0_1px_0_0_#ffffff30_inset] transition hover:cursor-pointer hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-70"
           >
             {pending && <Spinner />}
             {text.submit}
