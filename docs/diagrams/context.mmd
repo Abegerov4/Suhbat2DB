@@ -1,0 +1,23 @@
+%% Диаграмма контекста системы (C4, уровень 1)
+flowchart TB
+    analyst["👤 Аналитик<br/><i>задаёт вопросы к данным<br/>на естественном языке</i>"]
+    admin["👤 Администратор<br/><i>подключает базы данных</i>"]
+
+    system["<b>Suhbat2DB</b><br/>веб-платформа диалогового анализа данных:<br/>уточняет неоднозначные вопросы,<br/>генерирует и проверяет SQL,<br/>поясняет и визуализирует результат"]
+
+    target[("Анализируемая БД<br/>PostgreSQL<br/><i>роль только для чтения</i>")]
+    llm["LLM-провайдер<br/>OpenAI API<br/><i>генерация, классификация,<br/>эмбеддинги</i>"]
+    langfuse["Langfuse Cloud<br/><i>трассы, стоимость,<br/>версии промптов</i>"]
+
+    analyst -->|"вопросы, ответы на уточнения,<br/>оценки ответов (HTTPS)"| system
+    admin -->|"регистрация источника данных"| system
+    system -->|"SELECT в read-only транзакции,<br/>интроспекция схемы"| target
+    system -->|"промпты со связанной схемой"| llm
+    system -.->|"трассы каждого хода"| langfuse
+
+    classDef person fill:#e8f1ff,stroke:#3b6fd8,color:#0b2a5b
+    classDef sys fill:#3b6fd8,stroke:#1f4aa8,color:#ffffff
+    classDef ext fill:#f2f2f2,stroke:#888888,color:#222222
+    class analyst,admin person
+    class system sys
+    class target,llm,langfuse ext
