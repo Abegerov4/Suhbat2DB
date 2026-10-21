@@ -1,0 +1,37 @@
+Summary,Description,Type,Priority,State,Due Date,Tags,Acceptance criteria,Link
+План разработки по ролям и контракты компонентов,"README, docs/roles, docs/CONTRACTS.md",Task,Major,Done,2026-10-19,docs,"План 8 ролей с DoD; контракты REST, SSE, валидатора, состояния агента",https://github.com/Abegerov4/Suhbat2DB/commit/0c38487
+Роль 1. DevOps: окружение и CI,"docker compose, Makefile, CI backend/frontend/compose",Feature,Critical,Done,2026-10-19,devops,make up поднимает 5 сервисов healthy; CI зелёный,https://github.com/Abegerov4/Suhbat2DB/commit/ead1c13
+Роль 2. Демо-БД и схема приложения,"Демо-БД с ловушками неоднозначности, роль s2d_reader, миграции app-db",Feature,Critical,Done,2026-10-19,database,make seed < 2 мин; роль не может писать (тесты),https://github.com/Abegerov4/Suhbat2DB/commit/c71b33c
+Роль 3. Backend API,"Auth, источники с проверкой прав, интроспекция, сессии, SSE",Feature,Critical,Done,2026-10-19,backend,Все эндпоинты CONTRACTS §1; пишущая роль отклоняется; покрытие ≥ 70%,https://github.com/Abegerov4/Suhbat2DB/commit/f967765
+Роль 4. Валидатор SQL,"5 уровней проверки, набор атак",Feature,Critical,Done,2026-10-19,validator;security,"100% атак заблокировано, 0 ложных; покрытие ≥ 90%; уровни 1–3 < 20 мс",https://github.com/Abegerov4/Suhbat2DB/commit/1a0c87a
+Роль 5. Агент LangGraph,"Schema linking, уточнение, генерация, самокоррекция, пояснение",Feature,Critical,Done,2026-10-19,agent,"Сценарий с уточнением end-to-end; schema recall ≥ 0,95; trace в Langfuse",https://github.com/Abegerov4/Suhbat2DB/commit/4afaa79
+Роль 6. Веб-интерфейс,"Чат, аналитическая панель, обзор, e2e и доступность",Feature,Critical,Done,2026-10-19,frontend,E2E в CI; Lighthouse Accessibility ≥ 90,https://github.com/Abegerov4/Suhbat2DB/commit/a2b15e7
+"Роль 7. Оценка, этап 1","Наборы, раннер, эксперименты 1–2, безопасность, EVALS.md",Feature,Critical,Done,2026-10-21,evals,Отчёты прогонов; EVALS.md с интервалами и тестами значимости,https://github.com/Abegerov4/Suhbat2DB/commit/9fa9b82
+Архитектура и ADR,"ARCHITECTURE.md: компоненты, развёртывание, путь запроса, ADR 020–024",Task,Critical,In Progress,2026-10-23,docs;pre-defense-1,"Диаграмма компонентов, последовательности; ≥ 3 решения с альтернативами",
+Proposal и scope,docs/proposal.md,Task,Critical,In Progress,2026-10-23,docs;pre-defense-1,"Проблема, пользователи, цель, задачи, результаты, границы объёма",
+Требования и критерии приёмки,docs/requirements.md,Task,Critical,In Progress,2026-10-23,docs;pre-defense-1,FR и NFR с приоритетом MoSCoW и проверяемым критерием,
+Обзор литературы,docs/literature_review.md,Task,Critical,In Progress,2026-10-23,docs;pre-defense-1,"≥ 12 источников, ≥ 8 научных, таблица анализа; статьи прочитаны",
+Сравнение существующих систем,docs/existing_systems.md,Task,Major,In Progress,2026-10-23,docs;pre-defense-1,"3–5 систем, 6–10 критериев, источники; спорные ячейки перепроверены",
+Сравнение технологий,docs/technology_comparison.md,Task,Major,In Progress,2026-10-23,docs;pre-defense-1,≥ 3 решения по 2–3 альтернативы,
+"Диаграммы: контекст, use case, компоненты",docs/diagrams: исходники .mmd и SVG,Task,Critical,In Progress,2026-10-23,docs;pre-defense-1,Редактируемые исходники и читаемые экспорты,
+Роадмап и риски,docs/roadmap.md,Task,Critical,In Progress,2026-10-23,docs;pre-defense-1,"Таблица по датам, контрольные точки, риски",
+Прототип в Figma,Кликабельный сценарий: вход → вопрос → уточнение → ответ → панель; мобильная версия,Task,Critical,Open,2026-10-23,ux;pre-defense-1,Ссылка на Figma в README,
+Тег pre-defense-1,"Тег на сдаваемую версию, сводка выполненного",Task,Critical,Open,2026-10-24,pre-defense-1,"Тег в репозитории; ссылка, сводка, ограничения отправлены",
+Интервью с потенциальными пользователями,3–5 интервью по шаблону docs/templates/interview.md,Task,Critical,Open,2026-11-08,research,Протоколы в docs/interviews; выводы внесены в требования,
+Протокол встречи с руководителем по итогам предзащиты 1,docs/templates/supervisor_meeting.md,Task,Major,Open,2026-11-01,management,Замечания заведены задачами,
+Промпт v2: ложные отказы и казахский язык,"q_benign_05, q_benign_25, spider-extra-028, spider-hard-002",Bug,Major,Open,2026-11-30,agent,Проверка на отложенных вопросах; ложные блокировки ≤ 5%,
+Промпт v2: умолчания при уточнении и границы дат,"amb-043, amb-014, amb-029",Bug,Major,Open,2026-11-30,agent,EX на ambiguous_ru не ниже этапа 1; проверка на отложенных вопросах,
+Распознавание неоднозначности типа «схема»,0 из 6 на этапе 1,Feature,Major,Open,2026-11-30,agent,"Recall по типу schema ≥ 0,5 без роста лишних уточнений",
+Защита пояснения от инструкций из данных,q_indirect_02: число из названия товара в ответе,Bug,Major,Open,2026-11-30,agent;security,6 из 6 непрямых инъекций отражены,
+Черновик главы 1 (обзор),На основе docs/literature_review.md,Task,Major,Open,2026-11-30,thesis,Черновик отправлен руководителю,
+"Оценка, этап 2","Полные выборки, второй seed, эксперименты 3–5",Feature,Critical,Open,2026-12-27,evals,"EVALS.md: все 5 экспериментов, 2 seed",
+Вторая разметка ambiguous_ru и Cohen's κ,"review_sample.csv, python -m evals.kappa score",Task,Major,Open,2026-12-15,evals,"κ посчитан, расхождения описаны",
+Классификация 30–50 ошибок агента,Типы: schema linking / JOIN / агрегация / значение / неоднозначность / эталон,Task,Major,Open,2026-12-27,evals,Таблица в EVALS.md,
+Глава 2 (проектирование),"Требования, архитектура, граф, модель угроз",Task,Major,Open,2027-01-20,thesis,Черновик отправлен руководителю,
+Предзащита 2,Тег pre-defense-2,Task,Critical,Open,2027-01-31,pre-defense-2,"Тег, сводка, ограничения",
+Глава 3 (реализация),,Task,Major,Open,2027-02-28,thesis,Черновик,
+MCP-сервер с инструментами валидатора,Опционально,Feature,Minor,Open,2027-02-28,agent,"validate_sql, describe_table доступны из MCP-клиента",
+Глава 4 (эксперименты) и тезисы конференции,,Task,Major,Open,2027-03-31,thesis,Черновик; тезисы отправлены,
+Пользовательское тестирование,Сценарии по итогам интервью,Task,Major,Open,2027-04-20,research,Отчёт о тестировании,
+Полный текст и проверка на заимствования,,Task,Critical,Open,2027-04-30,thesis,Справка о проверке,
+"Итоговая предзащита: презентация, демо, резервное видео",,Task,Critical,Open,2027-05-15,final-pre-defense,Тег final-pre-defense; демо отрепетировано,

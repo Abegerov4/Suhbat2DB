@@ -1,0 +1,44 @@
+%% Диаграмма компонентов (C4, уровень 2). Та же диаграмма — в ARCHITECTURE.md §1
+flowchart LR
+    browser["Браузер"]
+
+    subgraph FE["frontend · Next.js 16"]
+        ui["UI<br/>чат, аналитическая панель,<br/>обзор, источники"]
+        bff["BFF<br/>JWT в httpOnly-cookie,<br/>прокси REST и SSE"]
+    end
+
+    subgraph BE["backend · FastAPI"]
+        api["REST + SSE API"]
+        chat["Сервис хода<br/>asyncio-задача,<br/>очередь событий"]
+        ds["Источники данных<br/>проверка прав,<br/>интроспекция, индексация"]
+        subgraph AG["Агент · LangGraph"]
+            graph_["Граф и узлы"]
+            linker["Schema linking"]
+            llmc["LLM-клиент<br/>модель на узел, fallback"]
+        end
+        val["Валидатор SQL<br/>уровни 1–5"]
+    end
+
+    appdb[("app-db · PostgreSQL<br/>пользователи, сессии,<br/>журнал, checkpoints")]
+    targetdb[("target-db · PostgreSQL<br/>анализируемые данные")]
+    qdrant[("Qdrant<br/>индекс схемы<br/>и примеров")]
+    openai["OpenAI API"]
+    lf["Langfuse Cloud"]
+
+    browser -->|HTTPS| ui
+    ui --> bff
+    bff -->|"REST + SSE, Bearer JWT"| api
+    api --> chat
+    api --> ds
+    chat --> graph_
+    graph_ --> linker
+    graph_ --> llmc
+    graph_ --> val
+    linker --> qdrant
+    ds --> qdrant
+    ds -->|"интроспекция"| targetdb
+    val -->|"EXPLAIN, SELECT<br/>роль s2d_reader"| targetdb
+    llmc --> openai
+    chat --> appdb
+    graph_ -->|checkpoints| appdb
+    graph_ -.->|трассы| lf

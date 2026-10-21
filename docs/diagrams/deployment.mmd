@@ -1,0 +1,22 @@
+%% Диаграмма развёртывания (docker compose, make up)
+flowchart TB
+    subgraph host["Хост: Docker Desktop / Linux"]
+        subgraph net["сеть compose · порты только на 127.0.0.1"]
+            fe["frontend<br/>node:24-slim<br/>:3000"]
+            be["backend<br/>python 3.12, uvicorn<br/>:8000"]
+            appdb[("app-db<br/>postgres:17<br/>:5442")]
+            tdb[("target-db<br/>postgres:17<br/>:5443")]
+            qd[("qdrant<br/>qdrant/qdrant:v1.19.2<br/>:6333")]
+        end
+        lfl["langfuse-local<br/>6 контейнеров<br/><i>профиль, необязательно</i>"]
+    end
+    openai["OpenAI API"]
+    lf["Langfuse Cloud"]
+
+    fe -->|"BACKEND_URL"| be
+    be --> appdb
+    be --> tdb
+    be --> qd
+    be -->|HTTPS| openai
+    be -.->|HTTPS| lf
+    be -.-> lfl
