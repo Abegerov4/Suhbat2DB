@@ -8,7 +8,7 @@ test("unauthenticated user is redirected to login with return path", async ({
   await page.goto("/datasources");
   await expect(page).toHaveURL("/login?next=%2Fdatasources");
   await expect(
-    page.getByRole("heading", { name: "Вход", level: 1 }),
+    page.getByRole("heading", { name: "С возвращением", level: 1 }),
   ).toBeVisible();
 });
 
