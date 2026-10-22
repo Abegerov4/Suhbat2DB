@@ -13,7 +13,7 @@
 | **Тип работы** | Индивидуальный дипломный проект: все этапы (анализ, проектирование, разработка, оценка, документация) выполняет автор |
 | **Сроки** | Октябрь 2026 – май 2027 |
 | **YouTrack** | [wasm.youtrack.cloud/issues/DIP](https://wasm.youtrack.cloud/issues/DIP) · порядок работы с задачами: [docs/project](docs/project/README.md) |
-| **Прототип** | *Figma: ссылка будет добавлена* · [экраны и сценарии](docs/prototype/README.md) · рабочая версия: [запуск](#14-запуск) |
+| **Прототип** | [Figma: кликабельный прототип](https://www.figma.com/proto/M1KIz4KLirQv3UrLMaCJO4?node-id=1-3&starting-point-node-id=1%3A3) · [файл](https://www.figma.com/design/M1KIz4KLirQv3UrLMaCJO4) · [экраны и сценарии](docs/prototype/README.md) · рабочая версия: [запуск](#14-запуск) |
 | **Статус** | Рабочая версия: агент, валидатор, веб-интерфейс и оценка этапа 1 готовы (октябрь 2026). Результаты в [EVALS.md](EVALS.md), план в [docs/roles](docs/roles/README.md) |
 
 > **Suhbat** — от казахского *сұхбат* («беседа, диалог»): разговор с базой данных на естественном языке.
