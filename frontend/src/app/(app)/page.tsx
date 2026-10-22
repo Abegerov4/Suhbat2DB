@@ -43,7 +43,7 @@ export default function OverviewPage() {
         )}
         {stats.data?.questions === 0 && <GettingStarted />}
         <StatCards stats={stats.data} />
-        <ActivityChart activity={stats.data?.activity} />
+        <ActivityChart />
         <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
           {stats.data ? (
             <ValidationSummary stats={stats.data} />
