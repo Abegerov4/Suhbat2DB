@@ -1,8 +1,8 @@
-# Правила разметки `ambiguous_ru`
+# Labelling guidelines for `ambiguous_ru`
 
-Набор проверяет, умеет ли агент отличать неоднозначный вопрос от однозначного и правильно отвечать после уточнения. База — демо-БД ([docs/demo_db.md](../../../docs/demo_db.md)). Набор генерируется и проверяется скриптом [`backend/evals/build_ambiguous.py`](../../../backend/evals/build_ambiguous.py), ручная правка JSONL не допускается.
+The set checks whether the agent can tell an ambiguous question from a clear one and answer correctly after clarification. The database is the demo database ([docs/demo_db.md](../../../docs/demo_db.md)). The set is generated and checked by the script [`backend/evals/build_ambiguous.py`](../../../backend/evals/build_ambiguous.py); editing the JSONL by hand is not allowed. The questions are in Russian; the examples below give an English translation.
 
-## Формат
+## Format
 
 ```json
 {"id": "ambiguous_ru-amb-001", "question": "Покажи продажи за 2025 год", "is_ambiguous": true,
@@ -12,52 +12,52 @@
    {"answer_to_clarification": "количество заказов без отменённых", "gold_sql": "SELECT ..."}]}
 ```
 
-- `interpretations` — все разумные трактовки с эталонным SQL; у однозначного вопроса трактовка одна и `answer_to_clarification = null`.
-- `target` — трактовка, которую «задумал» пользователь. Её выбирает симулированный пользователь, с её эталоном сравнивается ответ агента. Задуманная трактовка чередуется и не всегда первая: иначе агент, который просто применяет умолчание, получал бы завышенный EX.
+- `interpretations` lists all reasonable interpretations with their reference SQL; a clear question has one interpretation and `answer_to_clarification = null`.
+- `target` is the interpretation the user "had in mind". The simulated user chooses it, and the agent's answer is compared with its reference. The intended interpretation alternates and is not always the first one; otherwise an agent that simply applies a default would get an inflated EX.
 
-## Когда вопрос неоднозначен
+## When a question is ambiguous
 
-Вопрос неоднозначен, только если выполнены **оба** условия:
+A question is ambiguous only if **both** conditions hold:
 
-1. Есть хотя бы две разумные трактовки, которые эксперт по этой базе выбрал бы без подсказки.
-2. Трактовки дают **разные ответы на этих данных**. Это проверяется автоматически: скрипт выполняет все эталоны и отклоняет набор, если два из них совпали.
+1. There are at least two reasonable interpretations that an expert on this database would choose without a hint.
+2. The interpretations give **different answers on this data**. This is checked automatically: the script runs all the references and rejects the set if two of them match.
 
-Типы (`ambiguity_types`), по классификации из промпта агента:
+Types (`ambiguity_types`), following the classification in the agent prompt:
 
-| Тип | Пример | Трактовки |
+| Type | Example | Interpretations |
 |---|---|---|
-| `metric` | «Покажи продажи за 2025 год» | выручка / число заказов / проданные единицы |
-| `temporal` | «Выручка за первый квартал 2026 года» | календарный / финансовый квартал (FY с 1 апреля) |
-| `temporal` | «Сколько денег мы получили в сентябре 2026?» | по дате оплаты / по дате заказа |
-| `value` | «Выручка в Алматы за 2025 год» | город / город вместе с Алматинской областью |
-| `scope` | «Кто лучший менеджер за 2025 год?» | по выручке / по числу заказов |
-| `scope` | «Сколько у нас клиентов?» | зарегистрированные / покупавшие / активные |
-| `schema` | «Средняя цена проданных смартфонов» | `order_items.unit_price` / `products.price` |
+| `metric` | «Покажи продажи за 2025 год» ("Show sales for 2025") | revenue / number of orders / units sold |
+| `temporal` | «Выручка за первый квартал 2026 года» ("Revenue for Q1 2026") | calendar / fiscal quarter (FY starting on 1 April) |
+| `temporal` | «Сколько денег мы получили в сентябре 2026?» ("How much money did we receive in September 2026?") | by payment date / by order date |
+| `value` | «Выручка в Алматы за 2025 год» ("Revenue in Almaty for 2025") | the city / the city together with Almaty region |
+| `scope` | «Кто лучший менеджер за 2025 год?» ("Who is the best manager for 2025?") | by revenue / by number of orders |
+| `scope` | «Сколько у нас клиентов?» ("How many customers do we have?") | registered / have bought / active |
+| `schema` | «Средняя цена проданных смартфонов» ("Average price of smartphones sold") | `order_items.unit_price` / `products.price` |
 
-## Когда вопрос однозначен
+## When a question is clear
 
-Однозначные вопросы следуют **тем же умолчаниям, которые знает агент** (промпт `ambiguity.md`). Иначе ошибка агента была бы ошибкой разметки:
+Clear questions follow **the same defaults that the agent knows** (the `ambiguity.md` prompt). Otherwise an agent error would be a labelling error:
 
-- «выручка» — сумма `orders.total_amount`, отменённые заказы (`status = 'cancelled'`) не входят;
-- «за 2025 год» без слова «финансовый» — календарный год;
-- «оформлено заказов» — все заказы, включая отменённые;
-- если в вопросе явно названы показатель, тип периода или граница выборки («по выручке», «финансовый», «включая отменённые», «город Алматы без области»), вопрос однозначен.
+- "revenue" is the sum of `orders.total_amount`, and cancelled orders (`status = 'cancelled'`) are excluded;
+- "for 2025" without the word "fiscal" means the calendar year;
+- "orders placed" means all orders, including cancelled ones;
+- if the question explicitly names the measure, the type of period or the boundary of the selection ("by revenue", "fiscal", "including cancelled", "the city of Almaty without the region"), the question is clear.
 
-## Общие правила
+## General rules
 
-- **Только абсолютные даты.** Вопросы вида «за прошлый квартал» не используются: их ответ зависит от дня запуска, и прогоны перестают быть воспроизводимыми.
-- **Эталон — один SQL на трактовку.** Он выполняется на полном объёме демо-БД (`make seed`, SCALE=1.0) и должен вернуть непустой результат.
-- **Нет утечки в few-shot.** Формулировки не совпадают с примерами агента (`backend/app/agent/examples/demo.json`); почти-копии были заменены при сборке.
-- **Порядок строк** учитывается только при `ORDER BY` во внешнем запросе эталона («топ-N»).
+- **Absolute dates only.** Questions such as "for last quarter" are not used: their answer depends on the day of the run, and the runs would stop being reproducible.
+- **One reference SQL per interpretation.** It is run on the full volume of the demo database (`make seed`, SCALE=1.0) and must return a non-empty result.
+- **No leakage into few-shot.** The wording does not match the agent's examples (`backend/app/agent/examples/demo.json`); near-copies were replaced during the build.
+- **Row order** is taken into account only when the outer query of the reference has `ORDER BY` ("top N").
 
-## Вторая проверка разметки
+## Second check of the labels
 
-20% вопросов (21 шт.) проверяет второй человек — руководитель или однокурсник:
+20% of the questions (21) are checked by a second person, the supervisor or a fellow student:
 
 ```bash
-cd backend && uv run python -m evals.kappa export   # review_sample.csv: только вопросы, случайный порядок
-# второй разметчик заполняет reviewer_ambiguous (да/нет) и reviewer_types
+cd backend && uv run python -m evals.kappa export   # review_sample.csv: questions only, random order
+# the second annotator fills in reviewer_ambiguous (yes/no) and reviewer_types
 cd backend && uv run python -m evals.kappa score    # Cohen's κ → review_result.json
 ```
 
-Разметчик видит только текст вопроса: в выгрузке нет ни id (в них есть `amb`/`clear`), ни трактовок. Соответствие номеров вопросам хранится в `review_key.json`. Согласованность κ ≥ 0,6 считается приемлемой. Расхождения разбираются и описываются в `EVALS.md`.
+The annotator sees only the question text: the export contains neither ids (they include `amb`/`clear`) nor interpretations. The mapping of numbers to questions is kept in `review_key.json`. Agreement κ ≥ 0.6 is considered acceptable. Disagreements are analysed and described in `EVALS.md`.

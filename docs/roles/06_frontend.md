@@ -1,111 +1,111 @@
-# Роль 6. Frontend
+# Role 6. Frontend
 
-**Статус: ✅ выполнена** (октябрь 2026). Скриншоты — в [README](../../README.md#интерфейс).
+**Status: ✅ completed** (October 2026). Screenshots are in the [README](../../README.md#interface).
 
-**Цель:** веб-интерфейс, в котором человек без знания SQL задаёт вопросы и отвечает на уточнения. Ответ приходит вместе с SQL, отчётом проверки, таблицей и графиком.
-**Зависит от:** роль 3 (API + SSE), роль 5 (настоящий агент).
-**Нужно для:** пользовательского тестирования, демо на защите.
+**Aim:** a web interface where a person without SQL knowledge asks questions and answers clarifications. The answer comes together with the SQL, the validation report, a table and a chart.
+**Depends on:** role 3 (API + SSE), role 5 (the real agent).
+**Needed for:** user testing, the demo at the defence.
 
-Контракты: [`CONTRACTS.md` §1–2](../CONTRACTS.md).
+Contracts: [`CONTRACTS.md` §1–2](../CONTRACTS.md).
 
-## Стек
-Next.js 16 (App Router, `cacheComponents`) · React 19 · TypeScript · Tailwind CSS 4 · shadcn/ui (Radix, пресет Nova) · TanStack Query · Recharts 3 · shiki (подсветка SQL) · motion (анимации) · компоненты [AI Elements](https://ai-sdk.dev/elements) и [Magic UI](https://magicui.design) · `openapi-typescript` (типы из OpenAPI бэкенда) · Vitest (unit) · Playwright + axe-core (e2e и доступность).
+## Stack
+Next.js 16 (App Router, `cacheComponents`) · React 19 · TypeScript · Tailwind CSS 4 · shadcn/ui (Radix, Nova preset) · TanStack Query · Recharts 3 · shiki (SQL highlighting) · motion (animations) · components from [AI Elements](https://ai-sdk.dev/elements) and [Magic UI](https://magicui.design) · `openapi-typescript` (types from the backend OpenAPI) · Vitest (unit) · Playwright + axe-core (e2e and accessibility).
 
-Визуальный стиль — дашборд [app-1 (shadcnstore, 21st.dev)](https://21st.dev/@shadcnstore/components/app-1): боковая панель, закреплённая шапка, KPI-карточки, график с градиентом. Компонент не копировался: в выдаче 21st не было файлов `app-1-utils/*`, а приложенные компоненты написаны под Tailwind 3. Раскладка собрана из актуальных компонентов shadcn для Tailwind 4 и React 19.
+The visual style follows the [app-1 dashboard (shadcnstore, 21st.dev)](https://21st.dev/@shadcnstore/components/app-1): a sidebar, a sticky header, KPI cards, a chart with a gradient. The component was not copied: the 21st output did not contain the `app-1-utils/*` files, and the attached components were written for Tailwind 3. The layout is assembled from current shadcn components for Tailwind 4 and React 19. The interface language is Russian.
 
-## Устройство
+## Structure
 
 ```text
 frontend/src/
-├── proxy.ts                       # без cookie — на /login (оптимистичная проверка)
+├── proxy.ts                       # no cookie → /login (optimistic check)
 ├── app/
-│   ├── api/[...path]/route.ts     # BFF-прокси /api/* → FastAPI, JWT из httpOnly-cookie, поток SSE
-│   ├── api/auth/{login,logout}/   # вход кладёт токен в httpOnly-cookie
+│   ├── api/[...path]/route.ts     # BFF proxy /api/* → FastAPI, JWT from the httpOnly cookie, SSE stream
+│   ├── api/auth/{login,logout}/   # login puts the token into an httpOnly cookie
 │   ├── (auth)/{login,register}/
-│   └── (app)/                     # боковая панель + страницы
-│       ├── page.tsx               # «Обзор»: KPI, активность, проверка SQL, диалоги, источники
-│       ├── chat/                  # новый диалог, примеры вопросов
-│       ├── chat/[sessionId]/      # чат + аналитическая панель
-│       └── datasources/[id]/      # источники и обозреватель схемы
+│   └── (app)/                     # sidebar + pages
+│       ├── page.tsx               # Overview: KPIs, activity, SQL validation, dialogues, sources
+│       ├── chat/                  # new dialogue, sample questions
+│       ├── chat/[sessionId]/      # chat + analysis panel
+│       └── datasources/[id]/      # data sources and the schema browser
 ├── components/{layout,dashboard,chat,analysis,datasources,ui}/
-├── hooks/use-agent-stream.ts      # POST → SSE → состояние хода
+├── hooks/use-agent-stream.ts      # POST → SSE → turn state
 └── lib/{api,sse,turn,chart,format,highlight,queries}.ts
 ```
 
-## Задачи
+## Tasks
 
-### 6.1 Каркас
-- [x] Next.js, Tailwind 4, shadcn/ui, светлая, тёмная и системная темы (`next-themes`)
-- [x] Типы API: `npm run gen:api` → `src/lib/api/schema.d.ts`. Типы событий SSE в OpenAPI не попадают и описаны вручную по CONTRACTS §2
-- [x] Авторизация через **Backend for Frontend**: JWT хранится в httpOnly-cookie (`SameSite=Lax`), недоступен JavaScript, а route handler подставляет его в запросы к FastAPI. Изменяющие запросы с чужого `Origin` отклоняются. При 401 — переход на `/login?next=…` (только относительные пути, без open redirect)
+### 6.1 Skeleton
+- [x] Next.js, Tailwind 4, shadcn/ui, light, dark and system themes (`next-themes`)
+- [x] API types: `npm run gen:api` → `src/lib/api/schema.d.ts`. SSE event types are not in OpenAPI and are written by hand following CONTRACTS §2
+- [x] Authorisation through a **Backend for Frontend**: the JWT is kept in an httpOnly cookie (`SameSite=Lax`), is not accessible to JavaScript, and the route handler adds it to the requests to FastAPI. Modifying requests from a foreign `Origin` are rejected. On 401 the user goes to `/login?next=…` (relative paths only, no open redirect)
 
-### 6.2 Страницы
+### 6.2 Pages
 
-| Маршрут | Содержимое |
+| Route | Contents |
 |---|---|
-| `/login`, `/register` | Формы; регистрация сразу выполняет вход. Над формой — схема пути вопроса «Вопрос → Агент → Проверка SQL → БД → Ответ» с бегущими лучами (`AnimatedBeam`, Magic UI) |
-| `/` | **Обзор**: 4 KPI с анимированным счётчиком (`NumberTicker`, Magic UI) (вопросы, ответы с данными, уточнения, заблокированный SQL), активность за 14 дней, где валидатор останавливал запросы, последние диалоги, источники и оценки 👍/👎 |
-| `/chat` | Выбор источника, примеры вопросов; первый вопрос создаёт сессию |
-| `/chat/[sessionId]` | Чат + аналитическая панель |
-| `/datasources` | Карточки источников со статусом (опрос во время индексации); для admin — подключение, переиндексация, удаление |
-| `/datasources/[id]` | Обозреватель схемы: поиск, PK, FK, комментарии, значения категориальных столбцов |
+| `/login`, `/register` | Forms; registration logs the user in immediately. Next to the form there is an animated panel: the product logo with database and folder icons orbiting around it and ripples in the background (`OrbitingCircles`, `Ripple`, Magic UI) |
+| `/` | **Overview**: 4 KPIs with an animated counter (`NumberTicker`, Magic UI) (questions, answers with data, clarifications, blocked SQL); an activity chart with a period selector (7, 14 or 30 days) and a summary of the four outcomes with the change against the previous period; where the validator stopped queries; recent dialogues; sources and 👍/👎 ratings |
+| `/chat` | Choice of a source, sample questions; the first question creates a session |
+| `/chat/[sessionId]` | Chat + analysis panel |
+| `/datasources` | Source cards with status (polling during indexing); for admin: connection, reindexing, deletion |
+| `/datasources/[id]` | Schema browser: search, PKs, FKs, comments, values of categorical columns |
 
-### 6.3 Экран диалога: чат + аналитическая панель
-- [x] Две колонки с перетаскиваемым разделителем; панель скрывается кнопкой в шапке. На телефоне панель открывается листом снизу
-- [x] В чате только текст ответа, уточнения, отказы и компактная карточка ответа («10 строк» + пять значков проверки). Клик открывает ответ в панели; без выбора панель показывает последний ответ, а во время работы агента — его ход
-- [x] **`AgentThinking`** в чате: текущий шаг агента мерцающей подписью (`Shimmer`, AI Elements) в «пилюле» с бегущим по рамке лучом (`BorderBeam`, Magic UI)
-- [x] **`AgentTrace`** в панели: раскрывающаяся цепочка шагов графа (`ChainOfThought`, AI Elements) — иконка на каждый узел, найденные таблицы бейджами, причины решений guard и детектора неоднозначности подписями
-- [x] **`ClarificationCard`**: варианты кнопками с описанием и поле «свой вариант» для каждой неоднозначности; ввод вопроса заблокирован до ответа
-- [x] **Аналитическая панель**, вкладки:
-  - «График» (`ChartView`: столбцы, горизонтальные при длинных подписях; площадь или линии; кольцо; точки) или «Итог» — крупные числа, если в ответе одна строка
-  - «Таблица» (`ResultTable`: сортировка, страницы по 50 строк, плашка при усечении, CSV с BOM для Excel)
-  - «SQL» (`SqlPanel`: подсветка shiki, копирование, **история самокоррекции**: каждая отклонённая попытка с уровнем, причиной и подсказкой валидатора)
-  - «Проверка» (`ValidationReport`: 5 уровней с иконкой и подписью; уровень, на котором остановлен запрос, выделен, следующие — «не проверялся»)
-- [x] Отказы и ошибки — отдельная карточка с понятным заголовком по коду (`refused`, `unsafe_sql`, `max_attempts`, `cancelled`…), а не тост
-- [x] 👍/👎 + необязательный комментарий → `POST /feedback` (уходит score в Langfuse)
-- [x] История: `GET /sessions/{id}/messages` рендерит те же компоненты. Незавершённое уточнение остаётся активным; карточка отказа восстанавливается (поле `error` сообщения, миграция 0002)
+### 6.3 Chat screen: chat + analysis panel
+- [x] Two columns with a draggable divider; the panel can be hidden with a button in the header. On a phone the panel opens as a bottom sheet
+- [x] The chat shows only the answer text, clarifications, refusals and a compact answer card ("10 rows" + five validation icons). A click opens the answer in the panel; with nothing selected the panel shows the latest answer, and while the agent works it shows its progress
+- [x] **`AgentThinking`** in the chat: the current agent step as a shimmering label (`Shimmer`, AI Elements) in a "pill" with a beam running along its border (`BorderBeam`, Magic UI)
+- [x] **`AgentTrace`** in the panel: an expandable chain of graph steps (`ChainOfThought`, AI Elements) with an icon for each node, the found tables as badges, and the reasons for the guard and ambiguity detector decisions as captions
+- [x] **`ClarificationCard`**: options as buttons with a description and a "custom option" field for each ambiguity; question input is locked until the user answers
+- [x] **Analysis panel** with the tabs:
+  - Chart (`ChartView`: bars, horizontal for long labels; area or lines; donut; scatter) or Summary, with large numbers if the answer has one row
+  - Table (`ResultTable`: sorting, pages of 50 rows, a notice on truncation, CSV with a BOM for Excel)
+  - SQL (`SqlPanel`: shiki highlighting, copying, **self-correction history**: each rejected attempt with the validator level, reason and hint)
+  - Validation (`ValidationReport`: 5 levels with an icon and a label; the level where the query stopped is highlighted, and the following ones are marked "not checked")
+- [x] Refusals and errors are a separate card with a clear title by code (`refused`, `unsafe_sql`, `max_attempts`, `cancelled`…), not a toast
+- [x] 👍/👎 + an optional comment → `POST /feedback` (the score goes to Langfuse)
+- [x] History: `GET /sessions/{id}/messages` renders the same components. An unfinished clarification stays active; a refusal card is restored (the `error` field of the message, migration 0002)
 
-### 6.4 SSE и жизненный цикл хода
-- [x] `useAgentStream`: `fetch` + `ReadableStream`, собственный парсер SSE (`EventSource` не умеет POST). UTF-8 на границе чанков, CRLF, комментарии; неизвестные события пропускаются
-- [x] Редьюсер `applyEvent` — одна модель хода для потока и истории (`turnFromMessage`); стабильный ключ хода сохраняет выбранную вкладку панели, когда ответ переходит из потока в историю
-- [x] **Ход не зависит от соединения** (изменение бэкенда): агент выполняется отдельной задачей, SSE только читает её очередь. Если закрыть вкладку посреди ответа, ответ всё равно сохранится. «Остановить» вызывает `POST /sessions/{id}/stop`: ход отменяется и сохраняется с ошибкой `cancelled`
-- [x] Обрыв соединения → карточка «Соединение прервалось» с кнопкой «Повторить»
+### 6.4 SSE and the turn life cycle
+- [x] `useAgentStream`: `fetch` + `ReadableStream`, an own SSE parser (`EventSource` cannot do POST). UTF-8 across chunk boundaries, CRLF, comments; unknown events are skipped
+- [x] The `applyEvent` reducer is one turn model for the stream and the history (`turnFromMessage`); a stable turn key keeps the selected panel tab when the answer moves from the stream to the history
+- [x] **The turn does not depend on the connection** (a backend change): the agent runs as a separate task, and SSE only reads its queue. If the tab is closed in the middle of an answer, the answer is still saved. Stop calls `POST /sessions/{id}/stop`: the turn is cancelled and saved with the `cancelled` error
+- [x] A dropped connection → a "Connection lost" card with a Retry button
 
-### 6.5 Качество
-- [x] Ширина от 375 px: таблица прокручивается внутри карточки, горизонтальной прокрутки страницы нет (проверяется в e2e)
-- [x] Доступность: `aria-label` у иконок-кнопок, `aria-pressed`, `aria-sort`, `role=status` у прогресса, статус никогда не передаётся только цветом. Палитра графиков проверена валидатором dataviz на дальтонизм в обеих темах
-- [x] Unit (Vitest, 17): парсер SSE, редьюсер хода, подготовка данных графиков, CSV, склонения
-- [x] E2E (Playwright, 9): редирект без входа, регистрация (токен не виден из JS), неверный пароль, уточнение → ответ → график/таблица/SQL/проверка → перезагрузка, отказ и его восстановление, оценка и обновление «Обзора», лист на телефоне, axe без нарушений WCAG 2.1 AA уровня serious/critical. Агент — заглушка (`AGENT_MODE=fake`), ответы детерминированы
-- [x] CI: `frontend.yml` (lint, prettier, типы, unit, build), `e2e.yml` (весь стек в Docker + Playwright)
+### 6.5 Quality
+- [x] Widths from 375 px: the table scrolls inside its card, and the page has no horizontal scroll (checked in e2e)
+- [x] Accessibility: `aria-label` on icon buttons, `aria-pressed`, `aria-sort`, `role=status` on progress; status is never conveyed by colour alone. The chart palette was checked for colour blindness with the dataviz validator in both themes
+- [x] Unit tests (Vitest, 17): SSE parser, turn reducer, chart data preparation, CSV, Russian plural forms
+- [x] E2E tests (Playwright, 9): redirect without login, registration (the token is not visible from JS), wrong password, clarification → answer → chart/table/SQL/validation → reload, refusal and its restoration, rating and the Overview update, the sheet on a phone, axe without serious/critical WCAG 2.1 AA violations. The agent is a stub (`AGENT_MODE=fake`), so the answers are deterministic
+- [x] CI: `frontend.yml` (lint, prettier, types, unit, build), `e2e.yml` (the whole stack in Docker + Playwright)
 
-## Результаты
+## Results
 
-| Проверка | Результат |
+| Check | Result |
 |---|---|
 | Lighthouse `/chat/[id]` | Accessibility **96**, Best Practices 100, Performance 82 |
-| axe (WCAG 2.1 AA, serious/critical) | 0 нарушений на входе, «Обзоре», ответе и уточнении |
-| E2E | 9 тестов, два прогона подряд без падений |
-| Реальный агент через UI | уточнение «продажи за прошлый квартал» → 5,61 млрд ₸; динамика по месяцам (площадь); топ-5 регионов (кольцо); отказ «удали заказы» |
+| axe (WCAG 2.1 AA, serious/critical) | 0 violations on login, Overview, an answer and a clarification |
+| E2E | 9 tests, two runs in a row without failures |
+| Real agent through the UI | clarification of "sales for last quarter" → 5.61 billion ₸; monthly trend (area); top 5 regions (donut); refusal for "delete the orders" |
 
-## Фирменный стиль
-- **Акцентный цвет** — синий логотипа `#256abf` (`--primary` в обеих темах): кнопки, активный пункт меню, фокус, ссылки. Белый текст на нём — 5,4:1 (WCAG AA); для акцентного текста отдельный токен `--brand-text` (`#1c5cab` светлая тема, `#86b6ef` тёмная).
-- **Логотип** ([docs/brand](../brand)) — облачко диалога + цилиндр БД с орнаментом «қошқар мүйіз»; разделители и орнамент — маска, а не белая заливка, поэтому в тёмной теме видна подложка. Фавиконка — упрощённый силуэт.
-- **«Обзор»**: тёмно-синий баннер с крупным силуэтом логотипа, блок «01 · 02 · 03» для нового пользователя, индикатор доступности сервиса в шапке, карточка «Только чтение» в боковой панели.
+## Brand style
+- **Accent colour**: the logo blue `#256abf` (`--primary` in both themes) for buttons, the active menu item, focus and links. White text on it has a contrast of 5.4:1 (WCAG AA); accent text uses a separate token `--brand-text` (`#1c5cab` in the light theme, `#86b6ef` in the dark one).
+- **Logo** ([docs/brand](../brand)): a speech bubble + a database cylinder with the "қошқар мүйіз" ornament; the dividers and the ornament are a mask, not a white fill, so the background shows through in the dark theme. The favicon is a simplified silhouette.
+- **Login and the application share one style** (DIP-38): the same icon tiles, the glowing input border and the card style. On Overview there is a "01 · 02 · 03" getting-started block for a new user, a service availability indicator in the header and a "Read only" card in the sidebar.
 
-## Решения и отступления от плана
-- **Чат + аналитическая панель** вместо ответа целиком в ленте: графики и таблицы читаются крупно, на одном экране видны диалог, SQL и проверка ([ADR-018](../../ARCHITECTURE.md#adr-018-экран-диалога-чат--аналитическая-панель)).
-- **BFF и httpOnly-cookie** вместо `localStorage` и `@microsoft/fetch-event-source` ([ADR-017](../../ARCHITECTURE.md#adr-017-backend-for-frontend-и-jwt-в-httponly-cookie)). Библиотека не обновлялась с 2021 года, а собственный парсер занимает 60 строк и покрыт тестами.
-- **Страница «Обзор»** (`GET /api/stats`) — новая: дашборд строится из журнала запросов и истории диалогов.
-- Анимация графиков отключена: Recharts останавливал её посередине при перерисовке во время ответа.
-- Компоненты из реестров доработаны: `chain-of-thought` — один `Collapsible` на заголовок и содержимое (axe нашёл неверный `aria-controls`), `shimmer` — без создания компонентов при рендере, `number-ticker` — русские разделители разрядов. Все анимации учитывают системную настройку «уменьшить движение» (`MotionConfig reducedMotion="user"`). `dot-pattern` не взят: он вызывает `Math.random()` при рендере и рисует сотни SVG-узлов — точечный фон входа сделан одной CSS-строкой.
-- Next 16 с `cacheComponents` хранит прошлую страницу скрытой в `<Activity>`. Поэтому вход и выход делают полную перезагрузку (кэш и данные прошлого пользователя не остаются в памяти), а `useParams`/`usePathname` обёрнуты в `Suspense`.
+## Decisions and deviations from the plan
+- **Chat + analysis panel** instead of the whole answer in the feed: charts and tables are large, and one screen shows the dialogue, the SQL and the validation ([ADR-018](../../ARCHITECTURE.md#adr-018-chat-screen-chat--analysis-panel)).
+- **BFF and an httpOnly cookie** instead of `localStorage` and `@microsoft/fetch-event-source` ([ADR-017](../../ARCHITECTURE.md#adr-017-backend-for-frontend-and-jwt-in-an-httponly-cookie)). The library has not been updated since 2021, and the own parser is 60 lines long and covered by tests.
+- **The Overview page** (`GET /api/stats`) is new: the dashboard is built from the query log and the dialogue history.
+- Chart animation is turned off: Recharts stopped it halfway when the chart was redrawn during an answer.
+- Components from the registries were adapted: `chain-of-thought` uses one `Collapsible` for the header and the content (axe found a wrong `aria-controls`), `shimmer` does not create components during render, `number-ticker` uses Russian digit separators. All animations respect the system "reduce motion" setting (`MotionConfig reducedMotion="user"`), and the animated components render the same markup on the server and the client, so hydration does not break with reduced motion. `dot-pattern` was not used: it calls `Math.random()` during render and draws hundreds of SVG nodes, so the dotted background is one line of CSS.
+- Next 16 with `cacheComponents` keeps the previous page hidden in `<Activity>`. For this reason login and logout do a full reload (the cache and the previous user's data do not stay in memory), and `useParams`/`usePathname` are wrapped in `Suspense`.
 
 ## Definition of Done
-- [x] Полный демо-сценарий проходит через UI на реальном агенте
-- [x] E2E-тесты в CI (`e2e.yml`)
-- [x] Lighthouse Accessibility ≥ 90 на `/chat/[id]` — **96**
-- [x] Скриншоты основных экранов в README
+- [x] The full demo scenario works through the UI with the real agent
+- [x] E2E tests in CI (`e2e.yml`)
+- [x] Lighthouse Accessibility ≥ 90 on `/chat/[id]`: **96**
+- [x] Screenshots of the main screens in the README
 
-## База знаний
-- `ai_engineering.md` §7 (HITL в UI: подтверждение и правка — сильный демо-момент)
-- `ai_security.md` §8 (ответ агента рендерится как обычный текст: без Markdown, ссылок и картинок)
+## Knowledge base
+- `ai_engineering.md` §7 (HITL in the UI: confirmation and editing are a strong demo moment)
+- `ai_security.md` §8 (the agent's answer is rendered as plain text: no Markdown, links or images)

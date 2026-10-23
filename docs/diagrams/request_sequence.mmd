@@ -1,36 +1,36 @@
-%% Путь одного запроса с уточнением и самокоррекцией. Та же диаграмма — в ARCHITECTURE.md §4
+%% Path of one request with clarification and self-correction. The same diagram is in ARCHITECTURE.md §4
 sequenceDiagram
     autonumber
-    actor U as Аналитик
+    actor U as Analyst
     participant FE as Next.js (BFF)
     participant API as FastAPI
-    participant G as Граф LangGraph
+    participant G as LangGraph graph
     participant Q as Qdrant
     participant L as OpenAI
     participant DB as target-db
     participant A as app-db
 
-    U->>FE: «Выручка за первый квартал 2026»
+    U->>FE: "Revenue for Q1 2026"
     FE->>API: POST /sessions/{id}/messages
-    API->>G: ход как asyncio-задача, thread_id = id сессии
-    API-->>FE: поток SSE
+    API->>G: turn as an asyncio task, thread_id = session id
+    API-->>FE: SSE stream
     G->>L: guard_input (gpt-4.1-mini)
-    G->>Q: schema_linking: гибридный поиск, пути JOIN
+    G->>Q: schema_linking: hybrid search, JOIN paths
     G->>L: detect_ambiguity (gpt-4.1)
-    L-->>G: квартал календарный или финансовый?
+    L-->>G: calendar or fiscal quarter?
     G->>A: checkpoint, interrupt()
     G-->>FE: clarification, done(awaiting_clarification)
-    U->>FE: «финансовый (с 1 апреля)»
+    U->>FE: "fiscal (from 1 April)"
     FE->>API: POST /sessions/{id}/clarify
-    API->>G: Command(resume=ответ)
+    API->>G: Command(resume=answer)
     G->>L: generate_sql (gpt-4.1)
-    G->>G: валидатор, уровни 1–3 (без БД)
-    G->>DB: уровень 4: EXPLAIN
-    opt проверка не пройдена
-        G->>L: generate_sql + причина и подсказка (≤ 3 попыток)
+    G->>G: validator, levels 1–3 (no database)
+    G->>DB: level 4: EXPLAIN
+    opt check failed
+        G->>L: generate_sql + reason and hint (≤ 3 attempts)
     end
-    G->>DB: уровень 5: SELECT в READ ONLY, тайм-аут, LIMIT
-    G->>L: explain_and_visualize (gpt-4.1-mini, стриминг)
+    G->>DB: level 5: SELECT in READ ONLY, timeout, LIMIT
+    G->>L: explain_and_visualize (gpt-4.1-mini, streaming)
     G-->>FE: sql, validation, result, chart, answer
-    API->>A: сообщение и журнал запроса
+    API->>A: message and query log entry
     API-->>FE: done(message_id, trace_id)

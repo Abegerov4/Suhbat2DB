@@ -35,7 +35,7 @@ def p_value(p: float) -> str:
 
 def experiment1() -> list[str]:
     lines = [
-        "| Набор | Сложность | n | Baseline EX, % | Агент EX, % | Агент EX ослабл., % |",
+        "| Set | Difficulty | n | Baseline EX, % | Agent EX, % | Agent relaxed EX, % |",
         "|---|---|---|---|---|---|",
     ]
     stats = []
@@ -51,15 +51,15 @@ def experiment1() -> list[str]:
                 f"{pct(block['ex'])} | {pct(block['ex_relaxed'])} |"
             )
         lines.append(
-            f"| **{suite}** | **всего** | **{sb['n']}** | "
+            f"| **{suite}** | **total** | **{sb['n']}** | "
             f"**{pct(sa['ex'])}** {ci(sa['ex_ci95'])} | "
             f"**{pct(sb['ex'])}** {ci(sb['ex_ci95'])} | {pct(sb['ex_relaxed'])} |"
         )
         stats.append(compare(a, b))
     lines += [
         "",
-        "| Набор | Разница EX (агент − baseline), п.п. | 95% CI "
-        "| Агент лучше / хуже | p (Макнемар) |",
+        "| Set | EX difference (agent − baseline), pp | 95% CI "
+        "| Agent better / worse | p (McNemar) |",
         "|---|---|---|---|---|",
     ]
     for r in stats:
@@ -73,8 +73,8 @@ def experiment1() -> list[str]:
 
 def agent_details() -> list[str]:
     lines = [
-        "| Набор | EX 1-й попытки, % | Итоговый EX, % | Вклад самокоррекции, п.п. | "
-        "Schema recall | Все таблицы найдены, % | $ / вопрос | p50, с | p95, с |",
+        "| Set | First-attempt EX, % | Final EX, % | Self-correction gain, pp | "
+        "Schema recall | All tables found, % | $ / question | p50, s | p95, s |",
         "|---|---|---|---|---|---|---|---|---|",
     ]
     for suite in ("spider_subset", "bird_subset", "ambiguous_ru"):
@@ -104,21 +104,22 @@ def agent_details() -> list[str]:
 def experiment2() -> list[str]:
     a, b = latest("ambiguous_ru", "agent_no_clarify"), latest("ambiguous_ru", "agent")
     if not a or not b:
-        return ["(нет отчётов)"]
+        return ["(no reports)"]
     sa, sb = a["summary"], b["summary"]
     det = sb["ambiguity_detection"]
     lines = [
-        "| Метрика | Без уточнения | С уточнением |",
+        "| Metric | Without clarification | With clarification |",
         "|---|---|---|",
-        f"| EX на неоднозначных, % | {pct(sa['ex_ambiguous']['ex'])} "
+        f"| EX on ambiguous, % | {pct(sa['ex_ambiguous']['ex'])} "
         f"{ci(sa['ex_ambiguous']['ex_ci95'])} | {pct(sb['ex_ambiguous']['ex'])} "
         f"{ci(sb['ex_ambiguous']['ex_ci95'])} |",
-        f"| EX на однозначных, % | {pct(sa['ex_clear']['ex'])} | {pct(sb['ex_clear']['ex'])} |",
-        f"| EX на всём наборе, % | {pct(sa['ex'])} | {pct(sb['ex'])} |",
-        f"| Precision / Recall / F1 поиска неоднозначности | — | "
+        f"| EX on clear, % | {pct(sa['ex_clear']['ex'])} | {pct(sb['ex_clear']['ex'])} |",
+        f"| EX on the whole set, % | {pct(sa['ex'])} | {pct(sb['ex'])} |",
+        f"| Ambiguity detection precision / recall / F1 | — | "
         f"{det['precision']:.2f} / {det['recall']:.2f} / {det['f1']:.2f} |",
-        f"| Лишние уточнения (over-clarification), % | — | {pct(sb['over_clarification_rate'])} |",
-        f"| $ / вопрос | {sa.get('cost_usd_per_question', 0):.4f} | "
+        f"| Unnecessary clarifications (over-clarification), % | — | "
+        f"{pct(sb['over_clarification_rate'])} |",
+        f"| $ / question | {sa.get('cost_usd_per_question', 0):.4f} | "
         f"{sb.get('cost_usd_per_question', 0):.4f} |",
     ]
     amb_a = {c["id"]: c for c in a["cases"] if c.get("difficulty") == "ambiguous"}
@@ -130,10 +131,10 @@ def experiment2() -> list[str]:
     m = r["mcnemar"]
     lines += [
         "",
-        f"На неоднозначных вопросах (n = {r['n']}): разница EX {100 * r['diff']:+.1f} п.п., "
+        f"On ambiguous questions (n = {r['n']}): EX difference {100 * r['diff']:+.1f} pp, "
         f"95% CI [{100 * r['diff_ci95'][0]:+.1f}; {100 * r['diff_ci95'][1]:+.1f}], "
-        f"уточнение исправило {m['b01']} ответов и испортило {m['b10']}, "
-        f"p (Макнемар) = {p_value(m['p_value'])}.",
+        f"clarification fixed {m['b01']} answers and broke {m['b10']}, "
+        f"p (McNemar) = {p_value(m['p_value'])}.",
     ]
     return lines
 
@@ -141,40 +142,40 @@ def experiment2() -> list[str]:
 def security() -> list[str]:
     r = latest("unsafe", "agent")
     if not r:
-        return ["(нет отчёта)"]
+        return ["(no report)"]
     a, v = r["summary"]["agent"], r["summary"]["validator"]
     lines = [
-        "| Уровень | Атак | Заблокировано, % | Ложные блокировки, % |",
+        "| Level | Attacks | Blocked, % | False blocks, % |",
         "|---|---|---|---|",
-        f"| Агент: вопросы на естественном языке | {a['attacks']} | {pct(a['block_rate'])} | "
-        f"{pct(a['false_block_rate'])} (из {a['benign']}) |",
-        f"| Валидатор: SQL-атаки | {v['attacks']} | {pct(v['block_rate'])} | "
+        f"| Agent: natural-language questions | {a['attacks']} | {pct(a['block_rate'])} | "
+        f"{pct(a['false_block_rate'])} (of {a['benign']}) |",
+        f"| Validator: SQL attacks | {v['attacks']} | {pct(v['block_rate'])} | "
         f"{pct(v['false_block_rate'])} |",
         "",
-        "| Класс атак | Заблокировано, % |",
+        "| Attack class | Blocked, % |",
         "|---|---|",
     ]
     lines += [f"| {k} | {pct(x)} |" for k, x in a["block_rate_by_kind"].items()]
-    lines += ["", "| Язык атак | Заблокировано, % |", "|---|---|"]
+    lines += ["", "| Attack language | Blocked, % |", "|---|---|"]
     lines += [f"| {k} | {pct(x)} |" for k, x in a["block_rate_by_lang"].items()]
     lines += [
         "",
-        f"Непрямые инъекции через данные: устойчивость {pct(a['indirect_resisted'])}% "
-        f"(n = {a['indirect']}); «тяжёлые» запросы удержаны лимитами: "
-        f"{pct(a['heavy_contained'])}% (n = {a['heavy']}); попыток SQL, нарушающих политику "
-        f"«только чтение», — {a['policy_violation_attempts']} (все остановлены уровнем 2).",
+        f"Indirect injections through data: resisted {pct(a['indirect_resisted'])}% "
+        f"(n = {a['indirect']}); heavy queries contained by limits: "
+        f"{pct(a['heavy_contained'])}% (n = {a['heavy']}); SQL attempts violating the read-only "
+        f"policy: {a['policy_violation_attempts']} (all stopped at level 2).",
     ]
     if a["missed_attacks"] or a["false_blocks"]:
-        lines.append(f"Пропущены: {a['missed_attacks']}; ложно заблокированы: {a['false_blocks']}.")
+        lines.append(f"Missed: {a['missed_attacks']}; falsely blocked: {a['false_blocks']}.")
     return lines
 
 
 def main() -> None:
     sections = (
-        ("Эксперимент 1. Baseline против агента", experiment1),
-        ("Агент: самокоррекция, отбор таблиц, стоимость", agent_details),
-        ("Эксперимент 2. Уточнение неоднозначности", experiment2),
-        ("Безопасность", security),
+        ("Experiment 1. Baseline vs agent", experiment1),
+        ("Agent: self-correction, table selection, cost", agent_details),
+        ("Experiment 2. Ambiguity clarification", experiment2),
+        ("Security", security),
     )
     print("\n\n".join(f"### {title}\n\n" + "\n".join(section()) for title, section in sections))
 

@@ -1,26 +1,26 @@
-# Встреча с руководителем
+# Meeting with the supervisor
 
-Протокол заполняется после каждой встречи и сохраняется как `docs/meetings/YYYY-MM-DD.md`. Замечания, по которым нужно что-то сделать, заводятся задачами в YouTrack; в таблице указывается номер задачи, а после выполнения — ссылка на коммит или PR. Это и есть подтверждение для пункта «Supervisor feedback».
+The notes are filled in after each meeting and saved as `docs/meetings/YYYY-MM-DD.md`. Comments that require action are created as YouTrack tasks; the table gives the task number and, after completion, a link to the commit or pull request. This is the evidence for the "Supervisor feedback" item.
 
 | | |
 |---|---|
-| Дата | |
-| Формат | очно / онлайн |
-| Участники | Жанғабыл А. (студент), Сахипов А.А. (руководитель) |
-| Что показано | например, демо уточнения, `EVALS.md`, черновик главы 1 |
+| Date | |
+| Format | in person / online |
+| Participants | A. Zhangabyl (student), A. A. Sakhipov (supervisor) |
+| What was shown | for example, a clarification demo, `EVALS.md`, a draft of chapter 1 |
 
-## Повестка
+## Agenda
 
 1.
 2.
 
-## Замечания и решения
+## Comments and decisions
 
-| # | Замечание руководителя | Решение | Задача | Срок | Результат (коммит / PR) |
+| # | Supervisor's comment | Decision | Task | Deadline | Result (commit / PR) |
 |---|---|---|---|---|---|
-| 1 | | принять / обсудить / отклонить (с причиной) | DIP-.. | | |
+| 1 | | accept / discuss / reject (with a reason) | DIP-.. | | |
 
-## Договорённости
+## Agreements
 
-- Следующая встреча:
-- К следующей встрече подготовить:
+- Next meeting:
+- To prepare for the next meeting:

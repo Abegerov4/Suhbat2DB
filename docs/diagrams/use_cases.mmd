@@ -1,32 +1,32 @@
-%% Диаграмма вариантов использования
+%% Use case diagram
 flowchart LR
-    analyst(["👤 Аналитик"])
-    admin(["👤 Администратор"])
-    llm(["⚙️ LLM-провайдер"])
-    db(["⚙️ Анализируемая БД"])
+    analyst(["👤 Analyst"])
+    admin(["👤 Administrator"])
+    llm(["⚙️ LLM provider"])
+    db(["⚙️ Analysed database"])
 
     subgraph S["Suhbat2DB"]
         direction TB
-        UC1(["UC1 Войти / зарегистрироваться"])
-        UC2(["UC2 Начать диалог с выбранной БД"])
-        UC3(["UC3 Задать вопрос к данным"])
-        UC4(["UC4 Ответить на уточняющий вопрос"])
-        UC5(["UC5 Просмотреть SQL и отчёт проверки"])
-        UC6(["UC6 Просмотреть таблицу и график"])
-        UC7(["UC7 Остановить ответ"])
-        UC8(["UC8 Оценить ответ"])
-        UC9(["UC9 Просмотреть обзор журнала"])
-        UC10(["UC10 Подключить БД с проверкой прав"])
-        UC11(["UC11 Переиндексировать / удалить БД"])
-        UC12(["UC12 Сгенерировать и проверить SQL<br/>с самокоррекцией"])
-        UC13(["UC13 Отклонить небезопасный запрос"])
+        UC1(["UC1 Log in / register"])
+        UC2(["UC2 Start a dialogue with the selected database"])
+        UC3(["UC3 Ask a question about the data"])
+        UC4(["UC4 Answer a clarifying question"])
+        UC5(["UC5 View the SQL and the validation report"])
+        UC6(["UC6 View the table and the chart"])
+        UC7(["UC7 Stop the answer"])
+        UC8(["UC8 Rate the answer"])
+        UC9(["UC9 View the query log overview"])
+        UC10(["UC10 Connect a database with a privilege check"])
+        UC11(["UC11 Reindex / delete a database"])
+        UC12(["UC12 Generate and validate SQL<br/>with self-correction"])
+        UC13(["UC13 Reject an unsafe request"])
     end
 
     analyst --- UC1 & UC2 & UC3 & UC5 & UC6 & UC7 & UC8 & UC9
     UC3 -. "«include»" .-> UC12
-    UC4 -. "«extend»: вопрос неоднозначен" .-> UC3
-    UC13 -. "«extend»: атака или вне темы" .-> UC3
-    admin -- "наследует" --> analyst
+    UC4 -. "«extend»: the question is ambiguous" .-> UC3
+    UC13 -. "«extend»: attack or off topic" .-> UC3
+    admin -- "inherits" --> analyst
     admin --- UC10 & UC11
     UC12 --- llm
     UC12 --- db

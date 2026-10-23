@@ -1,81 +1,81 @@
-# Сравнение существующих систем
+# Comparison of existing systems
 
-> Данные взяты из открытой документации, инженерных блогов, форумов производителей и научных публикаций на 22.10.2026, ссылки в конце документа. Вручную системы не тестировались. «Не заявлено» означает, что в найденных источниках подтверждения нет; возможность при этом может существовать. Спорные ячейки нужно перепроверить перед защитой.
+> The data comes from public documentation, engineering blogs, vendor forums and academic publications as of 22.10.2026; the links are at the end of the document. The systems were not tested by hand. "Not stated" means that the sources found give no confirmation; the feature may still exist. Disputable cells should be checked again before the defence.
 
-## 1. Системы
+## 1. Systems
 
-| Система | Что это | Почему выбрана |
+| System | What it is | Why it was chosen |
 |---|---|---|
-| Snowflake Cortex Analyst | Сервис платформы Snowflake: вопрос → SQL по семантической модели (YAML) | Крупный коммерческий представитель, явно работает с неоднозначностью |
-| Databricks AI/BI Genie | Диалоговый интерфейс к таблицам Databricks в настроенном пространстве (Genie space) | Второй крупный представитель «данные + LLM» |
-| ThoughtSpot Spotter | ИИ-аналитик BI-платформы ThoughtSpot | BI-подход: поисковые токены вместо SQL |
-| Vanna | Открытая Python-библиотека: RAG по DDL, документации и примерам SQL | Ближайший открытый аналог, развёртывается у себя |
-| Чат с LLM (ChatGPT и аналоги, без инструментов) | Пользователь вставляет схему и просит SQL | Самый распространённый способ на практике; соответствует baseline в экспериментах |
+| Snowflake Cortex Analyst | A service of the Snowflake platform: question → SQL over a semantic model (YAML) | A large commercial system that handles ambiguity explicitly |
+| Databricks AI/BI Genie | A conversational interface to Databricks tables in a configured Genie space | The second large "data + LLM" system |
+| ThoughtSpot Spotter | AI analyst of the ThoughtSpot BI platform | The BI approach: search tokens instead of SQL |
+| Vanna | An open-source Python library: RAG over DDL, documentation and SQL examples | The closest open analogue that can be self-hosted |
+| Chat with an LLM (ChatGPT and similar, without tools) | The user pastes the schema and asks for SQL | The most common way in practice; corresponds to the baseline in the experiments |
 
-Отдельно в разделе 3.2 рассмотрены два исследовательских прототипа с уточняющим диалогом, Sphinteract и AmbiSQL. Это ближайшие научные аналоги ([обзор литературы](literature_review.md), источники 18 и 20), но не продукты, поэтому они сравниваются по применимым к ним критериям.
+Section 3.2 separately covers two research prototypes with a clarification dialogue, Sphinteract and AmbiSQL. They are the closest academic analogues ([literature review](literature_review.md), sources 18 and 20), but they are not products, so they are compared only on the criteria that apply to them.
 
-## 2. Критерии
+## 2. Criteria
 
-| # | Критерий | Почему важен для задачи |
+| # | Criterion | Why it matters for the task |
 |---|---|---|
-| К1 | Обнаружение неоднозначности и уточнение | Главная проблема 2 из [proposal](proposal.md#1-проблема) |
-| К2 | Видимость SQL пользователю | Можно проверить, как получен ответ |
-| К3 | Детерминированная проверка SQL до выполнения | Защита от неверных и опасных запросов |
-| К4 | Гарантия «только чтение» | Модель не может изменить данные |
-| К5 | Работа без предварительной ручной настройки семантической модели | Можно задавать вопросы сразу после подключения БД |
-| К6 | Открытый код и развёртывание у себя | Данные не покидают организацию |
-| К7 | Произвольная PostgreSQL как источник | Типичная СУБД в университете и малом бизнесе |
-| К8 | Русский язык интерфейса и вопросов | Целевые пользователи |
-| К9 | Измеренное качество на открытых наборах | Можно ли проверить заявления о точности |
+| C1 | Ambiguity detection and clarification | Main problem 2 in the [proposal](proposal.md#1-problem) |
+| C2 | SQL visible to the user | The user can check how the answer was obtained |
+| C3 | Deterministic SQL validation before execution | Protection against wrong and dangerous queries |
+| C4 | Read-only guarantee | The model cannot change the data |
+| C5 | Works without a manually built semantic model | Questions can be asked right after the database is connected |
+| C6 | Open source and self-hosting | The data does not leave the organisation |
+| C7 | Any PostgreSQL database as a source | A typical DBMS at universities and small businesses |
+| C8 | Russian interface and questions | The target users |
+| C9 | Quality measured on open datasets | Whether the accuracy claims can be checked |
 
-## 3. Сравнение
+## 3. Comparison
 
-### 3.1 Продукты и практические решения
+### 3.1 Products and practical solutions
 
-| Критерий | Cortex Analyst | Genie | Spotter | Vanna | Чат с LLM | Suhbat2DB |
+| Criterion | Cortex Analyst | Genie | Spotter | Vanna | Chat with an LLM | Suhbat2DB |
 |---|---|---|---|---|---|---|
-| К1. Уточнение | ⚠️ Неоднозначный вопрос отклоняется со списком похожих вопросов, на которые система может ответить [S2] | ⚠️ Может задать уточняющий вопрос; по данным форума, это настраивается инструкциями пространства [G2, G3] | ✅ «Спрашивает, когда не уверен, вместо угадывания» [T1] | — не заявлено | ⚠️ Зависит от модели, не гарантировано | ✅ Вопрос с вариантами, привязанными к схеме, пауза и продолжение (ADR-023) |
-| К2. SQL виден | ✅ API возвращает блок `sql` [S1] | ✅ Сгенерированный SQL можно посмотреть [G2] | ⚠️ Показывает поисковые токены и шаги на естественном языке [T1, T2] | ✅ | ✅ | ✅ С историей попыток |
-| К3. Проверка SQL | — не заявлено (качество обеспечивается семантической моделью и проверенными запросами) [S3] | — не заявлено (доверенные запросы и функции от автора пространства) [G1] | ⚠️ SQL строит поисковый движок по токенам [T2] | — не заявлено | ❌ | ✅ 5 уровней, AST, EXPLAIN ([validator.md](validator.md)) |
-| К4. Только чтение | ⚠️ Определяется правами роли Snowflake | ⚠️ Определяется правами в Unity Catalog | ⚠️ Права BI-платформы | ⚠️ Определяется подключением, которое передаёт разработчик | ❌ Пользователь сам выполняет SQL | ✅ Проверка прав при подключении + read-only транзакция + политика AST |
-| К5. Без ручной семантической модели | ❌ Нужна семантическая модель или view [S1] | ⚠️ Нужно настроить пространство: таблицы, инструкции, примеры [G1] | ❌ Нужна модель данных ThoughtSpot | ⚠️ Нужно «обучение» на DDL, документации, примерах [V1] | ✅ | ✅ Схема, комментарии и значения индексируются автоматически |
-| К6. Открытый код, у себя | ❌ Облако Snowflake | ❌ Облако Databricks | ❌ SaaS | ✅ MIT [V1] (статус поддержки сверить) | ❌ | ✅ docker compose |
-| К7. Любая PostgreSQL | ❌ Данные в Snowflake | ❌ Данные в Databricks | ⚠️ Через коннекторы платформы | ✅ | ✅ | ✅ |
-| К8. Русский язык | — не заявлено | — не заявлено | — не заявлено | ⚠️ Зависит от модели | ✅ | ✅ Интерфейс и промпты на русском; набор `ambiguous_ru` |
-| К9. Открытая оценка | ⚠️ Внутренние замеры в блоге [S2] | — не заявлено | — не заявлено | — не заявлено | — (есть работы о самих моделях) | ✅ Spider, BIRD, `ambiguous_ru`, `unsafe` с интервалами ([EVALS.md](../EVALS.md)) |
+| C1. Clarification | ⚠️ An ambiguous question is rejected with a list of similar questions the system can answer [S2] | ⚠️ Can ask a clarifying question; according to the forum, this is configured through the space instructions [G2, G3] | ✅ "Asks when it is not sure instead of guessing" [T1] | — not stated | ⚠️ Depends on the model, not guaranteed | ✅ A question with options tied to the schema, pause and resume (ADR-023) |
+| C2. SQL visible | ✅ The API returns an `sql` block [S1] | ✅ The generated SQL can be viewed [G2] | ⚠️ Shows search tokens and natural-language steps [T1, T2] | ✅ | ✅ | ✅ With the history of attempts |
+| C3. SQL validation | — not stated (quality comes from the semantic model and verified queries) [S3] | — not stated (trusted queries and functions from the space author) [G1] | ⚠️ The search engine builds the SQL from tokens [T2] | — not stated | ❌ | ✅ 5 levels, AST, EXPLAIN ([validator.md](validator.md)) |
+| C4. Read-only | ⚠️ Depends on the Snowflake role privileges | ⚠️ Depends on the privileges in Unity Catalog | ⚠️ BI platform privileges | ⚠️ Depends on the connection passed by the developer | ❌ The user runs the SQL personally | ✅ Privilege check on connection + read-only transaction + AST policy |
+| C5. No manual semantic model | ❌ Needs a semantic model or a view [S1] | ⚠️ The space must be configured: tables, instructions, examples [G1] | ❌ Needs a ThoughtSpot data model | ⚠️ Needs "training" on DDL, documentation, examples [V1] | ✅ | ✅ The schema, comments and values are indexed automatically |
+| C6. Open source, self-hosted | ❌ Snowflake cloud | ❌ Databricks cloud | ❌ SaaS | ✅ MIT [V1] (maintenance status to be checked) | ❌ | ✅ docker compose |
+| C7. Any PostgreSQL | ❌ Data in Snowflake | ❌ Data in Databricks | ⚠️ Through platform connectors | ✅ | ✅ | ✅ |
+| C8. Russian | — not stated | — not stated | — not stated | ⚠️ Depends on the model | ✅ | ✅ Interface and prompts in Russian; the `ambiguous_ru` set |
+| C9. Open evaluation | ⚠️ Internal measurements in a blog post [S2] | — not stated | — not stated | — not stated | — (there is work on the models themselves) | ✅ Spider, BIRD, `ambiguous_ru`, `unsafe` with intervals ([EVALS.md](../EVALS.md)) |
 
-Обозначения: ✅ есть; ⚠️ частично или с условиями; ❌ нет; — не заявлено в найденных источниках.
+Symbols: ✅ present; ⚠️ partly or with conditions; ❌ absent; — not stated in the sources found.
 
-### 3.2 Исследовательские системы
+### 3.2 Research systems
 
-| Критерий | Sphinteract | AmbiSQL | Suhbat2DB |
+| Criterion | Sphinteract | AmbiSQL | Suhbat2DB |
 |---|---|---|---|
-| К1. Уточнение | ✅ Короткие вопросы с вариантами и свободным ответом, затем SQL строится заново; четыре типа неоднозначности [R1] | ✅ Вопросы с выбором ответа, переписывание вопроса; таксономия по элементам БД и по рассуждению модели [R2] | ✅ Варианты привязаны к столбцам схемы, пауза графа и продолжение |
-| К3. Проверка SQL | — не заявлено | — не заявлено | ✅ 5 уровней, AST, EXPLAIN |
-| К4. Только чтение | — не заявлено | — не заявлено | ✅ Права роли, read-only транзакция, политика AST |
-| К6. Открытый код | — не заявлено | ✅ Код опубликован на GitHub [R2] | ✅ |
-| К8. Русский язык | ❌ Английские наборы | ❌ Английские наборы | ✅ |
-| К9. Измеренное качество | ✅ KaggleDBQA и BIRD; пользователя в основном симулирует LLM [R1] | ⚠️ Точность обнаружения неоднозначности и прирост точного совпадения SQL на собственной оценке; демонстрационная работа [R2] | ✅ Spider, BIRD, `ambiguous_ru`, `unsafe` |
+| C1. Clarification | ✅ Short questions with options and a free answer, then the SQL is rebuilt; four ambiguity types [R1] | ✅ Multiple-choice questions, question rewriting; taxonomy by database elements and by model reasoning [R2] | ✅ Options tied to schema columns, graph pause and resume |
+| C3. SQL validation | — not stated | — not stated | ✅ 5 levels, AST, EXPLAIN |
+| C4. Read-only | — not stated | — not stated | ✅ Role privileges, read-only transaction, AST policy |
+| C6. Open source | — not stated | ✅ The code is published on GitHub [R2] | ✅ |
+| C8. Russian | ❌ English datasets | ❌ English datasets | ✅ |
+| C9. Measured quality | ✅ KaggleDBQA and BIRD; the user is mostly simulated by an LLM [R1] | ⚠️ Ambiguity detection accuracy and the gain in exact SQL match on its own evaluation; a demo paper [R2] | ✅ Spider, BIRD, `ambiguous_ru`, `unsafe` |
 
-Оба прототипа показывают, что уточнение с вариантами ответа повышает точность. Проверку SQL до выполнения и гарантию только чтения они не рассматривают: это работы о понимании вопроса, а не о безопасном выполнении запроса.
+Both prototypes show that clarification with answer options increases accuracy. They do not cover SQL validation before execution or a read-only guarantee: these are works about understanding the question, not about executing the query safely.
 
-## 4. Выводы
+## 4. Conclusions
 
-Коммерческие платформы решают неоднозначность настройкой. Cortex Analyst отклоняет неоднозначный вопрос, а Genie и Cortex опираются на семантическую модель и проверенные запросы, которые заранее готовит специалист. Для типовых вопросов этого хватает, но платформу нужно настраивать вручную, и данные должны лежать в ней.
+The commercial platforms handle ambiguity through configuration. Cortex Analyst rejects an ambiguous question, and Genie and Cortex rely on a semantic model and verified queries that a specialist prepares in advance. This is enough for typical questions, but the platform has to be configured by hand, and the data has to be stored in it.
 
-По поведению ближе всего Spotter: он уточняет вопрос, когда не уверен. Но это закрытый продукт, и работает он только внутри своей BI-платформы с собственной моделью данных.
+Spotter is the closest in behaviour: it clarifies the question when it is not sure. However, it is a closed product, and it works only inside its own BI platform with its own data model.
 
-Vanna генерирует SQL с помощью RAG, но про уточнение, проверку SQL и гарантию только чтения в её описании ничего нет.
+Vanna generates SQL with RAG, but its description says nothing about clarification, SQL validation or a read-only guarantee.
 
-Чат с LLM доступнее всего и рискованнее всего: SQL никто не проверяет, и пользователь сам переносит его в СУБД. Этот вариант используется как baseline в экспериментах.
+Chat with an LLM is the most accessible and the most risky option: nobody checks the SQL, and the user moves it to the DBMS personally. This option is used as the baseline in the experiments.
 
-Исследовательские прототипы Sphinteract и AmbiSQL решают ту же задачу уточнения, что и проект, но в отрыве от проверки и безопасного выполнения SQL, и только для английского языка.
+The research prototypes Sphinteract and AmbiSQL address the same clarification task as the project, but separately from SQL validation and safe execution, and only for English.
 
-Suhbat2DB занимает свободное место между ними. Это открытая система для произвольной PostgreSQL, которой не нужна ручная семантическая модель. Она уточняет неоднозначный вопрос, детерминированно проверяет каждый SQL, гарантирует только чтение на уровне прав СУБД, а её качество измерено на открытых наборах, и замер можно повторить.
+Suhbat2DB fills the gap between them. It is an open system for any PostgreSQL database that does not need a manual semantic model. It clarifies an ambiguous question, checks every SQL query deterministically, guarantees read-only access at the level of DBMS privileges, and its quality is measured on open datasets in a way that can be repeated.
 
-У коммерческих систем есть то, чего в проекте нет: семантический слой с бизнес-метриками, который ведут аналитики, масштабирование, разграничение доступа на уровне строк и поддержка других СУБД. Часть этого можно добавить позже.
+The commercial systems have features that the project lacks: a semantic layer with business metrics maintained by analysts, scaling, row-level access control and support for other DBMSs. Some of these can be added later.
 
-## Источники
+## Sources
 
 - [S1] Snowflake. [Cortex Analyst](https://docs.snowflake.com/user-guide/snowflake-cortex/cortex-analyst); [REST API](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-analyst/rest-api)
 - [S2] Snowflake Engineering Blog. [Snowflake Cortex Analyst: Behind the Scenes](https://www.snowflake.com/en/engineering-blog/snowflake-cortex-analyst-behind-the-scenes/)
@@ -87,4 +87,4 @@ Suhbat2DB занимает свободное место между ними. Э
 - [T2] ThoughtSpot. [Spotter: Your AI Analyst](https://www.thoughtspot.com/blog/everyone-gets-an-ai-analyst)
 - [V1] Vanna. [PyPI: vanna](https://pypi.org/project/vanna/)
 - [R1] Zhao F. et al. [Sphinteract: Resolving Ambiguities in NL2SQL Through User Interaction](https://www.vldb.org/pvldb/vol18/p1145-zhao.pdf). PVLDB 18(4), 2024
-- [R2] Ding Z. et al. [AmbiSQL: Interactive Ambiguity Detection and Resolution for Text-to-SQL](https://arxiv.org/abs/2508.15276). Демонстрация SIGMOD 2026; [код](https://github.com/JustinzjDing/AmbiSQL)
+- [R2] Ding Z. et al. [AmbiSQL: Interactive Ambiguity Detection and Resolution for Text-to-SQL](https://arxiv.org/abs/2508.15276). SIGMOD 2026 demo; [code](https://github.com/JustinzjDing/AmbiSQL)

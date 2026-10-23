@@ -1,80 +1,80 @@
-# Проектное предложение (Project Proposal)
+# Project proposal
 
 | | |
 |---|---|
-| Тема | Разработка веб-платформы диалогового анализа реляционных данных на основе ИИ-агента с уточнением неоднозначных запросов и проверкой SQL-запросов |
 | Topic | Development of a Web Platform for Conversational Analysis of Relational Data Using an AI Agent with Ambiguous Query Clarification and SQL Query Validation |
-| Рабочее название | Suhbat2DB (от каз. *сұхбат*, «беседа, диалог») |
-| Исполнитель | Жанғабыл Алдияр Абегерұлы, группа SE-2425, ОП «Software Engineering». Проект индивидуальный, все этапы автор выполняет сам |
-| Руководитель | Сахипов А.А., PhD, ассистент-профессор Школы программной инженерии |
-| Сроки | Октябрь 2026 – май 2027 ([роадмап](roadmap.md)) |
+| Topic (Russian) | Разработка веб-платформы диалогового анализа реляционных данных на основе ИИ-агента с уточнением неоднозначных запросов и проверкой SQL-запросов |
+| Working title | Suhbat2DB (from the Kazakh *сұхбат*, "conversation, dialogue") |
+| Author | Aldiyar Zhangabyl, group SE-2425, Software Engineering programme. The project is individual, and the author carries out all stages |
+| Supervisor | A. A. Sakhipov, PhD, Assistant Professor, School of Software Engineering |
+| Timeline | October 2026 – May 2027 ([roadmap](roadmap.md)) |
 
-## 1. Проблема
+## 1. Problem
 
-Аналитикам, руководителям, преподавателям и студентам, которые не знают SQL, нужен быстрый доступ к данным в реляционных БД. Сейчас они либо ждут, пока запрос напишет специалист, либо просят LLM напрямую: «напиши SQL для…». У второго способа три слабых места.
+Analysts, managers, teachers and students who do not know SQL need quick access to data in relational databases. Today they either wait until a specialist writes the query or ask an LLM directly: "write SQL for…". The second way has three weak points.
 
-1. Запрос выглядит правдоподобно, но неверен. Модель ссылается на несуществующие столбцы или соединяет таблицы не по тем ключам. Запрос выполняется, ответ неправильный, и пользователь этого не замечает.
-2. Вопрос неоднозначен. Во фразе «продажи за прошлый квартал» неясно, что считать (выручку или число заказов) и какой квартал имеется в виду (календарный или финансовый). Модель молча выбирает один вариант, и пользователь получает ответ на другой вопрос.
-3. Запрос опасен. Из-за формулировки вопроса, prompt injection или инструкций, спрятанных в самих данных, модель может сгенерировать `DROP`, `DELETE`, тяжёлый декартов `JOIN` или вызов системных функций СУБД.
+1. The query looks plausible but is wrong. The model refers to columns that do not exist or joins tables on the wrong keys. The query runs, the answer is wrong, and the user does not notice.
+2. The question is ambiguous. In "sales for last quarter" it is unclear what to count (revenue or number of orders) and which quarter is meant (calendar or fiscal). The model silently picks one reading, and the user gets an answer to a different question.
+3. The query is dangerous. Because of the wording of the question, prompt injection or instructions hidden in the data itself, the model can generate `DROP`, `DELETE`, a heavy Cartesian `JOIN` or a call to DBMS system functions.
 
-Публичные бенчмарки Text-to-SQL (Spider, BIRD) второй и третий пункт почти не проверяют: у каждого вопроса там один эталонный ответ, а безопасность выполнения не оценивается ([обзор литературы](literature_review.md)).
+Public Text-to-SQL benchmarks (Spider, BIRD) hardly test the second and third points: each question has one reference answer, and the safety of execution is not evaluated ([literature review](literature_review.md)).
 
-## 2. Целевые пользователи
+## 2. Target users
 
-| Группа | Задача | Что им важно |
+| Group | Task | What matters to them |
 |---|---|---|
-| Аналитики и сотрудники бизнес-подразделений | Получать ответы на вопросы к данным, не дожидаясь специалиста по SQL | Правильный ответ и возможность проверить, как он получен |
-| Руководители | Смотреть показатели и сравнивать периоды | Чтобы «выручку» и «квартал» все понимали одинаково |
-| Преподаватели и студенты дисциплин по базам данных | Разбирать, как вопрос превращается в SQL | Видимый SQL, объяснение ошибок и исправлений |
-| Администраторы данных | Подключать БД к системе | Гарантия, что система не изменит данные и не перегрузит СУБД |
+| Analysts and business staff | Get answers from data without waiting for an SQL specialist | A correct answer and a way to check how it was obtained |
+| Managers | Look at figures and compare periods | That everyone understands "revenue" and "quarter" in the same way |
+| Teachers and students of database courses | Study how a question turns into SQL | Visible SQL, explanation of errors and corrections |
+| Data administrators | Connect databases to the system | A guarantee that the system will not change the data or overload the DBMS |
 
-Интервью с пользователями, которые должны подтвердить эти потребности, ещё предстоят ([шаблон](templates/interview.md), сроки в [роадмапе](roadmap.md)).
+Interviews with users that should confirm these needs are still to be done ([template](templates/interview.md), dates in the [roadmap](roadmap.md)).
 
-## 3. Цель и задачи
+## 3. Aim and objectives
 
-Цель: разработать веб-платформу, где ИИ-агент отвечает на вопросы к реляционной БД на естественном языке, переспрашивает, если вопрос неоднозначен, и проверяет каждый SQL-запрос до выполнения, а затем экспериментально сравнить эти механизмы с базовым подходом.
+Aim: to develop a web platform where an AI agent answers natural-language questions about a relational database, asks back when a question is ambiguous and checks every SQL query before execution, and then to compare these mechanisms experimentally with a baseline approach.
 
-Задачи:
+Objectives:
 
-1. Проанализировать подходы к Text-to-SQL на LLM, агентные архитектуры, работы о неоднозначности вопросов и о безопасности LLM-приложений.
-2. Спроектировать архитектуру платформы и граф агента.
-3. Реализовать отбор нужной части схемы (schema linking) по векторному индексу схемы и значений.
-4. Реализовать обнаружение неоднозначности и уточняющий диалог с вариантами, привязанными к схеме.
-5. Реализовать многоуровневую проверку SQL (синтаксис, политика «только чтение», сверка со схемой, план выполнения, изолированное выполнение с лимитами) и цикл самокоррекции.
-6. Реализовать веб-интерфейс: диалог, SQL с отчётом проверки, таблица, график, пояснение.
-7. Подготовить наборы данных и провести эксперименты: агент против базового подхода, агент с уточнением и без, проверка на атаках.
+1. Analyse LLM-based approaches to Text-to-SQL, agent architectures, and work on question ambiguity and on the security of LLM applications.
+2. Design the platform architecture and the agent graph.
+3. Implement selection of the relevant part of the schema (schema linking) using a vector index of the schema and values.
+4. Implement ambiguity detection and a clarification dialogue with options tied to the schema.
+5. Implement multi-level SQL validation (syntax, read-only policy, schema check, execution plan, isolated execution with limits) and a self-correction loop.
+6. Implement the web interface: dialogue, SQL with a validation report, table, chart, explanation.
+7. Prepare datasets and run experiments: agent vs baseline, agent with and without clarification, a check against attacks.
 
-## 4. Ожидаемые результаты
+## 4. Expected results
 
-- Веб-платформа с модулями уточнения и проверки SQL, которая разворачивается одной командой.
-- Наборы данных: подмножества Spider и BIRD, собственный набор неоднозначных вопросов на русском `ambiguous_ru` и набор атак `unsafe`.
-- Экспериментальная оценка с доверительными интервалами и тестами значимости: execution accuracy, качество обнаружения неоднозначности, доли заблокированных атак и ложных блокировок, стоимость и задержка ([EVALS.md](../EVALS.md)).
-- Текст диплома и, по плану руководителя, тезисы для студенческой научной конференции.
+- A web platform with clarification and SQL validation modules that is deployed with one command.
+- Datasets: subsets of Spider and BIRD, an own set of ambiguous questions in Russian `ambiguous_ru`, and an attack set `unsafe`.
+- An experimental evaluation with confidence intervals and significance tests: execution accuracy, quality of ambiguity detection, shares of blocked attacks and false blocks, cost and latency ([EVALS.md](../EVALS.md)).
+- The diploma text and, as planned with the supervisor, an abstract for a student research conference.
 
-Новизна работы в том, что явное обнаружение неоднозначности с уточняющим диалогом объединено с многоуровневой детерминированной проверкой SQL, а вклад каждого механизма измерен отдельно.
+The novelty of the work is that explicit ambiguity detection with a clarification dialogue is combined with multi-level deterministic SQL validation, and the contribution of each mechanism is measured separately.
 
-## 5. Объём работ (scope)
+## 5. Scope
 
-| Входит | Не входит |
+| Included | Not included |
 |---|---|
-| PostgreSQL как анализируемая СУБД | Другие СУБД (их можно добавить через диалекты sqlglot, но в работу они не входят) |
-| Только чтение данных | Изменение данных, ETL, построение витрин |
-| Вопросы на русском; английский и казахский без отдельной оптимизации | Голосовой ввод |
-| Веб-интерфейс, роли `admin` и `analyst` | Мобильное приложение, SSO, многоарендность |
-| LLM через API (OpenAI, резервный провайдер Anthropic) | Дообучение собственной модели |
-| Демо-БД и бенчмарки Spider, BIRD | Работа с реальными персональными данными |
-| Трассировка в Langfuse | Промышленная эксплуатация, SLA |
+| PostgreSQL as the analysed DBMS | Other DBMSs (they can be added through sqlglot dialects, but they are outside this work) |
+| Read-only access to data | Data modification, ETL, building data marts |
+| Questions in Russian; English and Kazakh without separate optimisation | Voice input |
+| Web interface, `admin` and `analyst` roles | Mobile application, SSO, multi-tenancy |
+| LLMs through an API (OpenAI, Anthropic as the fallback provider) | Fine-tuning an own model |
+| Demo database and the Spider and BIRD benchmarks | Work with real personal data |
+| Tracing in Langfuse | Production operation, SLA |
 
-Если останется время: MCP-сервер с инструментами валидатора, семантический кэш.
+If time allows: an MCP server with the validator tools and a semantic cache.
 
-## 6. Инженерная сложность
+## 6. Engineering complexity
 
-Работа требует связывать слова вопроса со схемой и значениями, находить пути соединений по внешним ключам и учитывать диалект PostgreSQL. Граф агента содержит цикл самокоррекции и паузу для ответа человека, которая переживает перезапуск сервера. Система выполняет SQL, который модель сгенерировала по недоверенному вводу, поэтому защита строится в несколько рубежей. Для корректной оценки нужно сравнивать результаты SQL, симулировать пользователя, применять парные статистические тесты и следить, чтобы тестовые вопросы не попали в примеры для модели.
+The work has to link the words of a question to the schema and values, find join paths over foreign keys and take the PostgreSQL dialect into account. The agent graph contains a self-correction loop and a pause for a human answer that survives a server restart. The system executes SQL that the model generated from untrusted input, so the protection is built as several lines of defence. A correct evaluation requires comparing SQL results, simulating the user, applying paired statistical tests and making sure that test questions do not get into the examples given to the model.
 
-## 7. Риски
+## 7. Risks
 
-Риски и меры по ним описаны в [роадмапе](roadmap.md#4-риски).
+Risks and the measures against them are described in the [roadmap](roadmap.md#4-risks).
 
-## 8. Связанные документы
+## 8. Related documents
 
-[Требования](requirements.md) · [Обзор литературы](literature_review.md) · [Сравнение существующих систем](existing_systems.md) · [Сравнение технологий](technology_comparison.md) · [Архитектура](../ARCHITECTURE.md) · [Диаграммы](diagrams/) · [План проверки и результаты](../EVALS.md) · [Роадмап](roadmap.md)
+[Requirements](requirements.md) · [Literature review](literature_review.md) · [Comparison of existing systems](existing_systems.md) · [Technology comparison](technology_comparison.md) · [Architecture](../ARCHITECTURE.md) · [Diagrams](diagrams/) · [Evaluation plan and results](../EVALS.md) · [Roadmap](roadmap.md)

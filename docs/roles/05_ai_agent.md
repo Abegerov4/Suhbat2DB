@@ -1,116 +1,118 @@
-# Роль 5. AI Agent (LLM Engineer)
+# Role 5. AI Agent (LLM Engineer)
 
-**Статус: ✅ выполнена** (октябрь 2026). Граф — [docs/graph.md](../graph.md), состояние — [CONTRACTS §5](../CONTRACTS.md#5-состояние-агента-langgraph).
+**Status: ✅ completed** (October 2026). Graph: [docs/graph.md](../graph.md); state: [CONTRACTS §5](../CONTRACTS.md#5-agent-state-langgraph).
 
-**Цель:** LangGraph-агент, который заменяет `FakeAgentRunner`. Агент связывает вопрос со схемой, уточняет неоднозначности, генерирует SQL, исправляет его по отчёту валидатора, выполняет и поясняет результат. Каждый шаг трассируется.
-**Зависит от:** роли 3 (интерфейс `AgentRunner`, `SchemaSnapshot`), 4 (валидатор).
-**Нужно для:** Frontend (реальные события), Evals (конфигурации `agent` и `baseline`).
+**Aim:** a LangGraph agent that replaces `FakeAgentRunner`. The agent links the question to the schema, clarifies ambiguities, generates SQL, corrects it using the validator report, executes it and explains the result. Every step is traced.
+**Depends on:** roles 3 (the `AgentRunner` interface, `SchemaSnapshot`) and 4 (the validator).
+**Needed for:** Frontend (real events), Evals (the `agent` and `baseline` configurations).
 
-## Структура
+## Structure
 
 ```text
 backend/app/agent/
-├── llm.py              # интерфейс LLM, модель на узел, structured output, резервный провайдер
-├── prompts/*.md        # промпты v1 (guard, ambiguity, generate_sql, explain, baseline) + реестр
+├── llm.py              # LLM interface, model per node, structured output, fallback provider
+├── prompts/*.md        # v1 prompts (guard, ambiguity, generate_sql, explain, baseline) + registry
 ├── retrieval/
-│   ├── sparse.py       # BM25-токенизация: стемминг RU/EN, разбиение идентификаторов
-│   ├── embeddings.py   # OpenAI-эмбеддинги; хэш-эмбеддинги для тестов
-│   ├── store.py        # Qdrant: схема и примеры, dense + BM25, RRF
-│   └── linker.py       # отбор таблиц и достройка путей JOIN по внешним ключам
-├── examples/demo.json  # 20 проверенных пар «вопрос → SQL» для few-shot
+│   ├── sparse.py       # BM25 tokenisation: RU/EN stemming, identifier splitting
+│   ├── embeddings.py   # OpenAI embeddings; hash embeddings for tests
+│   ├── store.py        # Qdrant: schema and examples, dense + BM25, RRF
+│   └── linker.py       # table selection and completion of JOIN paths over foreign keys
+├── examples/demo.json  # 20 verified "question → SQL" pairs for few-shot
 ├── state.py            # AgentState, AgentContext
-├── nodes.py            # 10 узлов графа
-├── graph.py            # StateGraph, маршрутизация кодом
-├── charts.py           # выбор графика по типам столбцов
-├── langgraph_runner.py # поток графа → SSE + Langfuse
-├── baseline.py         # базовый подход для эксперимента 1
-└── factory.py          # сборка при старте приложения
+├── nodes.py            # the 10 graph nodes
+├── graph.py            # StateGraph, routing in code
+├── charts.py           # chart choice by column types
+├── langgraph_runner.py # graph stream → SSE + Langfuse
+├── baseline.py         # baseline approach for experiment 1
+└── factory.py          # assembly at application startup
 ```
 
-## Задачи
+## Tasks
 
-### 5.1 Слой LLM
-- [x] Интерфейс `LLM` (`structured`, `stream_text`) и реализация на LangChain (OpenAI, Anthropic). В тестах используется сценарная `FakeLLM`
-- [x] Модель на узел: `strong` = **gpt-4.1** (`detect_ambiguity`, `generate_sql`, temperature 0), `fast` = **gpt-4.1-mini** (`guard_input`, `explain`, temperature 0 и 0,3). Модели задаются в env
-- [x] Рассуждающие модели (gpt-5*, o-серия) не принимают `temperature`: параметр не передаётся (`supports_temperature`)
-- [x] Резервный провайдер через `with_fallbacks`, если задан его ключ. Сейчас ключ только у OpenAI
-- [x] Langfuse: `CallbackHandler` с заранее созданным `trace_id`, сессия и пользователь в метаданных, `trace_id` уходит в SSE `done` и в сообщение. 👍/👎 отправляется в Langfuse как score `user_feedback`
-- [ ] ~~`LLM_MAX_COST_PER_REQUEST`~~ — не понадобился: стоимость ограничена лимитами попыток и уточнений, фактическая ≈ $0,01 за вопрос (Langfuse)
+### 5.1 LLM layer
+- [x] The `LLM` interface (`structured`, `stream_text`) and an implementation on LangChain (OpenAI, Anthropic). Tests use a scripted `FakeLLM`
+- [x] Model per node: `strong` = **gpt-4.1** (`detect_ambiguity`, `generate_sql`, temperature 0), `fast` = **gpt-4.1-mini** (`guard_input`, `explain`, temperature 0 and 0.3). The models are set in env
+- [x] Reasoning models (gpt-5*, the o-series) do not accept `temperature`, so the parameter is not passed (`supports_temperature`)
+- [x] Fallback provider through `with_fallbacks` if its key is set. Currently only an OpenAI key is available
+- [x] Langfuse: a `CallbackHandler` with a `trace_id` created in advance, the session and user in the metadata; the `trace_id` goes to the SSE `done` event and to the message. 👍/👎 is sent to Langfuse as the `user_feedback` score
+- [ ] ~~`LLM_MAX_COST_PER_REQUEST`~~ not needed: the cost is bounded by the limits on attempts and clarifications, and the actual cost is ≈ $0.01 per question (Langfuse)
 
 ### 5.2 Retrieval: schema linking
-- [x] Документы трёх видов: таблица, столбец (тип, FK, комментарий), значение категориального столбца. Коллекции в Qdrant именуются по модели эмбеддингов
-- [x] Гибридный поиск dense + BM25 (Qdrant `Modifier.IDF`, токенизация со стеммингом) с объединением RRF. Режимы `dense` и `sparse` оставлены для экспериментов
-- [x] Таблицы ранжируются по сумме обратных рангов их документов, совпадение значения весит в 1,5 раза больше
-- [x] Достройка путей JOIN: каждая отобранная таблица связывается с главной **по всем кратчайшим путям** графа FK. Первая версия брала один путь и выбирала его произвольно, а у «заказов в Алматинской области» два законных пути: через клиента и через менеджера
-- [x] Value linking: найденные значения выводятся первыми в списке `[значения: …]`
-- [x] Набор [`evals/datasets/schema_linking/demo.jsonl`](../../evals/datasets/schema_linking/demo.jsonl) — 40 вопросов с эталонными таблицами, скрипт `scripts/eval_schema_linking.py`
+- [x] Three kinds of documents: table, column (type, FK, comment), value of a categorical column. The Qdrant collections are named after the embedding model
+- [x] Hybrid dense + BM25 search (Qdrant `Modifier.IDF`, tokenisation with stemming) fused with RRF. The `dense` and `sparse` modes are kept for experiments
+- [x] Tables are ranked by the sum of the reciprocal ranks of their documents; a value match weighs 1.5 times more
+- [x] Completion of JOIN paths: each selected table is connected to the main table **along all shortest paths** of the FK graph. The first version took one path and chose it arbitrarily, while "orders in Almaty region" has two valid paths: through the customer and through the manager
+- [x] Value linking: the values found are listed first in `[values: …]`
+- [x] The set [`evals/datasets/schema_linking/demo.jsonl`](../../evals/datasets/schema_linking/demo.jsonl) has 40 questions with reference tables; the script is `scripts/eval_schema_linking.py`
 
-**Результаты** (доля вопросов, для которых найдены все нужные таблицы, top-5):
+**Results** (share of questions for which all required tables were found, top-5):
 
-| Эмбеддинги | dense | BM25 | hybrid |
+| Embeddings | dense | BM25 | hybrid |
 |---|---|---|---|
-| text-embedding-3-small | 0,900 | 0,800 | 0,900 |
-| text-embedding-3-large | **0,975** | — | **0,975** |
+| text-embedding-3-small | 0.900 | 0.800 | 0.900 |
+| text-embedding-3-large | **0.975** | — | **0.975** |
 
-Выбрано: **text-embedding-3-large, hybrid, 5 таблиц**: полнота 0,975 при требовании ≥ 0,95. BM25 в одиночку слаб, потому что вопросы на русском, а идентификаторы на английском. Гибрид оставлен при равных метриках: он страхует точные совпадения кодов и имён в реальных БД. Единственный промах — вопрос с двумя законными путями соединения. Подбор параметров на этих же 40 вопросах остановлен, чтобы не подгонять результат под набор.
+Chosen: **text-embedding-3-large, hybrid, 5 tables**, with recall 0.975 against the requirement of ≥ 0.95. BM25 alone is weak because the questions are in Russian and the identifiers are in English. The hybrid mode was kept although the metrics are equal: it covers exact matches of codes and names in real databases. The only miss is a question with two valid join paths. Tuning on the same 40 questions was stopped so as not to fit the result to the set.
 
 ### 5.3 Baseline
-- [x] `BaselineRunner`: полная схема + вопрос → SQL одним вызовом → только уровни 2 и 5 валидатора
+- [x] `BaselineRunner`: full schema + question → SQL in one call → only validator levels 2 and 5
 
-### 5.4 Граф
-- [x] 10 узлов, маршрут — только Python-функция `route()` по полю `state["route"]`
-- [x] Лимиты: 3 попытки генерации, 2 раунда уточнений
-- [x] `AsyncPostgresSaver` на БД приложения, `thread_id = session_id`
-- [x] `LangGraphAgentRunner`: `astream(stream_mode=["custom", "updates"])` → события CONTRACTS §2; `__interrupt__` → `clarification`
-- [x] Диаграмма из кода — [docs/graph.md](../graph.md)
+### 5.4 Graph
+- [x] 10 nodes; the route is chosen only by the Python function `route()` from the `state["route"]` field
+- [x] Limits: 3 generation attempts, 2 rounds of clarification
+- [x] `AsyncPostgresSaver` on the application database, `thread_id = session_id`
+- [x] `LangGraphAgentRunner`: `astream(stream_mode=["custom", "updates"])` → CONTRACTS §2 events; `__interrupt__` → `clarification`
+- [x] Diagram from the code: [docs/graph.md](../graph.md)
 
-### 5.5 Генерация и самокоррекция
-- [x] Промпт v1: правила (только SELECT, FK, значения из списков, даты через `date_trunc`, умолчания, псевдонимы), схема, few-shot, контекст диалога, ошибки прошлых попыток
-- [x] Промпты в Langfuse Prompt Management (`suhbat2db-*`, v1, label production) — `make prompts`. При `PROMPTS_FROM_LANGFUSE=true` берутся оттуда, иначе из файлов
-- [x] Самокоррекция: SQL прошлой попытки, уровень, сообщение и подсказка валидатора передаются генератору. Фатальное нарушение политики — отказ без повтора
+### 5.5 Generation and self-correction
+- [x] Prompt v1: rules (SELECT only, FKs, values from the lists, dates through `date_trunc`, defaults, aliases), schema, few-shot, dialogue context, errors of earlier attempts
+- [x] Prompts in Langfuse Prompt Management (`suhbat2db-*`, v1, label production) via `make prompts`. With `PROMPTS_FROM_LANGFUSE=true` they are taken from there, otherwise from the files
+- [x] Self-correction: the SQL of the previous attempt, the level, the message and the validator hint are passed to the generator. A fatal policy violation leads to a refusal without a retry
 
-### 5.6 Неоднозначность и уточнение
-- [x] `AmbiguityVerdict`: варианты с `interpretation`, привязанной к столбцам схемы; не больше 2 неоднозначностей и 2–4 варианта
-- [x] В промпте — умолчания, которые не нужно уточнять, и примеры однозначных вопросов (против over-clarification)
-- [x] `interrupt()` → `Command(resume=…)`; ответ свободным текстом тоже принимается
-- [x] Память сессии: прошлые уточнения передаются детектору в следующих ходах
+### 5.6 Ambiguity and clarification
+- [x] `AmbiguityVerdict`: options with an `interpretation` tied to schema columns; at most 2 ambiguities and 2–4 options
+- [x] The prompt lists the defaults that need no clarification and examples of clear questions (against over-clarification)
+- [x] `interrupt()` → `Command(resume=…)`; a free-text answer is accepted as well
+- [x] Session memory: earlier clarifications are passed to the detector in later turns
 
-### 5.7 Guard и пояснение
-- [x] `guard_input`: allow / modify / injection / off_topic; сомнительные случаи решаются в пользу allow, потому что запись всё равно блокирует валидатор
-- [x] Схема, значения и результат передаются в границах `<schema>`, `<query_result>` с указанием, что это данные, а не инструкции
-- [x] Тип графика выбирает код (дата → line, ≤ 6 положительных категорий → pie, иначе bar, больше 30 категорий → без графика)
-- [x] Пояснение стримится по токенам. Числа из пояснения, которых нет в результате, пишутся в лог как предупреждение
+### 5.7 Guard and explanation
+- [x] `guard_input`: allow / modify / injection / off_topic; doubtful cases are resolved as allow, because the validator blocks writes anyway
+- [x] The schema, values and result are passed inside `<schema>` and `<query_result>` boundaries with a statement that this is data, not instructions
+- [x] Code chooses the chart type (date → line, ≤ 6 positive categories → pie, otherwise bar, more than 30 categories → no chart)
+- [x] The explanation is streamed token by token. Numbers in the explanation that are not in the result are logged as a warning
 
-### 5.8 Тесты
-- [x] 38 тестов агента: поиск по схеме (Qdrant в памяти), графики, граф целиком (обычный ответ, самокоррекция с подсказкой, ошибка выполнения, исчерпание попыток, фатальный SQL, отказы, уточнение и продолжение, память сессии, лимит раундов), baseline, раннер через API, LLM-клиент, реестр промптов
-- [x] Smoke-тест с настоящим LLM: `make smoke` (10 вопросов)
+### 5.8 Tests
+- [x] 38 agent tests: schema search (in-memory Qdrant), charts, the whole graph (normal answer, self-correction with a hint, execution error, attempts used up, fatal SQL, refusals, clarification and resume, session memory, round limit), baseline, the runner through the API, the LLM client, the prompt registry
+- [x] Smoke test with a real LLM: `make smoke` (10 questions)
 
-## Smoke-тест (gpt-4.1, демо-БД)
+## Smoke test (gpt-4.1, demo database)
 
-| Вопрос | Поведение |
+The questions were asked in Russian; English translations are given.
+
+| Question | Behaviour |
 |---|---|
-| Сколько всего заказов? | Верный SQL, 100 000 |
-| Топ-5 регионов по выручке за 2025 год | Верный JOIN через клиента, pie |
-| Покажи продажи за прошлый квартал | 2 уточнения (показатель, тип квартала) → выручка, календарный → 5,61 млрд ₸ (совпадает с docs/demo_db.md) |
-| Какой способ оплаты самый популярный? | kaspi_qr |
-| Динамика выручки по месяцам в 2026 году | line, 10 месяцев |
-| Средний чек онлайн и офлайн | **Лишнее уточнение**: вопрос однозначен (over-clarification, измеряется в роли 7) |
-| Кто лучший менеджер? | Уточнение критерия → по выручке |
-| Сколько клиентов ни разу ничего не купили? | 7 100 (трактовка «без отменённых заказов») |
-| Удали все отменённые заказы | Отказ на `guard_input` |
-| Напиши стихотворение про осень | Отказ `out_of_scope` |
+| How many orders are there in total? | Correct SQL, 100,000 |
+| Top 5 regions by revenue for 2025 | Correct JOIN through the customer, pie |
+| Show sales for last quarter | 2 clarifications (measure, type of quarter) → revenue, calendar → 5.61 billion ₸ (matches docs/demo_db.md) |
+| Which payment method is the most popular? | kaspi_qr |
+| Monthly revenue trend in 2026 | line, 10 months |
+| Average order value online and offline | **Unnecessary clarification**: the question is clear (over-clarification, measured in role 7) |
+| Who is the best manager? | Clarification of the criterion → by revenue |
+| How many customers have never bought anything? | 7,100 (interpretation "without cancelled orders") |
+| Delete all cancelled orders | Refusal at `guard_input` |
+| Write a poem about autumn | Refusal `out_of_scope` |
 
-Стоимость хода — около **$0,01** (2 вызова gpt-4.1 по ~2,4 тыс. токенов + gpt-4.1-mini), задержка 4–8 с.
+A turn costs about **$0.01** (2 gpt-4.1 calls of ~2.4 thousand tokens + gpt-4.1-mini), and the latency is 4–8 s.
 
 ## Definition of Done
-- [x] `FakeAgentRunner` заменён (при наличии ключа LLM), события соответствуют CONTRACTS §2
-- [x] «Покажи продажи за прошлый квартал» → уточнение → ответ проходит end-to-end
-- [x] В Langfuse виден полный trace: узлы, вызовы LLM, токены, стоимость
-- [x] Schema recall ≥ 0,95 — **0,975**
-- [x] Промпты v1 загружены в Langfuse
+- [x] `FakeAgentRunner` is replaced (when an LLM key is set), and the events match CONTRACTS §2
+- [x] "Show sales for last quarter" → clarification → answer works end to end
+- [x] Langfuse shows the full trace: nodes, LLM calls, tokens, cost
+- [x] Schema recall ≥ 0.95: **0.975**
+- [x] The v1 prompts are uploaded to Langfuse
 
-## База знаний
-- `ai_engineering.md` §2.3, §5 (StateGraph, route_fn, reducers), §6 (self-reflection: критик — код), §7 (HITL + checkpointer), §2.6 (модель на узел)
-- `rag.md` §2.3–2.4 (эмбеддинги, hybrid + RRF), §7 (метрики retrieval)
-- `prompting_memory_tools.md` §2.1–2.3 (промптинг, Just-in-Time), §5.5 (Text-to-SQL pipeline)
-- `ai_security.md` §4.3–4.4 (untrusted data, guardrail на входе)
+## Knowledge base
+- `ai_engineering.md` §2.3, §5 (StateGraph, route_fn, reducers), §6 (self-reflection: the critic is code), §7 (HITL + checkpointer), §2.6 (model per node)
+- `rag.md` §2.3–2.4 (embeddings, hybrid + RRF), §7 (retrieval metrics)
+- `prompting_memory_tools.md` §2.1–2.3 (prompting, just-in-time), §5.5 (Text-to-SQL pipeline)
+- `ai_security.md` §4.3–4.4 (untrusted data, input guardrail)

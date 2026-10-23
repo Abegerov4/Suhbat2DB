@@ -1,64 +1,64 @@
-# Роль 1. DevOps
+# Role 1. DevOps
 
-**Статус: ✅ выполнена** (октябрь 2026)
+**Status: ✅ completed** (October 2026)
 
-**Цель:** окружение, в котором весь проект поднимается одной командой, а качество кода проверяется автоматически.
-**Зависит от:** ничего.
-**Нужно для:** всех остальных ролей.
+**Aim:** an environment where the whole project starts with one command and code quality is checked automatically.
+**Depends on:** nothing.
+**Needed for:** all other roles.
 
-## Задачи
+## Tasks
 
-### 1.1 Репозиторий
-- [x] Ветка `main`, приватный репозиторий https://github.com/Abegerov4/Suhbat2DB
-- [x] Структура монорепозитория: `backend/`, `frontend/`, `infra/`, `scripts/`, `docs/` (`evals/` и `demo_db/` появятся в ролях 2 и 7)
-- [x] `.gitignore`: личные материалы, `.env`, артефакты Python и Node. Проверено, что обоснование, PDF и `база знаний/` не попадают в индекс
-- [ ] GitHub Projects: доска `Backlog / In progress / Review / Done` с задачами из файлов ролей (делается вручную в веб-интерфейсе GitHub)
-- [ ] Доступ руководителя к репозиторию (Settings → Collaborators)
+### 1.1 Repository
+- [x] Branch `main`, private repository https://github.com/Abegerov4/Suhbat2DB
+- [x] Monorepository structure: `backend/`, `frontend/`, `infra/`, `scripts/`, `docs/` (`evals/` and `demo_db/` appear in roles 2 and 7)
+- [x] `.gitignore`: personal materials, `.env`, Python and Node artefacts. Checked that personal documents and course materials do not get into the index
+- [ ] GitHub Projects: a `Backlog / In progress / Review / Done` board with the tasks from the role files (done by hand in the GitHub web interface)
+- [ ] Supervisor access to the repository (Settings → Collaborators)
 
-### 1.2 Инструменты качества кода
+### 1.2 Code quality tools
 - [x] Backend: `uv`, Python 3.12, `ruff` (lint + format), `mypy --strict`, `pytest` + `pytest-asyncio`
-- [x] Frontend: **npm** (вместо pnpm, см. ADR-003 в [ARCHITECTURE.md](../../ARCHITECTURE.md)), `eslint`, `prettier`, `tsc --noEmit`
-- [x] `pre-commit`: базовые проверки файлов, ruff, prettier, **gitleaks** (поиск секретов)
+- [x] Frontend: **npm** (instead of pnpm, see ADR-003 in [ARCHITECTURE.md](../../ARCHITECTURE.md)), `eslint`, `prettier`, `tsc --noEmit`
+- [x] `pre-commit`: basic file checks, ruff, prettier, **gitleaks** (secret detection)
 
 ### 1.3 docker-compose
 
-| Сервис | Образ | Порт на хосте | Назначение |
+| Service | Image | Host port | Purpose |
 |---|---|---|---|
-| `app-db` | `postgres:17` | 5442 | БД приложения и checkpoints LangGraph |
-| `target-db` | `postgres:17` | 5443 | Демо-БД для вопросов (роль 2) |
-| `qdrant` | `qdrant/qdrant:v1.19.2` | 6333 | Векторный индекс схемы |
+| `app-db` | `postgres:17` | 5442 | Application database and LangGraph checkpoints |
+| `target-db` | `postgres:17` | 5443 | Demo database for questions (role 2) |
+| `qdrant` | `qdrant/qdrant:v1.19.2` | 6333 | Vector index of the schema |
 | `backend` | `./backend` | 8000 | FastAPI |
 | `frontend` | `./frontend` | 3000 | Next.js (standalone) |
-| `langfuse-web` + worker, postgres, clickhouse, redis, minio | официальные образы Langfuse v4 | 3001 (UI), 9090 (MinIO) | Трассировка |
+| `langfuse-web` + worker, postgres, clickhouse, redis, minio | official Langfuse v4 images | 3001 (UI), 9090 (MinIO) | Tracing |
 
-- [x] Volumes для данных, healthcheck у каждого сервиса, `depends_on: condition: service_healthy`
-- [x] Langfuse: в роли 5 по умолчанию Langfuse Cloud (ADR-013), self-hosted — профиль `langfuse-local` (`make up-langfuse`) в отдельном файле [`infra/langfuse/docker-compose.yml`](../../infra/langfuse/docker-compose.yml), подключён через `include`. Организация, проект и API-ключи создаются автоматически при первом запуске
-- [x] Все порты привязаны к `127.0.0.1`, хост-порты переопределяются в `.env` (5432 часто занят локальным Postgres)
-- [ ] `docker-compose.override.yml` с hot reload — отложено до роли 3, пока разработка идёт локально через `uv run uvicorn --reload` и `npm run dev`
+- [x] Volumes for data, a healthcheck on every service, `depends_on: condition: service_healthy`
+- [x] Langfuse: since role 5 Langfuse Cloud is the default (ADR-013); self-hosted is the `langfuse-local` profile (`make up-langfuse`) in a separate file [`infra/langfuse/docker-compose.yml`](../../infra/langfuse/docker-compose.yml), connected through `include`. The organisation, project and API keys are created automatically on the first start
+- [x] All ports are bound to `127.0.0.1`, and host ports can be overridden in `.env` (5432 is often taken by a local Postgres)
+- [ ] `docker-compose.override.yml` with hot reload, postponed until role 3 while development runs locally through `uv run uvicorn --reload` and `npm run dev`
 
-### 1.4 Конфигурация
-- [x] [`.env.example`](../../.env.example) + [`scripts/init-env.sh`](../../scripts/init-env.sh): `make env` создаёт `.env` со случайными секретами (`chmod 600`)
-- [x] Backend читает конфиг через `pydantic-settings` ([`app/core/config.py`](../../backend/app/core/config.py)). Если обязательной переменной нет, приложение падает при старте (есть тест)
+### 1.4 Configuration
+- [x] [`.env.example`](../../.env.example) + [`scripts/init-env.sh`](../../scripts/init-env.sh): `make env` creates `.env` with random secrets (`chmod 600`)
+- [x] The backend reads the configuration through `pydantic-settings` ([`app/core/config.py`](../../backend/app/core/config.py)). If a required variable is missing, the application fails at startup (there is a test)
 
 ### 1.5 Makefile
 - [x] `help`, `env`, `up`, `up-lite`, `down`, `ps`, `logs`, `test`, `lint`, `format`
-- [x] Заглушки `seed`, `index`, `eval-smoke` (реализуются в ролях 2, 5 и 7)
+- [x] Stubs `seed`, `index`, `eval-smoke` (implemented in roles 2, 5 and 7)
 
 ### 1.6 CI (GitHub Actions)
-- [x] `backend.yml`: ruff → mypy → pytest. Сервис postgres добавится в роли 3 вместе с тестами БД
+- [x] `backend.yml`: ruff → mypy → pytest. A postgres service is added in role 3 together with the database tests
 - [x] `frontend.yml`: lint → prettier → typecheck → build
-- [x] `compose.yml`: генерация `.env` → `docker compose config` → сборка образов backend и frontend
-- [ ] `evals.yml` (роль 7): `make eval-smoke` на PR, ключи LLM в GitHub Secrets
+- [x] `compose.yml`: `.env` generation → `docker compose config` → build of the backend and frontend images
+- [ ] `evals.yml` (role 7): `make eval-smoke` on pull requests, LLM keys in GitHub Secrets
 
-### 1.7 Деплой (опционально, к апрелю)
-- [ ] VPS или Railway/Render, HTTPS, отдельные секреты для prod. Публичный URL для демонстрации на защите
+### 1.7 Deployment (optional, by April)
+- [ ] A VPS or Railway/Render, HTTPS, separate secrets for production. A public URL for the demonstration at the defence
 
 ## Definition of Done
-- [x] `make up` на чистой машине поднимает все 11 сервисов, все healthy
-- [x] `GET http://localhost:8000/api/health` → `{"status":"ok"}`, фронтенд отдаёт 200, Langfuse отвечает на `/api/public/health` и принимает сгенерированные ключи
-- [ ] CI зелёный на `main` (проверить после первого push)
-- [x] В истории git нет личных файлов и секретов (gitleaks в pre-commit)
+- [x] `make up` on a clean machine starts all 11 services, all of them healthy
+- [x] `GET http://localhost:8000/api/health` → `{"status":"ok"}`, the frontend returns 200, Langfuse answers on `/api/public/health` and accepts the generated keys
+- [ ] CI is green on `main` (to be checked after the first push)
+- [x] The git history contains no personal files or secrets (gitleaks in pre-commit)
 
-## База знаний
-- `ai_engineering.md` §10 (LLMOps: LangSmith или Langfuse, self-hosted)
-- `ai_security.md` §2.2 (секреты только через env)
+## Knowledge base
+- `ai_engineering.md` §10 (LLMOps: LangSmith or Langfuse, self-hosted)
+- `ai_security.md` §2.2 (secrets only through env)
