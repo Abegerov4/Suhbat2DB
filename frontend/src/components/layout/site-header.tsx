@@ -18,7 +18,7 @@ export function SiteHeader({
       <SidebarTrigger className="-ml-1" aria-label="Показать или скрыть меню" />
       <Separator
         orientation="vertical"
-        className="mr-1 data-[orientation=vertical]:h-4"
+        className="mr-1 data-vertical:h-4 data-vertical:self-center"
       />
       <div className="min-w-0 flex-1">
         <h1 className="truncate text-base font-semibold">{title}</h1>
