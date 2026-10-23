@@ -1,6 +1,6 @@
 # Comparison of existing systems
 
-> The data comes from public documentation, engineering blogs, vendor forums and academic publications as of 22.10.2026; the links are at the end of the document. The systems were not tested by hand. "Not stated" means that the sources found give no confirmation; the feature may still exist. Disputable cells should be checked again before the defence.
+> The data comes from public documentation, engineering blogs, vendor forums and academic publications as of 22.10.2026; the links are at the end of the document. The systems were not tested by hand. "Not stated" means that the sources found give no confirmation; the feature may still exist. The cells about clarification (C1) and the Vanna licence were checked against the sources again on 23.10.2026.
 
 ## 1. Systems
 
@@ -39,7 +39,7 @@ Section 3.2 separately covers two research prototypes with a clarification dialo
 | C3. SQL validation | — not stated (quality comes from the semantic model and verified queries) [S3] | — not stated (trusted queries and functions from the space author) [G1] | ⚠️ The search engine builds the SQL from tokens [T2] | — not stated | ❌ | ✅ 5 levels, AST, EXPLAIN ([validator.md](validator.md)) |
 | C4. Read-only | ⚠️ Depends on the Snowflake role privileges | ⚠️ Depends on the privileges in Unity Catalog | ⚠️ BI platform privileges | ⚠️ Depends on the connection passed by the developer | ❌ The user runs the SQL personally | ✅ Privilege check on connection + read-only transaction + AST policy |
 | C5. No manual semantic model | ❌ Needs a semantic model or a view [S1] | ⚠️ The space must be configured: tables, instructions, examples [G1] | ❌ Needs a ThoughtSpot data model | ⚠️ Needs "training" on DDL, documentation, examples [V1] | ✅ | ✅ The schema, comments and values are indexed automatically |
-| C6. Open source, self-hosted | ❌ Snowflake cloud | ❌ Databricks cloud | ❌ SaaS | ✅ MIT [V1] (maintenance status to be checked) | ❌ | ✅ docker compose |
+| C6. Open source, self-hosted | ❌ Snowflake cloud | ❌ Databricks cloud | ❌ SaaS | ✅ MIT, maintained (version 2.0.2, February 2026) [V1] | ❌ | ✅ docker compose |
 | C7. Any PostgreSQL | ❌ Data in Snowflake | ❌ Data in Databricks | ⚠️ Through platform connectors | ✅ | ✅ | ✅ |
 | C8. Russian | — not stated | — not stated | — not stated | ⚠️ Depends on the model | ✅ | ✅ Interface and prompts in Russian; the `ambiguous_ru` set |
 | C9. Open evaluation | ⚠️ Internal measurements in a blog post [S2] | — not stated | — not stated | — not stated | — (there is work on the models themselves) | ✅ Spider, BIRD, `ambiguous_ru`, `unsafe` with intervals ([EVALS.md](../EVALS.md)) |
@@ -83,8 +83,8 @@ The commercial systems have features that the project lacks: a semantic layer wi
 - [G1] Databricks. [Use trusted assets in AI/BI Genie spaces](https://docs.databricks.com/en/genie/trusted-assets.html)
 - [G2] Databricks Community. [Can Genie ask clarifying questions?](https://community.databricks.com/t5/generative-ai/can-genie-ask-clarifying-questions/m-p/125575)
 - [G3] Databricks. [Knowledge store](https://docs.databricks.com/en/genie/knowledge-store)
-- [T1] ThoughtSpot. [Best practices for prompting Spotter](https://docs.thoughtspot.com/cloud/26.3.0.cl/spotter-business)
-- [T2] ThoughtSpot. [Spotter: Your AI Analyst](https://www.thoughtspot.com/blog/everyone-gets-an-ai-analyst)
+- [T1] ThoughtSpot. [Best practices for prompting Spotter](https://docs.thoughtspot.com/cloud/latest/spotter-business)
+- [T2] ThoughtSpot. [Spotter documentation](https://docs.thoughtspot.com/cloud/latest/spotter)
 - [V1] Vanna. [PyPI: vanna](https://pypi.org/project/vanna/)
 - [R1] Zhao F. et al. [Sphinteract: Resolving Ambiguities in NL2SQL Through User Interaction](https://www.vldb.org/pvldb/vol18/p1145-zhao.pdf). PVLDB 18(4), 2024
 - [R2] Ding Z. et al. [AmbiSQL: Interactive Ambiguity Detection and Resolution for Text-to-SQL](https://arxiv.org/abs/2508.15276). SIGMOD 2026 demo; [code](https://github.com/JustinzjDing/AmbiSQL)
