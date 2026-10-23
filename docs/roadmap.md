@@ -1,65 +1,65 @@
-# План работ и роадмап
+# Work plan and roadmap
 
-Проект индивидуальный: все задачи выполняет Жанғабыл Алдияр, руководитель Сахипов А.А. По плану руководства встречи с руководителем проходят раз в неделю, примерно на час, очно или онлайн, а раз в месяц студент показывает работающую версию. Задачи ведутся в YouTrack, подробный план по компонентам лежит в [docs/roles](roles/README.md).
+The project is individual: Aldiyar Zhangabyl carries out all tasks, and A. A. Sakhipov is the supervisor. According to the supervision plan, meetings with the supervisor take place once a week for about an hour, in person or online, and once a month the student shows a working version. Tasks are tracked in YouTrack, and the detailed plan by components is in [docs/roles](roles/README.md).
 
-В разделе 2 перечислено сделанное, с датами, которые подтверждаются коммитами, в разделе 3 план. Если сроки плана сдвигаются, изменение и причина записываются здесь.
+Section 2 lists the completed work with dates confirmed by commits, and section 3 gives the plan. If the plan dates move, the change and its reason are recorded here.
 
-## 1. Контрольные точки
+## 1. Milestones
 
-| Дата | Контрольная точка | Что сдаётся | Тег |
+| Date | Milestone | What is submitted | Tag |
 |---|---|---|---|
-| 24.10.2026 | Предзащита 1 | Анализ, требования, архитектура, прототип, план проверки, рабочая версия, оценка этапа 1 | `pre-defense-1` |
-| Январь 2027 (дата по графику Школы) | Предзащита 2 | Главы 1–2, оценка этапа 2, исправления по замечаниям | `pre-defense-2` |
-| Май 2027 (дата по графику Школы) | Итоговая предзащита | Полный текст, проверка на заимствования, презентация и демо | `final-pre-defense` |
-| Май – июнь 2027 | Защита | — | — |
+| 24.10.2026 | Pre-defence 1 | Analysis, requirements, architecture, prototype, evaluation plan, working version, stage 1 evaluation | `pre-defense-1` |
+| January 2027 (date set by the School schedule) | Pre-defence 2 | Chapters 1–2, stage 2 evaluation, fixes after the comments | `pre-defense-2` |
+| May 2027 (date set by the School schedule) | Final pre-defence | Full text, plagiarism check, presentation and demo | `final-pre-defense` |
+| May – June 2027 | Defence | — | — |
 
-## 2. Факт: октябрь 2026
+## 2. Completed work: October 2026
 
-| Дата | Что сделано | Подтверждение |
+| Date | What was done | Evidence |
 |---|---|---|
-| 07.10.2026 | Получены требования к предзащите 1 | Документ Школы |
-| 07–18.10.2026 | Тема и «Обоснование возможности выполнения дипломной работы» направлены руководителю и согласованы им. «Обоснование» содержит тема на русском и английском языках, задачи и этапы, методы и технологии, ожидаемый результат, план руководства (еженедельные встречи, контрольные точки до мая 2027 года) | Документ «Обоснование…» (хранится у автора, в репозиторий не включён, так как содержит персональные данные) |
-| 19.10.2026 | Репозиторий: README, план по 8 ролям, контракты компонентов | `0c38487` |
-| 19.10.2026 | Окружение и CI (роль 1), демо-БД (2), backend API (3), валидатор SQL (4), агент LangGraph (5), веб-интерфейс (6), логотип и бренд | `ead1c13` … `36c1df1` |
-| 20.10.2026 | Исправления CI и доступности интерфейса; загрузка Spider и BIRD в PostgreSQL, сборка наборов | `9f91216`, `7490809` |
-| 21.10.2026 | Оценка этапа 1: эксперименты 1–2 и безопасность, `EVALS.md` | `9fa9b82` |
-| 21–23.10.2026 | Документы предзащиты: архитектура и ADR, proposal, требования, обзор литературы, сравнения, диаграммы, роадмап; прототип в Figma; задачи в YouTrack | PR в репозитории |
-| 24.10.2026 | Предзащита 1 | Тег `pre-defense-1` |
+| 07.10.2026 | Requirements for pre-defence 1 received | School document |
+| 07–18.10.2026 | The topic and the "Justification of the feasibility of the diploma work" were sent to the supervisor and approved. The justification contains the topic in Russian and English, objectives and stages, methods and technologies, the expected result and the supervision plan (weekly meetings, milestones until May 2027) | The justification document (kept by the author and not included in the repository because it contains personal data) |
+| 19.10.2026 | Repository: README, plan by 8 roles, component contracts | `0c38487` |
+| 19.10.2026 | Environment and CI (role 1), demo database (2), backend API (3), SQL validator (4), LangGraph agent (5), web interface (6), logo and brand | `ead1c13` … `36c1df1` |
+| 20.10.2026 | CI and interface accessibility fixes; Spider and BIRD loaded into PostgreSQL, datasets built | `9f91216`, `7490809` |
+| 21.10.2026 | Stage 1 evaluation: experiments 1–2 and security, `EVALS.md` | `9fa9b82` |
+| 21–23.10.2026 | Pre-defence documents: architecture and ADRs, proposal, requirements, literature review, comparisons, diagrams, roadmap; Figma prototype; YouTrack tasks | Pull requests in the repository |
+| 24.10.2026 | Pre-defence 1 | Tag `pre-defense-1` |
 
-Первым коммитом в репозиторий попали план по ролям и контракты между компонентами, следующими коммитами роли 1–6, реализованные по этому плану. С 22.10.2026 работа ведётся через задачи YouTrack, ветки и pull request'ы.
+The first commit added the plan by roles and the contracts between components, and the following commits added roles 1–6, implemented according to this plan. Since 22.10.2026 the work has been organised through YouTrack tasks, branches and pull requests.
 
-По плану из «Обоснования» прототип (MVP) приходился на декабрь 2026 – январь 2027 года, а модуль уточнения и эксперименты на февраль – март 2027 года. Эти этапы выполнены в октябре 2026 года, поэтому план пересмотрен: освободившееся время отведено на исследование пользователей, второй этап оценки, исправления по результатам первого этапа и текст диплома (раздел 3).
+In the plan of the justification document, the prototype (MVP) was scheduled for December 2026 – January 2027, and the clarification module and the experiments for February – March 2027. These stages were completed in October 2026, so the plan was revised: the freed time goes to user research, the second stage of the evaluation, fixes based on the first stage, and the diploma text (section 3).
 
-## 3. План: октябрь 2026 – май 2027
+## 3. Plan: October 2026 – May 2027
 
-| Период | Работа | Результат | Требования |
+| Period | Work | Result | Requirements |
 |---|---|---|---|
-| 25.10 – 08.11.2026 | Замечания предзащиты 1; 3–5 интервью с потенциальными пользователями; уточнение требований по их итогам | Протоколы интервью, требования v2 | — |
-| 09.11 – 30.11.2026 | Промпт v2: ложные отказы, умолчания при уточнении, неоднозначность типа «схема», защита пояснения от инъекций. Проверка на вопросах, не использованных при разборе. Черновик главы 1 (обзор) | `EVALS.md` v2, глава 1 | FR-11, FR-16, NFR-02, NFR-07 |
-| 01.12 – 27.12.2026 | Оценка этапа 2: полные выборки Spider 200 и BIRD 150, второй seed, эксперименты 3–5, разметка вторым человеком (κ), классификация 30–50 ошибок | Полный `EVALS.md` | FR-11, NFR-07 |
-| Январь 2027 | Глава 2 (проектирование); подготовка и проведение предзащиты 2 | Тег `pre-defense-2` | — |
-| Февраль 2027 | Глава 3 (реализация); опционально MCP-сервер с инструментами валидатора | Черновик главы 3 | FR-17 |
-| Март 2027 | Глава 4 (эксперименты); тезисы для студенческой конференции по эксперименту 2 | Черновик глав 1–4 | — |
-| Апрель 2027 | Пользовательское тестирование с реальными пользователями; полный текст; проверка на заимствования | Текст диплома | — |
-| Май 2027 | Итоговая предзащита, исправления, презентация, демо-сценарий и резервное видео | Тег `final-pre-defense` | — |
+| 25.10 – 08.11.2026 | Comments from pre-defence 1; 3–5 interviews with potential users; refinement of the requirements based on them | Interview notes, requirements v2 | — |
+| 09.11 – 30.11.2026 | Prompt v2: false refusals, defaults during clarification, "schema" ambiguity, protection of the explanation against injection. Check on questions not used in the analysis. Draft of chapter 1 (review) | `EVALS.md` v2, chapter 1 | FR-11, FR-16, NFR-02, NFR-07 |
+| 01.12 – 27.12.2026 | Stage 2 evaluation: full samples Spider 200 and BIRD 150, a second seed, experiments 3–5, labelling by a second person (κ), classification of 30–50 errors | Full `EVALS.md` | FR-11, NFR-07 |
+| January 2027 | Chapter 2 (design); preparation for and holding of pre-defence 2 | Tag `pre-defense-2` | — |
+| February 2027 | Chapter 3 (implementation); optionally an MCP server with the validator tools | Draft of chapter 3 | FR-17 |
+| March 2027 | Chapter 4 (experiments); abstract for a student conference on experiment 2 | Draft of chapters 1–4 | — |
+| April 2027 | User testing with real users; full text; plagiarism check | Diploma text | — |
+| May 2027 | Final pre-defence, fixes, presentation, demo scenario and backup video | Tag `final-pre-defense` | — |
 
-## 4. Риски
+## 4. Risks
 
-| # | Риск | Вероятность | Влияние | Мера | Статус |
+| # | Risk | Likelihood | Impact | Measure | Status |
 |---|---|---|---|---|---|
-| R1 | Агент не превзойдёт baseline по строгому EX | Высокая (случилось на этапе 1) | Высокое: не подтверждается одна из гипотез | Разбор ошибок, ослабленный EX, промпт v2 с проверкой на отложенных вопросах; честное описание отрицательного результата | Активен |
-| R2 | Недоступность или подорожание API LLM | Средняя | Высокое | Резервный провайдер (Anthropic), кэш ответов в оценке, заглушка для тестов и e2e | Под контролем |
-| R3 | Бюджет на эксперименты | Средняя | Среднее | Кэш LLM, подвыборки на этапе 1, смета этапа 2 (≈ $9) | Под контролем |
-| R4 | Симулированный пользователь искажает эффект уточнения | Средняя | Среднее | Судья на сильной модели, проверка «подозрительных» ответов, пользовательское тестирование в апреле | Активен |
-| R5 | Разметку `ambiguous_ru` проверял один человек | Высокая | Среднее | Второй разметчик на 20% вопросов, Cohen's κ | Запланирован |
-| R6 | Нет подтверждения потребности от реальных пользователей | Высокая | Среднее | 3–5 интервью до 08.11.2026 | Запланирован |
-| R7 | Непрямые инъекции через данные | Средняя (1 из 6 на этапе 1) | Среднее: данные не меняются, но текст ответа искажается | Проверка чисел в пояснении → блокировка, отдельный промпт | Активен |
-| R8 | Один исполнитель: болезнь, нагрузка по другим курсам | Средняя | Высокое | Приоритизация (сначала Must), еженедельный контроль с руководителем, запас в декабре и апреле | Под контролем |
-| R9 | Изменения API библиотек (LangGraph, Next.js) | Низкая | Среднее | Версии зафиксированы в lock-файлах, CI на каждый push | Под контролем |
+| R1 | The agent does not outperform the baseline on strict EX | High (happened in stage 1) | High: one of the hypotheses is not confirmed | Error analysis, relaxed EX, prompt v2 checked on held-out questions; an honest description of the negative result | Active |
+| R2 | The LLM API becomes unavailable or more expensive | Medium | High | Fallback provider (Anthropic), response cache in the evaluation, a stub for tests and e2e | Under control |
+| R3 | Budget for the experiments | Medium | Medium | LLM cache, subsets in stage 1, stage 2 estimate (≈ $9) | Under control |
+| R4 | The simulated user distorts the effect of clarification | Medium | Medium | A judge on a strong model, review of "suspicious" answers, user testing in April | Active |
+| R5 | The `ambiguous_ru` labels were checked by one person | High | Medium | A second annotator on 20% of the questions, Cohen's κ | Planned |
+| R6 | No confirmation of the need from real users | High | Medium | 3–5 interviews by 08.11.2026 | Planned |
+| R7 | Indirect injections through data | Medium (1 of 6 in stage 1) | Medium: the data does not change, but the answer text is distorted | Checking the numbers in the explanation → blocking, a separate prompt | Active |
+| R8 | A single developer: illness, workload from other courses | Medium | High | Prioritisation (Must first), weekly progress checks with the supervisor, spare time in December and April | Under control |
+| R9 | API changes in libraries (LangGraph, Next.js) | Low | Medium | Versions pinned in lock files, CI on every push | Under control |
 
-## 5. Зависимости
+## 5. Dependencies
 
-- Эксперименты этапа 2 зависят от промпта v2, а промпт v2 зависит от разбора ошибок этапа 1.
-- Глава 4 зависит от завершения оценки этапа 2.
-- Пользовательское тестирование зависит от интервью: по их итогам выбираются сценарии.
-- Внешние: OpenAI API (ключ и бюджет), Langfuse Cloud, доступ руководителя и комиссии к репозиторию.
+- The stage 2 experiments depend on prompt v2, and prompt v2 depends on the stage 1 error analysis.
+- Chapter 4 depends on the completion of the stage 2 evaluation.
+- User testing depends on the interviews: the scenarios are chosen based on them.
+- External: the OpenAI API (key and budget), Langfuse Cloud, access of the supervisor and the committee to the repository.

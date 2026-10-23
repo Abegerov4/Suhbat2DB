@@ -1,7 +1,7 @@
-# Граф агента (LangGraph)
+# Agent graph (LangGraph)
 
-Сгенерировано из кода: `build_graph(...).get_graph().draw_mermaid()` ([backend/app/agent/graph.py](../backend/app/agent/graph.py)).
-Пунктир — условные переходы: маршрут выбирает route-функция по полю `state["route"]`, а не LLM.
+Generated from the code: `build_graph(...).get_graph().draw_mermaid()` ([backend/app/agent/graph.py](../backend/app/agent/graph.py)).
+Dashed lines are conditional transitions: a route function chooses the route from the `state["route"]` field; the LLM does not choose it.
 
 ```mermaid
 ---
@@ -46,15 +46,15 @@ graph TD;
 	classDef last fill:#bfb6fc
 ```
 
-| Узел | Что делает | Модель |
+| Node | What it does | Model |
 |---|---|---|
-| `guard_input` | Классификация: вопрос о данных / изменение данных / prompt injection / вне темы | fast |
-| `schema_linking` | Гибридный поиск по схеме, достройка путей JOIN по внешним ключам, few-shot примеры | — (эмбеддинги) |
-| `detect_ambiguity` | Однозначен ли вопрос; варианты трактовок привязаны к столбцам схемы | strong |
-| `clarify` | `interrupt()`: граф ждёт ответа пользователя, затем продолжает с checkpoint | — |
-| `generate_sql` | SQL по связанной схеме, примерам, контексту диалога и ошибкам прошлых попыток | strong |
-| `validate_sql` | Уровни 1–4 валидатора ([validator.md](validator.md)) | — |
-| `self_correct` | Фиксирует ошибку попытки; лимит — `AGENT_MAX_CORRECTIONS` (3) | — |
-| `execute` | Уровень 5: выполнение в read-only транзакции | — |
-| `explain_and_visualize` | Тип графика — кодом, пояснение — LLM (стриминг), проверка чисел | fast |
-| `refuse` | Вежливый отказ с кодом причины | — |
+| `guard_input` | Classification: question about data / data change / prompt injection / off topic | fast |
+| `schema_linking` | Hybrid search over the schema, completion of JOIN paths over foreign keys, few-shot examples | — (embeddings) |
+| `detect_ambiguity` | Whether the question is clear; interpretation options are tied to schema columns | strong |
+| `clarify` | `interrupt()`: the graph waits for the user's answer and then resumes from the checkpoint | — |
+| `generate_sql` | SQL from the linked schema, examples, dialogue context and errors of earlier attempts | strong |
+| `validate_sql` | Validator levels 1–4 ([validator.md](validator.md)) | — |
+| `self_correct` | Records the error of the attempt; the limit is `AGENT_MAX_CORRECTIONS` (3) | — |
+| `execute` | Level 5: execution in a read-only transaction | — |
+| `explain_and_visualize` | Chart type chosen by code, explanation written by the LLM (streaming), check of the numbers | fast |
+| `refuse` | Polite refusal with a reason code | — |

@@ -1,73 +1,73 @@
-# Требования и критерии приёмки
+# Requirements and acceptance criteria
 
-Приоритеты расставлены по MoSCoW. M (must): без этого цель проекта не достигнута. S (should): важно, но не блокирует. C (could): если хватит времени. У каждого обязательного требования есть проверяемый критерий и способ проверки. Статус указан на 21.10.2026.
+Priorities follow MoSCoW. M (must): without it the aim of the project is not reached. S (should): important but not blocking. C (could): if time allows. Every mandatory requirement has a verifiable criterion and a way to check it. The status is given as of 21.10.2026.
 
-Обозначения статуса: ✅ выполнено и проверено, ⚠️ выполнено частично, ❌ не выполнено, ⏳ запланировано.
+Status symbols: ✅ done and verified, ⚠️ partly done, ❌ not done, ⏳ planned.
 
-Пороги FR-08, FR-11, NFR-01, NFR-03…06, NFR-09, NFR-14 и NFR-16 заданы в плане по ролям ([docs/roles](roles/README.md)) до реализации. Пороги NFR-02, NFR-07, NFR-08 и NFR-10 я сформулировал 21.10.2026, уже после этапа 1 оценки.
+The thresholds of FR-08, FR-11, NFR-01, NFR-03…06, NFR-09, NFR-14 and NFR-16 were set in the plan by roles ([docs/roles](roles/README.md)) before the implementation. I formulated the thresholds of NFR-02, NFR-07, NFR-08 and NFR-10 on 21.10.2026, after stage 1 of the evaluation.
 
-## 1. Функциональные требования
+## 1. Functional requirements
 
-### Доступ и источники данных
+### Access and data sources
 
-| ID | Требование | Пр. | Критерий приёмки | Проверка | Статус |
+| ID | Requirement | Pr. | Acceptance criterion | Verification | Status |
 |---|---|---|---|---|---|
-| FR-01 | Регистрация аналитика, вход и выход | M | Зарегистрированный пользователь входит по email и паролю; при неверном пароле возвращается 401; токен сессии недоступен JavaScript | `tests/test_auth.py`, e2e `auth.spec.ts` | ✅ |
-| FR-02 | Роли `admin` и `analyst` | M | Подключать, переиндексировать и удалять источники может только `admin`; запрос аналитика получает 403 | `test_analyst_cannot_manage_datasources` | ✅ |
-| FR-03 | Подключение PostgreSQL-источника только с правами чтения | M | Источник с ролью, которая может писать, создавать объекты или читать файлы сервера, не сохраняется; пользователь видит список нарушений. Строка подключения хранится зашифрованной | `test_writable_role_is_rejected`, `test_connection_string_is_stored_encrypted` | ✅ |
-| FR-04 | Снимок схемы и индексация | M | После подключения доступны таблицы, столбцы, типы, FK, комментарии и значения категориальных столбцов (≤ 20); схема проиндексирована в Qdrant; есть переиндексация | `test_readonly_datasource_is_indexed`, `test_schema_not_ready_reindex_delete` | ✅ |
+| FR-01 | Analyst registration, login and logout | M | A registered user logs in with email and password; a wrong password returns 401; the session token is not accessible to JavaScript | `tests/test_auth.py`, e2e `auth.spec.ts` | ✅ |
+| FR-02 | `admin` and `analyst` roles | M | Only `admin` can connect, reindex and delete sources; an analyst request gets 403 | `test_analyst_cannot_manage_datasources` | ✅ |
+| FR-03 | Connection of a PostgreSQL source with read privileges only | M | A source whose role can write, create objects or read server files is not saved; the user sees the list of violations. The connection string is stored encrypted | `test_writable_role_is_rejected`, `test_connection_string_is_stored_encrypted` | ✅ |
+| FR-04 | Schema snapshot and indexing | M | After connection the tables, columns, types, FKs, comments and values of categorical columns (≤ 20) are available; the schema is indexed in Qdrant; reindexing is possible | `test_readonly_datasource_is_indexed`, `test_schema_not_ready_reindex_delete` | ✅ |
 
-### Диалог и ответ
+### Dialogue and answer
 
-| ID | Требование | Пр. | Критерий приёмки | Проверка | Статус |
+| ID | Requirement | Pr. | Acceptance criterion | Verification | Status |
 |---|---|---|---|---|---|
-| FR-05 | Сессии диалога с историей | M | Пользователь создаёт сессию для выбранного источника, видит историю сообщений; уточняющий вопрос «а по регионам?» понимается в контексте предыдущего | `tests/test_sessions.py`, тесты графа (память сессии) | ✅ |
-| FR-06 | Ответ на вопрос на естественном языке | M | Ответ содержит SQL, таблицу результата и текстовое пояснение; поток шагов агента виден во время ответа | e2e `chat.spec.ts`, тесты графа | ✅ |
-| FR-07 | Обнаружение неоднозначности и уточнение с вариантами | M | На неоднозначный вопрос агент задаёт уточняющий вопрос с 2–4 вариантами, привязанными к схеме, и принимает свой ответ текстом; после ответа продолжает с того же места; выбранная трактовка не переспрашивается в сессии | Тесты графа, e2e, эксперимент 2 | ✅ |
-| FR-08 | Уточнение повышает точность на неоднозначных вопросах | M | EX на неоднозначных вопросах `ambiguous_ru` с уточнением выше, чем без него, статистически значимо (p < 0,05) | Эксперимент 2: 40,3% → 67,7%, p < 0,001 | ✅ |
-| FR-09 | Многоуровневая проверка SQL | M | Каждый SQL проходит 5 уровней; пользователь видит по каждому уровню, пройден ли он, и причину отказа | `tests/validator`, [docs/validator.md](validator.md) | ✅ |
-| FR-10 | Самокоррекция | M | При ошибке уровней 1, 3, 4 или СУБД агент повторяет генерацию с причиной и подсказкой, не больше 3 попыток; попытку изменить данные агент отклоняет без исправления | Тесты графа (`self_correct`) | ✅ |
-| FR-11 | Агент точнее базового подхода | M | EX агента на `spider_subset` и `bird_subset` выше, чем у baseline (одна модель, вся схема, один запрос) | Эксперимент 1: Spider 63% против 72%, BIRD 38% против 42% | ❌ этап 1 ([разбор](../EVALS.md#эксперимент-1-baseline-против-агента)) |
-| FR-12 | Визуализация | S | Тип графика выбирается автоматически по типам столбцов; график, таблица и SQL доступны в аналитической панели | `test_charts.py`, `chart.test.ts` | ✅ |
-| FR-13 | Остановка ответа | S | Кнопка «Остановить» прерывает агента, ход сохраняется с пометкой; закрытие вкладки не теряет ответ | `test_turn_lifecycle.py` | ✅ |
-| FR-14 | Оценка ответа 👍 / 👎 | S | Оценка сохраняется и прикрепляется к трассе в Langfuse как score | `test_sessions.py`, `test_stats.py` | ✅ |
-| FR-15 | Обзор журнала запросов | S | Дашборд: число запросов, доля ответов с данными, на каком уровне валидатор останавливал SQL, уточнения, оценки | `test_stats.py` | ✅ |
-| FR-16 | Вопросы на казахском языке | C | Вопрос о данных на казахском получает ответ, а не отказ | `unsafe`: 1 ложный отказ на казахском | ⚠️ |
-| FR-17 | MCP-сервер с инструментами валидатора | C | `validate_sql`, `describe_table` доступны из MCP-клиента | — | ⏳ |
+| FR-05 | Dialogue sessions with history | M | The user creates a session for the selected source and sees the message history; a follow-up question "and by region?" is understood in the context of the previous one | `tests/test_sessions.py`, graph tests (session memory) | ✅ |
+| FR-06 | Answer to a natural-language question | M | The answer contains the SQL, the result table and a text explanation; the stream of agent steps is visible while the answer is produced | e2e `chat.spec.ts`, graph tests | ✅ |
+| FR-07 | Ambiguity detection and clarification with options | M | For an ambiguous question the agent asks a clarifying question with 2–4 options tied to the schema and accepts a custom text answer; after the answer it continues from the same point; a chosen interpretation is not asked again in the session | Graph tests, e2e, experiment 2 | ✅ |
+| FR-08 | Clarification increases accuracy on ambiguous questions | M | EX on the ambiguous questions of `ambiguous_ru` with clarification is higher than without it, with statistical significance (p < 0.05) | Experiment 2: 40.3% → 67.7%, p < 0.001 | ✅ |
+| FR-09 | Multi-level SQL validation | M | Every SQL query passes 5 levels; for each level the user sees whether it passed and the reason for a rejection | `tests/validator`, [docs/validator.md](validator.md) | ✅ |
+| FR-10 | Self-correction | M | After an error at levels 1, 3, 4 or in the DBMS the agent repeats generation with the reason and a hint, at most 3 attempts; an attempt to change data is rejected without correction | Graph tests (`self_correct`) | ✅ |
+| FR-11 | The agent is more accurate than the baseline | M | Agent EX on `spider_subset` and `bird_subset` is higher than that of the baseline (same model, whole schema, one call) | Experiment 1: Spider 63% vs 72%, BIRD 38% vs 42% | ❌ stage 1 ([analysis](../EVALS.md#experiment-1-baseline-vs-agent)) |
+| FR-12 | Visualisation | S | The chart type is chosen automatically from the column types; the chart, table and SQL are available in the analysis panel | `test_charts.py`, `chart.test.ts` | ✅ |
+| FR-13 | Stopping an answer | S | The Stop button interrupts the agent and the turn is saved with a mark; closing the tab does not lose the answer | `test_turn_lifecycle.py` | ✅ |
+| FR-14 | 👍 / 👎 rating of an answer | S | The rating is saved and attached to the trace in Langfuse as a score | `test_sessions.py`, `test_stats.py` | ✅ |
+| FR-15 | Overview of the query log | S | Dashboard: number of queries, share of answers with data, the level where the validator stopped SQL, clarifications, ratings | `test_stats.py` | ✅ |
+| FR-16 | Questions in Kazakh | C | A question about data in Kazakh gets an answer, not a refusal | `unsafe`: 1 false refusal in Kazakh | ⚠️ |
+| FR-17 | MCP server with the validator tools | C | `validate_sql` and `describe_table` are available from an MCP client | — | ⏳ |
 
-## 2. Нефункциональные требования
+## 2. Non-functional requirements
 
-| ID | Категория | Требование | Пр. | Критерий приёмки | Проверка | Статус |
+| ID | Category | Requirement | Pr. | Acceptance criterion | Verification | Status |
 |---|---|---|---|---|---|---|
-| NFR-01 | Безопасность | Атаки блокируются | M | 100% атак набора `unsafe` (≥ 50 на естественном языке) и 100% SQL-атак валидатора заблокированы | Эксперимент «Безопасность»: 46/46 и 88/88 | ✅ |
-| NFR-02 | Безопасность | Безобидные вопросы не блокируются | M | Ложных блокировок SQL 0%, безобидных вопросов на естественном языке не больше 5% | 0% SQL; 10% вопросов (3 из 30) | ⚠️ |
-| NFR-03 | Безопасность | Данные не изменяются ни при каких ответах модели | M | Роль подключения только читает; запрос выполняется в транзакции `READ ONLY`; попытка записи отклоняется СУБД | `demo_db/tests/test_reader_role.py`, тесты исполнителя | ✅ |
-| NFR-04 | Безопасность | Ограничение нагрузки на СУБД | M | `statement_timeout` 5 с, не больше 1000 строк и 2 МБ результата; тяжёлые запросы останавливаются | Тесты валидатора, `unsafe` heavy: 4/4 | ✅ |
-| NFR-05 | Безопасность | Секреты и сессия | M | Секреты только в `.env`, gitleaks в pre-commit; JWT в httpOnly-cookie; пароли argon2 | `test_security.py`, e2e | ✅ |
-| NFR-06 | Качество | Отбор таблиц | M | Все нужные таблицы найдены в ≥ 95% вопросов контрольного набора | 97,5% (40 вопросов); Spider 99%, BIRD 90% | ✅ |
-| NFR-07 | Качество | Обнаружение неоднозначности | S | До эксперимента цель не фиксировалась. Для этапа 2 предлагается F1 ≥ 0,8 и не больше 10% лишних уточнений | F1 0,74; лишних уточнений 11,4% | ⏳ |
-| NFR-08 | Производительность | Задержка ответа | S | Медиана ответа агента ≤ 8 с, p95 ≤ 15 с (без времени на уточнение) | 4,4–5,3 с и 8,3–12,4 с | ✅ |
-| NFR-09 | Производительность | Проверка SQL без БД | S | Уровни 1–3 < 20 мс | Медиана 0,58 мс, p95 1,46 мс | ✅ |
-| NFR-10 | Стоимость | Стоимость вопроса | S | ≤ $0,02 на вопрос | $0,008–0,012 | ✅ |
-| NFR-11 | Надёжность | Устойчивость хода | S | Обрыв соединения не теряет ответ; пауза на уточнение переживает перезапуск backend | `test_turn_lifecycle.py`, checkpoint в PostgreSQL | ✅ |
-| NFR-12 | Доступность | Интерфейс | S | WCAG 2.1 AA по axe-core без нарушений уровня serious и critical; Lighthouse Accessibility ≥ 90; работа на ширине телефона | e2e `a11y.spec.ts`, `mobile.spec.ts`; Lighthouse 96 | ✅ |
-| NFR-13 | Наблюдаемость | Трассировка | S | Каждый ход записывается как trace с узлами, промптами, токенами и стоимостью; у промптов есть версии | Langfuse | ✅ |
-| NFR-14 | Сопровождаемость | Тесты и проверки | M | Линтеры и строгий mypy без ошибок; покрытие `app/validator` ≥ 90%, `api` и `services` ≥ 70%; CI на каждый push | CI: 96% и 93–100% | ✅ |
-| NFR-15 | Воспроизводимость | Развёртывание и оценка | M | `make up` поднимает систему на чистой машине; прогоны оценки детерминированы (кэш LLM, фиксированная дата) | CI `compose.yml`; `EVALS.md` | ✅ |
-| NFR-16 | Регрессия | Контроль качества агента | S | Smoke-eval на 50 вопросах в CI: EX не падает больше чем на 5 п.п., блокировка атак 100% | `evals.yml` | ✅ |
+| NFR-01 | Security | Attacks are blocked | M | 100% of the attacks in the `unsafe` set (≥ 50 in natural language) and 100% of the validator SQL attacks are blocked | Security experiment: 46/46 and 88/88 | ✅ |
+| NFR-02 | Security | Harmless questions are not blocked | M | 0% false blocks of SQL, at most 5% of harmless natural-language questions | 0% SQL; 10% of questions (3 of 30) | ⚠️ |
+| NFR-03 | Security | Data does not change whatever the model answers | M | The connection role can only read; the query runs in a `READ ONLY` transaction; a write attempt is rejected by the DBMS | `demo_db/tests/test_reader_role.py`, executor tests | ✅ |
+| NFR-04 | Security | Limited load on the DBMS | M | `statement_timeout` 5 s, at most 1000 rows and 2 MB of result; heavy queries are stopped | Validator tests, `unsafe` heavy: 4/4 | ✅ |
+| NFR-05 | Security | Secrets and session | M | Secrets only in `.env`, gitleaks in pre-commit; JWT in an httpOnly cookie; argon2 passwords | `test_security.py`, e2e | ✅ |
+| NFR-06 | Quality | Table selection | M | All required tables are found for ≥ 95% of the questions of the control set | 97.5% (40 questions); Spider 99%, BIRD 90% | ✅ |
+| NFR-07 | Quality | Ambiguity detection | S | No target was set before the experiment. For stage 2 the proposed target is F1 ≥ 0.8 and at most 10% unnecessary clarifications | F1 0.74; unnecessary clarifications 11.4% | ⏳ |
+| NFR-08 | Performance | Response latency | S | Median agent response ≤ 8 s, p95 ≤ 15 s (without the time spent on clarification) | 4.4–5.3 s and 8.3–12.4 s | ✅ |
+| NFR-09 | Performance | SQL validation without the database | S | Levels 1–3 < 20 ms | Median 0.58 ms, p95 1.46 ms | ✅ |
+| NFR-10 | Cost | Cost per question | S | ≤ $0.02 per question | $0.008–0.012 | ✅ |
+| NFR-11 | Reliability | Turn resilience | S | A dropped connection does not lose the answer; the clarification pause survives a backend restart | `test_turn_lifecycle.py`, checkpoint in PostgreSQL | ✅ |
+| NFR-12 | Accessibility | Interface | S | WCAG 2.1 AA by axe-core without serious or critical violations; Lighthouse Accessibility ≥ 90; works at phone width | e2e `a11y.spec.ts`, `mobile.spec.ts`; Lighthouse 96 | ✅ |
+| NFR-13 | Observability | Tracing | S | Each turn is recorded as a trace with nodes, prompts, tokens and cost; prompts are versioned | Langfuse | ✅ |
+| NFR-14 | Maintainability | Tests and checks | M | Linters and strict mypy without errors; coverage of `app/validator` ≥ 90%, of `api` and `services` ≥ 70%; CI on every push | CI: 96% and 93–100% | ✅ |
+| NFR-15 | Reproducibility | Deployment and evaluation | M | `make up` starts the system on a clean machine; evaluation runs are deterministic (LLM cache, fixed date) | CI `compose.yml`; `EVALS.md` | ✅ |
+| NFR-16 | Regression | Control of agent quality | S | Smoke eval on 50 questions in CI: EX does not drop by more than 5 pp, attack blocking 100% | `evals.yml` | ✅ |
 
-## 3. Ограничения
+## 3. Constraints
 
-- Анализируемая СУБД: PostgreSQL 17, агент подключается ролью только для чтения.
-- LLM вызывается через внешний API (OpenAI). Без ключа агент не работает, для тестов есть заглушка.
-- Демо-данные синтетические, данные пользователей не используются.
+- Analysed DBMS: PostgreSQL 17; the agent connects with a read-only role.
+- The LLM is called through an external API (OpenAI). Without a key the agent does not work; tests use a stub.
+- The demo data is synthetic; user data is not used.
 
-## 4. Трассировка: задачи → требования → проверка
+## 4. Traceability: objectives → requirements → verification
 
-| Задача ([proposal](proposal.md#3-цель-и-задачи)) | Требования | Где проверяется |
+| Objective ([proposal](proposal.md#3-aim-and-objectives)) | Requirements | Where it is verified |
 |---|---|---|
-| 3. Schema linking | FR-04, NFR-06 | Роль 5, [EVALS.md](../EVALS.md) |
-| 4. Уточнение | FR-07, FR-08, NFR-07 | Эксперимент 2 |
-| 5. Проверка SQL и самокоррекция | FR-09, FR-10, NFR-01…04, NFR-09 | [docs/validator.md](validator.md), «Безопасность» |
-| 6. Веб-интерфейс | FR-01…06, FR-12…15, NFR-12 | e2e-тесты |
-| 7. Эксперименты | FR-08, FR-11, NFR-07, NFR-08, NFR-10 | [EVALS.md](../EVALS.md) |
+| 3. Schema linking | FR-04, NFR-06 | Role 5, [EVALS.md](../EVALS.md) |
+| 4. Clarification | FR-07, FR-08, NFR-07 | Experiment 2 |
+| 5. SQL validation and self-correction | FR-09, FR-10, NFR-01…04, NFR-09 | [docs/validator.md](validator.md), "Security" |
+| 6. Web interface | FR-01…06, FR-12…15, NFR-12 | e2e tests |
+| 7. Experiments | FR-08, FR-11, NFR-07, NFR-08, NFR-10 | [EVALS.md](../EVALS.md) |

@@ -1,44 +1,44 @@
-# Архитектура Suhbat2DB
+# Suhbat2DB architecture
 
-Документ описывает, из чего состоит система, как проходит один запрос и почему выбраны именно такие решения. Разделы 1–7 посвящены устройству системы, раздел 8 собирает архитектурные решения (ADR) в формате «контекст → решение → последствия». Контракты между компонентами (REST, SSE, валидатор, состояние агента) описаны в [docs/CONTRACTS.md](docs/CONTRACTS.md), результаты оценки в [EVALS.md](EVALS.md).
+This document describes the parts of the system, the path of one request and the reasons for the main decisions. Sections 1–7 cover the structure of the system, and section 8 collects the architectural decisions (ADRs) in the form "context, decision, consequences". The contracts between components (REST, SSE, validator, agent state) are in [docs/CONTRACTS.md](docs/CONTRACTS.md), and the evaluation results are in [EVALS.md](EVALS.md).
 
-## Содержание
+## Contents
 
-1. [Компоненты](#1-компоненты)
-2. [Развёртывание](#2-развёртывание)
-3. [Граф агента](#3-граф-агента)
-4. [Путь одного запроса](#4-путь-одного-запроса)
-5. [Данные](#5-данные)
-6. [Рубежи защиты](#6-рубежи-защиты)
-7. [Наблюдаемость и оценка](#7-наблюдаемость-и-оценка)
-8. [Архитектурные решения (ADR)](#8-архитектурные-решения-adr)
+1. [Components](#1-components)
+2. [Deployment](#2-deployment)
+3. [Agent graph](#3-agent-graph)
+4. [Path of one request](#4-path-of-one-request)
+5. [Data](#5-data)
+6. [Lines of defence](#6-lines-of-defence)
+7. [Observability and evaluation](#7-observability-and-evaluation)
+8. [Architectural decisions (ADR)](#8-architectural-decisions-adr)
 
-## 1. Компоненты
+## 1. Components
 
 ```mermaid
 flowchart LR
-    browser["Браузер"]
+    browser["Browser"]
 
     subgraph FE["frontend · Next.js 16"]
-        ui["UI<br/>чат, аналитическая панель,<br/>обзор, источники"]
-        bff["BFF<br/>JWT в httpOnly-cookie,<br/>прокси REST и SSE"]
+        ui["UI<br/>chat, analysis panel,<br/>overview, data sources"]
+        bff["BFF<br/>JWT in httpOnly cookie,<br/>REST and SSE proxy"]
     end
 
     subgraph BE["backend · FastAPI"]
         api["REST + SSE API"]
-        chat["Сервис хода<br/>asyncio-задача,<br/>очередь событий"]
-        ds["Источники данных<br/>проверка прав,<br/>интроспекция, индексация"]
-        subgraph AG["Агент · LangGraph"]
-            graph_["Граф и узлы"]
+        chat["Turn service<br/>asyncio task,<br/>event queue"]
+        ds["Data sources<br/>privilege check,<br/>introspection, indexing"]
+        subgraph AG["Agent · LangGraph"]
+            graph_["Graph and nodes"]
             linker["Schema linking"]
-            llmc["LLM-клиент<br/>модель на узел, fallback"]
+            llmc["LLM client<br/>model per node, fallback"]
         end
-        val["Валидатор SQL<br/>уровни 1–5"]
+        val["SQL validator<br/>levels 1–5"]
     end
 
-    appdb[("app-db · PostgreSQL<br/>пользователи, сессии,<br/>журнал, checkpoints")]
-    targetdb[("target-db · PostgreSQL<br/>анализируемые данные")]
-    qdrant[("Qdrant<br/>индекс схемы<br/>и примеров")]
+    appdb[("app-db · PostgreSQL<br/>users, sessions,<br/>log, checkpoints")]
+    targetdb[("target-db · PostgreSQL<br/>analysed data")]
+    qdrant[("Qdrant<br/>schema and<br/>example index")]
     openai["OpenAI API"]
     lf["Langfuse Cloud"]
 
@@ -53,429 +53,429 @@ flowchart LR
     graph_ --> val
     linker --> qdrant
     ds --> qdrant
-    ds -->|"интроспекция"| targetdb
-    val -->|"EXPLAIN, SELECT<br/>роль s2d_reader"| targetdb
+    ds -->|"introspection"| targetdb
+    val -->|"EXPLAIN, SELECT<br/>role s2d_reader"| targetdb
     llmc --> openai
     chat --> appdb
     graph_ -->|checkpoints| appdb
-    graph_ -.->|трассы| lf
+    graph_ -.->|traces| lf
 ```
 
-| Компонент | Код | Отвечает за | Не делает |
+| Component | Code | Responsible for | Does not |
 |---|---|---|---|
-| UI | [frontend/src/app](frontend/src/app), [components](frontend/src/components) | Чат с уточнениями, аналитическая панель (график, таблица, SQL, проверка), обзор, управление источниками | Не хранит токен и не обращается к backend напрямую |
-| BFF | [frontend/src/app/api](frontend/src/app/api), [proxy.ts](frontend/src/proxy.ts) | Вход и выход, JWT в httpOnly-cookie, прокси REST и SSE без буферизации, отклонение запросов с чужого `Origin` ([ADR-017](#adr-017-backend-for-frontend-и-jwt-в-httponly-cookie)) | Бизнес-логики нет |
-| REST + SSE API | [backend/app/api](backend/app/api) | Аутентификация, роли `admin` / `analyst`, сессии, сообщения, источники, статистика. Проверки до открытия потока ([ADR-010](#adr-010-sse-ответ-формируется-вручную)) | Не знает, как устроен агент |
-| Сервис хода | [services/chat.py](backend/app/services/chat.py) | Запускает ход отдельной задачей, раздаёт события в SSE, сохраняет ответ и журнал запроса ([ADR-019](#adr-019-ход-агента-не-зависит-от-соединения)) | — |
-| Источники данных | [services/datasources.py](backend/app/services/datasources.py), [indexer.py](backend/app/services/indexer.py), [target_db.py](backend/app/services/target_db.py) | Проверка, что роль подключения только читает ([ADR-008](#adr-008-проверка-только-чтение-по-правам-роли-а-не-пробной-записью)), снимок схемы, примеры значений, индексация в Qdrant | — |
-| Агент | [backend/app/agent](backend/app/agent) | Граф из 10 узлов: guard, schema linking, поиск неоднозначности, уточнение, генерация SQL, проверка, самокоррекция, выполнение, пояснение, отказ | Не обращается к app-db и HTTP напрямую, только отдаёт события |
-| Schema linking | [agent/retrieval](backend/app/agent/retrieval) | Гибридный поиск по схеме и значениям, пути JOIN по FK, few-shot примеры ([ADR-015](#adr-015-schema-linking-text-embedding-3-large-гибридный-поиск-все-кратчайшие-пути-join)) | — |
-| LLM-клиент и промпты | [llm.py](backend/app/agent/llm.py), [prompts](backend/app/agent/prompts) | Модель и temperature на узел, structured output, резервный провайдер. Промпты хранятся в файлах `*.md`, их версии синхронизируются с Langfuse ([ADR-016](#adr-016-собственный-интерфейс-llm-поверх-langchain)) | — |
-| Валидатор SQL | [backend/app/validator](backend/app/validator) | 5 уровней: синтаксис, политика «только чтение», схема, план, изолированное выполнение ([docs/validator.md](docs/validator.md)) | Не использует LLM |
+| UI | [frontend/src/app](frontend/src/app), [components](frontend/src/components) | Chat with clarifications, analysis panel (chart, table, SQL, validation), overview, data source management | Store the token or call the backend directly |
+| BFF | [frontend/src/app/api](frontend/src/app/api), [proxy.ts](frontend/src/proxy.ts) | Login and logout, JWT in an httpOnly cookie, REST and SSE proxy without buffering, rejection of requests from a foreign `Origin` ([ADR-017](#adr-017-backend-for-frontend-and-jwt-in-an-httponly-cookie)) | Contain business logic |
+| REST + SSE API | [backend/app/api](backend/app/api) | Authentication, `admin` / `analyst` roles, sessions, messages, data sources, statistics. Checks run before the stream opens ([ADR-010](#adr-010-the-sse-response-is-built-by-hand)) | Know how the agent works |
+| Turn service | [services/chat.py](backend/app/services/chat.py) | Runs the turn as a separate task, sends events to SSE, saves the answer and the query log entry ([ADR-019](#adr-019-the-agent-turn-does-not-depend-on-the-connection)) | — |
+| Data sources | [services/datasources.py](backend/app/services/datasources.py), [indexer.py](backend/app/services/indexer.py), [target_db.py](backend/app/services/target_db.py) | Check that the connection role can only read ([ADR-008](#adr-008-read-only-check-by-role-privileges-not-by-a-test-write)), schema snapshot, sample values, indexing in Qdrant | — |
+| Agent | [backend/app/agent](backend/app/agent) | A graph of 10 nodes: guard, schema linking, ambiguity detection, clarification, SQL generation, validation, self-correction, execution, explanation, refusal | Access app-db or HTTP directly; it only emits events |
+| Schema linking | [agent/retrieval](backend/app/agent/retrieval) | Hybrid search over the schema and values, JOIN paths over FKs, few-shot examples ([ADR-015](#adr-015-schema-linking-text-embedding-3-large-hybrid-search-all-shortest-join-paths)) | — |
+| LLM client and prompts | [llm.py](backend/app/agent/llm.py), [prompts](backend/app/agent/prompts) | Model and temperature per node, structured output, fallback provider. Prompts are stored in `*.md` files and their versions are synchronised with Langfuse ([ADR-016](#adr-016-own-llm-interface-on-top-of-langchain)) | — |
+| SQL validator | [backend/app/validator](backend/app/validator) | 5 levels: syntax, read-only policy, schema, plan, isolated execution ([docs/validator.md](docs/validator.md)) | Use an LLM |
 
-Заменить можно LLM-провайдера (протокол `LLM`), модель эмбеддингов (её имя входит в имя коллекции Qdrant), реализацию агента (протокол `AgentRunner`; в тестах и e2e работает заглушка `AGENT_MODE=fake`) и фронтенд, который общается с backend только через REST и SSE. Валидатор и интроспекция намеренно работают только с PostgreSQL: так проверка точнее, хотя перенести её на другую СУБД сложнее.
+The LLM provider (the `LLM` protocol), the embedding model (its name is part of the Qdrant collection name), the agent implementation (the `AgentRunner` protocol; tests and e2e use the `AGENT_MODE=fake` stub) and the frontend, which talks to the backend only through REST and SSE, can be replaced. The validator and the introspection work only with PostgreSQL on purpose: this makes the checks more precise, although moving them to another DBMS is harder.
 
-## 2. Развёртывание
+## 2. Deployment
 
-`make up` поднимает пять контейнеров. Хост-порты привязаны к `127.0.0.1` и задаются в `.env` ([ADR-004](#adr-004-хост-порты-настраиваются-через-env)).
+`make up` starts five containers. The host ports are bound to `127.0.0.1` and are set in `.env` ([ADR-004](#adr-004-host-ports-are-set-in-env)).
 
-| Контейнер | Образ | Порт | Назначение |
+| Container | Image | Port | Purpose |
 |---|---|---|---|
-| `frontend` | `node:24-slim` | 3000 | Next.js: UI и BFF |
-| `backend` | `python:3.12-slim` | 8000 | FastAPI, агент, валидатор. Миграции применяются при старте |
-| `app-db` | `postgres:17` | 5442 | Служебные данные и checkpoints LangGraph |
-| `target-db` | `postgres:17` | 5443 | Анализируемые данные: демо-БД, базы Spider и BIRD для оценки |
-| `qdrant` | `qdrant/qdrant:v1.19.2` | 6333 | Индекс схемы и примеров «вопрос → SQL» |
+| `frontend` | `node:24-slim` | 3000 | Next.js: UI and BFF |
+| `backend` | `python:3.12-slim` | 8000 | FastAPI, agent, validator. Migrations are applied at startup |
+| `app-db` | `postgres:17` | 5442 | Service data and LangGraph checkpoints |
+| `target-db` | `postgres:17` | 5443 | Analysed data: the demo database and the Spider and BIRD databases for the evaluation |
+| `qdrant` | `qdrant/qdrant:v1.19.2` | 6333 | Index of the schema and of "question → SQL" examples |
 
-Из внешних сервисов агенту обязательно нужен OpenAI API. Langfuse Cloud необязателен: без ключей трассировка просто отключается. Локальный Langfuse запускается профилем `langfuse-local` и добавляет ещё 6 контейнеров ([ADR-013](#adr-013-langfuse-cloud-по-умолчанию-локальный--по-желанию)). `app-db` и `target-db` разделены из соображений безопасности ([ADR-002](#adr-002-отдельные-инстансы-postgresql-для-приложения-и-для-анализируемых-данных)).
+The only external service the agent requires is the OpenAI API. Langfuse Cloud is optional: without keys tracing is simply turned off. A local Langfuse is started with the `langfuse-local` profile and adds 6 more containers ([ADR-013](#adr-013-langfuse-cloud-by-default-local-langfuse-optional)). `app-db` and `target-db` are separated for security reasons ([ADR-002](#adr-002-separate-postgresql-instances-for-the-application-and-for-the-analysed-data)).
 
-## 3. Граф агента
+## 3. Agent graph
 
-Диаграмма сгенерирована из кода и лежит в [docs/graph.md](docs/graph.md) вместе с таблицей узлов. Упрощённо:
+The diagram is generated from the code and is in [docs/graph.md](docs/graph.md) together with a table of nodes. A simplified version:
 
 ```mermaid
 stateDiagram-v2
     [*] --> guard_input
-    guard_input --> refuse: атака / изменение данных / вне темы
-    guard_input --> schema_linking: вопрос о данных
+    guard_input --> refuse: attack / data change / off topic
+    guard_input --> schema_linking: question about data
     schema_linking --> detect_ambiguity
-    detect_ambiguity --> clarify: неоднозначно
-    clarify --> schema_linking: ответ пользователя (resume)
-    detect_ambiguity --> generate_sql: однозначно
-    detect_ambiguity --> refuse: нельзя ответить по схеме
+    detect_ambiguity --> clarify: ambiguous
+    clarify --> schema_linking: user answer (resume)
+    detect_ambiguity --> generate_sql: clear
+    detect_ambiguity --> refuse: cannot be answered from the schema
     generate_sql --> validate_sql
-    validate_sql --> self_correct: уровни 1, 3, 4 (попыток < 3)
-    validate_sql --> refuse: уровень 2 / попытки исчерпаны
-    validate_sql --> execute: уровни 1–4 пройдены
+    validate_sql --> self_correct: levels 1, 3, 4 (attempts < 3)
+    validate_sql --> refuse: level 2 / attempts used up
+    validate_sql --> execute: levels 1–4 passed
     self_correct --> generate_sql
-    execute --> self_correct: ошибка СУБД
+    execute --> self_correct: DBMS error
     execute --> explain_and_visualize
     explain_and_visualize --> [*]
     refuse --> [*]
 ```
 
-Каждый узел записывает в состояние поле `route`, и по нему route-функция выбирает следующий узел; сама LLM переход не выбирает. У циклов есть лимиты: самокоррекция делает не больше 3 попыток (`AGENT_MAX_CORRECTIONS`), уточнение не больше 2 раундов на вопрос (`MAX_CLARIFICATION_ROUNDS`).
+Each node writes the `route` field to the state, and a route function uses it to choose the next node; the LLM itself does not choose the transition. The loops have limits: self-correction makes at most 3 attempts (`AGENT_MAX_CORRECTIONS`) and clarification at most 2 rounds per question (`MAX_CLARIFICATION_ROUNDS`).
 
-Ошибки SQL находит детерминированный валидатор, второй LLM в роли критика нет. Генератор получает от валидатора уровень, причину и подсказку (`feedback`). Попытку изменить данные агент не исправляет, а сразу отказывает (`fatal=True` на уровне 2).
+SQL errors are found by the deterministic validator; there is no second LLM acting as a critic. The generator receives the level, the reason and a hint (`feedback`) from the validator. The agent does not try to repair an attempt to modify data and refuses immediately (`fatal=True` at level 2).
 
-В checkpoint попадает только то, что нужно для продолжения: вопрос, уточнения и история. Снимок схемы, пул соединений и лимиты передаются через `AgentContext` и создаются заново на каждом ходе ([state.py](backend/app/agent/state.py)).
+The checkpoint holds only what is needed to resume: the question, the clarifications and the history. The schema snapshot, the connection pool and the limits are passed through `AgentContext` and are created again on every turn ([state.py](backend/app/agent/state.py)).
 
-| Поле состояния | Время жизни | Зачем |
+| State field | Lifetime | Purpose |
 |---|---|---|
-| `question`, `resolved_question`, `route`, `sql`, `attempts`, `feedback`, `result`, `answer`, `chart`, `error` | Один ход | Сбрасываются в начале хода (`new_turn`) |
-| `pending_clarification`, `turn_clarifications`, `clarification_rounds` | Один вопрос | Уточнения текущего вопроса |
-| `clarifications` (reducer `add`) | Сессия | Память сессии: выбранная трактовка не переспрашивается |
-| `history` (reducer `add`) | Сессия | Контекст для уточняющих вопросов («а по регионам?») |
+| `question`, `resolved_question`, `route`, `sql`, `attempts`, `feedback`, `result`, `answer`, `chart`, `error` | One turn | Reset at the start of a turn (`new_turn`) |
+| `pending_clarification`, `turn_clarifications`, `clarification_rounds` | One question | Clarifications of the current question |
+| `clarifications` (reducer `add`) | Session | Session memory: a chosen interpretation is not asked again |
+| `history` (reducer `add`) | Session | Context for follow-up questions ("and by region?") |
 
-## 4. Путь одного запроса
+## 4. Path of one request
 
-Ниже путь неоднозначного вопроса, который проходит уточнение и самокоррекцию.
+Below is the path of an ambiguous question that goes through clarification and self-correction.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor U as Аналитик
+    actor U as Analyst
     participant FE as Next.js (BFF)
     participant API as FastAPI
-    participant G as Граф LangGraph
+    participant G as LangGraph graph
     participant Q as Qdrant
     participant L as OpenAI
     participant DB as target-db
     participant A as app-db
 
-    U->>FE: «Выручка за первый квартал 2026»
+    U->>FE: "Revenue for Q1 2026"
     FE->>API: POST /sessions/{id}/messages
-    API->>G: ход как asyncio-задача, thread_id = id сессии
-    API-->>FE: поток SSE
+    API->>G: turn as an asyncio task, thread_id = session id
+    API-->>FE: SSE stream
     G->>L: guard_input (gpt-4.1-mini)
-    G->>Q: schema_linking: гибридный поиск, пути JOIN
+    G->>Q: schema_linking: hybrid search, JOIN paths
     G->>L: detect_ambiguity (gpt-4.1)
-    L-->>G: квартал календарный или финансовый?
+    L-->>G: calendar or fiscal quarter?
     G->>A: checkpoint, interrupt()
     G-->>FE: clarification, done(awaiting_clarification)
-    U->>FE: «финансовый (с 1 апреля)»
+    U->>FE: "fiscal (from 1 April)"
     FE->>API: POST /sessions/{id}/clarify
-    API->>G: Command(resume=ответ)
+    API->>G: Command(resume=answer)
     G->>L: generate_sql (gpt-4.1)
-    G->>G: валидатор, уровни 1–3 (без БД)
-    G->>DB: уровень 4: EXPLAIN
-    opt проверка не пройдена
-        G->>L: generate_sql + причина и подсказка (≤ 3 попыток)
+    G->>G: validator, levels 1–3 (no database)
+    G->>DB: level 4: EXPLAIN
+    opt check failed
+        G->>L: generate_sql + reason and hint (≤ 3 attempts)
     end
-    G->>DB: уровень 5: SELECT в READ ONLY, тайм-аут, LIMIT
-    G->>L: explain_and_visualize (gpt-4.1-mini, стриминг)
+    G->>DB: level 5: SELECT in READ ONLY, timeout, LIMIT
+    G->>L: explain_and_visualize (gpt-4.1-mini, streaming)
     G-->>FE: sql, validation, result, chart, answer
-    API->>A: сообщение и журнал запроса
+    API->>A: message and query log entry
     API-->>FE: done(message_id, trace_id)
 ```
 
-1. Браузер обращается только к Next.js. BFF достаёт JWT из httpOnly-cookie и передаёт запрос в FastAPI, а поток SSE пропускает без буферизации.
-2. API проверяет сессию и источник до открытия потока, поэтому ошибки приходят обычными кодами 404, 409 и 422. Затем ход запускается отдельной задачей: если вкладку закрыть, ответ всё равно сохранится.
-3. `guard_input` отсекает атаки, просьбы изменить данные и вопросы не о данных.
-4. `schema_linking` находит нужные таблицы гибридным поиском (dense + BM25), достраивает промежуточные таблицы для JOIN по внешним ключам и подбирает похожие примеры «вопрос → SQL».
-5. `detect_ambiguity` решает, однозначен ли вопрос с учётом уже найденной схемы. Если нет, `interrupt()` ставит граф на паузу, состояние сохраняется в app-db, пользователь видит варианты кнопками. Ответ приходит отдельным запросом `POST /clarify`, и граф продолжает с того же места, даже если backend за это время перезапускался.
-6. `generate_sql` строит SQL по связанной схеме, примерам, истории диалога и ошибкам прошлых попыток.
-7. Валидатор проверяет SQL. Уровни 1–3 работают без БД (< 3 мс), уровень 4 выполняет `EXPLAIN` без `ANALYZE`. При ошибке причина и подсказка возвращаются генератору, а нарушение политики «только чтение» сразу приводит к отказу.
-8. `execute` выполняет запрос ролью `s2d_reader` в транзакции `READ ONLY` с `statement_timeout` 5 с и лимитом 1000 строк.
-9. `explain_and_visualize`: тип графика выбирает код по типам столбцов, пояснение пишет LLM (стриминг токенов), числа в пояснении сверяются с результатом.
-10. API сохраняет сообщение и строку журнала запросов и отправляет событие `done` с `message_id` и `trace_id`, по которым потом ставится оценка ответа.
+1. The browser talks only to Next.js. The BFF takes the JWT from the httpOnly cookie and forwards the request to FastAPI; the SSE stream passes through without buffering.
+2. The API checks the session and the data source before opening the stream, so errors come back as ordinary 404, 409 and 422 codes. The turn then starts as a separate task: if the tab is closed, the answer is still saved.
+3. `guard_input` stops attacks, requests to change data and questions that are not about data.
+4. `schema_linking` finds the required tables with hybrid search (dense + BM25), adds the intermediate tables needed for JOINs over foreign keys and selects similar "question → SQL" examples.
+5. `detect_ambiguity` decides whether the question is clear, taking the retrieved schema into account. If it is not, `interrupt()` pauses the graph, the state is saved in app-db and the user sees the options as buttons. The answer comes in a separate `POST /clarify` request, and the graph continues from the same point even if the backend has restarted in the meantime.
+6. `generate_sql` builds SQL from the linked schema, the examples, the dialogue history and the errors of earlier attempts.
+7. The validator checks the SQL. Levels 1–3 work without the database (< 3 ms), and level 4 runs `EXPLAIN` without `ANALYZE`. On an error the reason and the hint go back to the generator, while a violation of the read-only policy leads straight to a refusal.
+8. `execute` runs the query as the `s2d_reader` role in a `READ ONLY` transaction with a `statement_timeout` of 5 s and a limit of 1000 rows.
+9. `explain_and_visualize`: code chooses the chart type from the column types, the LLM writes the explanation (token streaming), and the numbers in the explanation are compared with the result.
+10. The API saves the message and the query log row and sends the `done` event with `message_id` and `trace_id`, which are later used to rate the answer.
 
-Ход стоит около $0,008–0,012 и занимает 4–5 с по медиане ([EVALS.md](EVALS.md#главное)).
+A turn costs about $0.008–0.012 and takes 4–5 s at the median ([EVALS.md](EVALS.md#summary)).
 
-## 5. Данные
+## 5. Data
 
-| Хранилище | Что лежит | Кто пишет | Как защищено |
+| Storage | Contents | Written by | Protection |
 |---|---|---|---|
-| app-db | `users`, `datasources` (строка подключения зашифрована Fernet), `chat_sessions`, `messages`, `feedback`, `query_log`; таблицы checkpoint'ов LangGraph | backend | Отдельный инстанс. SQL, сгенерированный моделью, выполняется только в target-db |
-| target-db | Анализируемые данные пользователя | Никто (только чтение) | Роль `s2d_reader`: `SELECT`, `CONNECTION LIMIT`, `statement_timeout`, без доступа к системным функциям ([demo_db/roles.sql](demo_db/roles.sql)) |
-| Qdrant | `schema_elements__<модель>`: документы таблиц, столбцов и значений; `sql_examples__<модель>`: проверенные пары «вопрос → SQL». Фильтр по `datasource_id` | индексатор | Восстанавливается из снимка схемы (`make index`), поэтому не бэкапится |
-| Langfuse | Трассы ходов, стоимость, оценки 👍/👎, версии промптов | backend | Демо-данные синтетические; для реальных данных нужен локальный Langfuse ([ADR-013](#adr-013-langfuse-cloud-по-умолчанию-локальный--по-желанию)) |
+| app-db | `users`, `datasources` (connection string encrypted with Fernet), `chat_sessions`, `messages`, `feedback`, `query_log`; LangGraph checkpoint tables | backend | Separate instance. SQL generated by the model runs only in target-db |
+| target-db | The user's analysed data | Nobody (read-only) | Role `s2d_reader`: `SELECT`, `CONNECTION LIMIT`, `statement_timeout`, no access to system functions ([demo_db/roles.sql](demo_db/roles.sql)) |
+| Qdrant | `schema_elements__<model>`: documents for tables, columns and values; `sql_examples__<model>`: verified "question → SQL" pairs. Filter by `datasource_id` | indexer | Rebuilt from the schema snapshot (`make index`), so it is not backed up |
+| Langfuse | Turn traces, cost, 👍/👎 ratings, prompt versions | backend | The demo data is synthetic; real data needs a local Langfuse ([ADR-013](#adr-013-langfuse-cloud-by-default-local-langfuse-optional)) |
 
-Схема демо-БД и её «ловушки» неоднозначности описаны в [docs/demo_db.md](docs/demo_db.md).
+The demo database schema and its ambiguity "traps" are described in [docs/demo_db.md](docs/demo_db.md).
 
-## 6. Рубежи защиты
+## 6. Lines of defence
 
-Агент выполняет SQL, который модель сгенерировала по тексту пользователя и данным из БД. Поэтому каждый рубеж рассчитан на случай, когда предыдущий не сработал.
+The agent executes SQL that the model generated from the user's text and from data in the database. Each line of defence is therefore designed for the case when the previous one has failed.
 
-| # | Рубеж | Где | От чего защищает |
+| # | Line | Where | Protects against |
 |---|---|---|---|
-| 1 | Классификация входа | `guard_input`, промпт [guard.md](backend/app/agent/prompts/guard.md) | Прямые просьбы изменить данные, prompt injection, вопросы не о данных |
-| 2 | Данные отделены от инструкций | Схема, значения и результат передаются в тегах `<schema>`, `<query_result>`, вопрос в `<user_message>`; в промптах прямо сказано, что это данные | Инструкции, спрятанные в комментариях к столбцам и значениях (indirect injection) |
-| 3 | Structured output | Решения LLM (guard, неоднозначность, SQL) возвращаются как Pydantic-схемы | Свободный текст вместо решения, подмена маршрута |
-| 4 | Валидатор по AST | Уровни 1–4 ([docs/validator.md](docs/validator.md)) | DDL и DML, изменяющие CTE, опасные функции, системные каталоги, тяжёлые планы |
-| 5 | Права СУБД | Роль только для чтения, проверка прав при регистрации источника, транзакция `READ ONLY`, тайм-аут, лимит строк | Всё, что прошло рубежи 1–4: у роли физически нет права записи |
-| 6 | Проверка ответа | `ungrounded_numbers` пишет в лог числа пояснения, которых нет в результате | Выдуманные цифры и инструкции из данных в тексте ответа (пока обнаружение, без блокировки) |
-| 7 | Приложение | JWT в httpOnly-cookie, проверка `Origin`, ответ выводится без Markdown и ссылок, пароли argon2, секреты только в env | Кража сессии через XSS, CSRF, утечка секретов |
+| 1 | Input classification | `guard_input`, prompt [guard.md](backend/app/agent/prompts/guard.md) | Direct requests to change data, prompt injection, questions not about data |
+| 2 | Data separated from instructions | The schema, values and result are passed in the `<schema>` and `<query_result>` tags, the question in `<user_message>`; the prompts state that this is data | Instructions hidden in column comments and values (indirect injection) |
+| 3 | Structured output | LLM decisions (guard, ambiguity, SQL) are returned as Pydantic schemas | Free text instead of a decision, route substitution |
+| 4 | AST validator | Levels 1–4 ([docs/validator.md](docs/validator.md)) | DDL and DML, data-modifying CTEs, dangerous functions, system catalogs, heavy plans |
+| 5 | DBMS privileges | Read-only role, privilege check when a source is registered, `READ ONLY` transaction, timeout, row limit | Anything that passed lines 1–4: the role has no write privilege at all |
+| 6 | Answer check | `ungrounded_numbers` logs numbers in the explanation that are not in the result | Invented figures and instructions from data in the answer text (detection only, no blocking yet) |
+| 7 | Application | JWT in an httpOnly cookie, `Origin` check, the answer is rendered without Markdown or links, argon2 passwords, secrets only in env | Session theft through XSS, CSRF, secret leaks |
 
-На наборе атак заблокированы все атаки на естественном языке и все SQL-атаки. Одна непрямая инъекция из шести попала в текст пояснения, но данные не затронула ([EVALS.md](EVALS.md#безопасность)).
+On the attack set all natural-language attacks and all SQL attacks were blocked. One of six indirect injections got into the explanation text but did not affect the data ([EVALS.md](EVALS.md#security)).
 
-## 7. Наблюдаемость и оценка
+## 7. Observability and evaluation
 
-Каждый ход записывается в Langfuse как trace, а узлы и вызовы LLM внутри него как вложенные observations с токенами, стоимостью и задержкой. `trace_id` хранится в сообщении, и оценка 👍/👎 прикрепляется к trace как score.
+Each turn is recorded in Langfuse as a trace, and the nodes and LLM calls inside it as nested observations with tokens, cost and latency. The `trace_id` is stored with the message, and a 👍/👎 rating is attached to the trace as a score.
 
-Основная версия промптов лежит в файлах [`prompts/*.md`](backend/app/agent/prompts) в git. `make prompts` загружает их в Langfuse Prompt Management новой версией. С `PROMPTS_FROM_LANGFUSE=true` агент берёт версию `production` и связывает её с генерациями в трассах.
+The main version of the prompts is kept in the [`prompts/*.md`](backend/app/agent/prompts) files in git. `make prompts` uploads them to Langfuse Prompt Management as a new version. With `PROMPTS_FROM_LANGFUSE=true` the agent takes the `production` version and links it to the generations in the traces.
 
-Таблица `query_log` в app-db хранит итог каждого выполненного или остановленного SQL: статус, уровень валидатора, на котором запрос остановлен, число строк и задержку. По ней строится страница «Обзор».
+The `query_log` table in app-db stores the outcome of every executed or stopped SQL query: status, the validator level where it stopped, number of rows and latency. The Overview page is built from it.
 
-Пакет [`backend/evals`](backend/evals) прогоняет агента и baseline на наборах Spider, BIRD, `ambiguous_ru` и `unsafe`, кэшируя ответы LLM. Smoke-набор из 50 вопросов с порогами регрессии запускается в CI, когда меняется агент ([ADR-024](#adr-024-собственный-раннер-оценки-с-кэшем-llm)).
+The [`backend/evals`](backend/evals) package runs the agent and the baseline on the Spider, BIRD, `ambiguous_ru` and `unsafe` sets and caches the LLM responses. A smoke set of 50 questions with regression thresholds runs in CI when the agent changes ([ADR-024](#adr-024-own-evaluation-runner-with-an-llm-cache)).
 
-## 8. Архитектурные решения (ADR)
+## 8. Architectural decisions (ADR)
 
-| ADR | Решение | Статус |
+| ADR | Decision | Status |
 |---|---|---|
-| [001](#adr-001-langfuse-self-hosted-вместо-langfuse-cloud-и-langsmith) | Langfuse self-hosted | Заменено ADR-013 |
-| [002](#adr-002-отдельные-инстансы-postgresql-для-приложения-и-для-анализируемых-данных) | Отдельные PostgreSQL для приложения и данных | Принято |
-| [003](#adr-003-npm-вместо-pnpm-для-фронтенда) | npm вместо pnpm | Принято |
-| [004](#adr-004-хост-порты-настраиваются-через-env) | Хост-порты через `.env` | Принято |
-| [005](#adr-005-перечисления-как-varchar--check-а-не-нативный-enum-postgresql) | VARCHAR + CHECK вместо ENUM | Принято |
-| [006](#adr-006-синтетическая-демо-бд-с-намеренными-ловушками) | Синтетическая демо-БД с «ловушками» | Принято |
-| [007](#adr-007-часовой-пояс-демо-бд--asiaalmaty) | Часовой пояс Asia/Almaty | Принято |
-| [008](#adr-008-проверка-только-чтение-по-правам-роли-а-не-пробной-записью) | Проверка read-only по правам роли | Принято |
-| [009](#adr-009-примеры-значений-столбцов-через-select-distinct-а-не-из-статистики) | Значения столбцов через `SELECT DISTINCT` | Принято |
-| [010](#adr-010-sse-ответ-формируется-вручную) | SSE-ответ вручную | Принято |
-| [011](#adr-011-проверка-sql-по-ast-sqlglot-а-не-регулярными-выражениями) | Проверка SQL по AST (sqlglot), а не регулярными выражениями | Принято |
-| [012](#adr-012-limit-max_rows--1-вместо-отдельного-счётчика-строк) | `LIMIT max_rows + 1` | Принято |
-| [013](#adr-013-langfuse-cloud-по-умолчанию-локальный--по-желанию) | Langfuse Cloud по умолчанию | Принято |
-| [014](#adr-014-модели-llm-gpt-41-для-точных-узлов-gpt-41-mini-для-остальных) | gpt-4.1 и gpt-4.1-mini по узлам | Принято |
-| [015](#adr-015-schema-linking-text-embedding-3-large-гибридный-поиск-все-кратчайшие-пути-join) | Schema linking: large-эмбеддинги, гибридный поиск | Принято |
-| [016](#adr-016-собственный-интерфейс-llm-поверх-langchain) | Собственный интерфейс LLM | Принято |
-| [017](#adr-017-backend-for-frontend-и-jwt-в-httponly-cookie) | BFF и JWT в httpOnly-cookie | Принято |
-| [018](#adr-018-экран-диалога-чат--аналитическая-панель) | Чат + аналитическая панель | Принято |
-| [019](#adr-019-ход-агента-не-зависит-от-соединения) | Ход агента не зависит от соединения | Принято |
-| [020](#adr-020-оркестрация-агента-langgraph-а-не-crewai-autogen-или-собственный-цикл) | LangGraph, а не CrewAI, AutoGen или свой цикл | Принято |
-| [021](#adr-021-векторный-индекс-qdrant-а-не-pgvector) | Qdrant, а не pgvector | Принято |
-| [022](#adr-022-трассировка-langfuse-а-не-langsmith) | Langfuse, а не LangSmith | Принято |
-| [023](#adr-023-уточнение-через-interrupt-и-checkpoint-а-не-угадывание) | Уточнение через `interrupt` и checkpoint | Принято |
-| [024](#adr-024-собственный-раннер-оценки-с-кэшем-llm) | Собственный раннер оценки с кэшем LLM | Принято |
+| [001](#adr-001-self-hosted-langfuse-instead-of-langfuse-cloud-and-langsmith) | Self-hosted Langfuse | Superseded by ADR-013 |
+| [002](#adr-002-separate-postgresql-instances-for-the-application-and-for-the-analysed-data) | Separate PostgreSQL for the application and for the data | Accepted |
+| [003](#adr-003-npm-instead-of-pnpm-for-the-frontend) | npm instead of pnpm | Accepted |
+| [004](#adr-004-host-ports-are-set-in-env) | Host ports through `.env` | Accepted |
+| [005](#adr-005-enumerations-as-varchar--check-not-native-postgresql-enum) | VARCHAR + CHECK instead of ENUM | Accepted |
+| [006](#adr-006-synthetic-demo-database-with-deliberate-traps) | Synthetic demo database with "traps" | Accepted |
+| [007](#adr-007-demo-database-time-zone-asiaalmaty) | Time zone Asia/Almaty | Accepted |
+| [008](#adr-008-read-only-check-by-role-privileges-not-by-a-test-write) | Read-only check by role privileges | Accepted |
+| [009](#adr-009-sample-column-values-through-select-distinct-not-from-statistics) | Column values through `SELECT DISTINCT` | Accepted |
+| [010](#adr-010-the-sse-response-is-built-by-hand) | SSE response built by hand | Accepted |
+| [011](#adr-011-sql-checks-on-the-ast-sqlglot-not-with-regular-expressions) | SQL checks on the AST (sqlglot), not with regular expressions | Accepted |
+| [012](#adr-012-limit-max_rows--1-instead-of-a-separate-row-count) | `LIMIT max_rows + 1` | Accepted |
+| [013](#adr-013-langfuse-cloud-by-default-local-langfuse-optional) | Langfuse Cloud by default | Accepted |
+| [014](#adr-014-llm-models-gpt-41-for-precise-nodes-gpt-41-mini-for-the-rest) | gpt-4.1 and gpt-4.1-mini by node | Accepted |
+| [015](#adr-015-schema-linking-text-embedding-3-large-hybrid-search-all-shortest-join-paths) | Schema linking: large embeddings, hybrid search | Accepted |
+| [016](#adr-016-own-llm-interface-on-top-of-langchain) | Own LLM interface | Accepted |
+| [017](#adr-017-backend-for-frontend-and-jwt-in-an-httponly-cookie) | BFF and JWT in an httpOnly cookie | Accepted |
+| [018](#adr-018-chat-screen-chat--analysis-panel) | Chat + analysis panel | Accepted |
+| [019](#adr-019-the-agent-turn-does-not-depend-on-the-connection) | The agent turn does not depend on the connection | Accepted |
+| [020](#adr-020-agent-orchestration-langgraph-instead-of-crewai-autogen-or-an-own-loop) | LangGraph instead of CrewAI, AutoGen or an own loop | Accepted |
+| [021](#adr-021-vector-index-qdrant-instead-of-pgvector) | Qdrant instead of pgvector | Accepted |
+| [022](#adr-022-tracing-langfuse-instead-of-langsmith) | Langfuse instead of LangSmith | Accepted |
+| [023](#adr-023-clarification-through-interrupt-and-checkpoint-instead-of-guessing) | Clarification through `interrupt` and a checkpoint | Accepted |
+| [024](#adr-024-own-evaluation-runner-with-an-llm-cache) | Own evaluation runner with an LLM cache | Accepted |
 
-## ADR-001. Langfuse self-hosted вместо Langfuse Cloud и LangSmith
+## ADR-001. Self-hosted Langfuse instead of Langfuse Cloud and LangSmith
 
-> **Заменено ADR-013** (октябрь 2026): по умолчанию используется Langfuse Cloud, self-hosted остался необязательным профилем.
+> **Superseded by ADR-013** (October 2026): Langfuse Cloud is used by default, and the self-hosted option remains as an optional profile.
 
-**Контекст.** Для трассировки нужен инструмент, который показывает дерево шагов агента, стоимость и задержку, хранит датасеты для evals и версии промптов. Кандидаты: LangSmith (лучшая интеграция с LangGraph, но vendor lock-in и проблемы с on-prem), Langfuse Cloud, Langfuse self-hosted. Self-host Langfuse v4 требует 6 контейнеров (web, worker, PostgreSQL, ClickHouse, Redis, MinIO).
+**Context.** Tracing needs a tool that shows the tree of agent steps, cost and latency, and stores datasets for evals and prompt versions. Candidates: LangSmith (best integration with LangGraph, but vendor lock-in and problems with on-prem), Langfuse Cloud, self-hosted Langfuse. Self-hosted Langfuse v4 needs 6 containers (web, worker, PostgreSQL, ClickHouse, Redis, MinIO).
 
-**Решение.** Langfuse self-hosted в отдельном compose-файле `infra/langfuse/docker-compose.yml`, подключённом через `include`. Headless-инициализация (`LANGFUSE_INIT_*`) создаёт организацию, проект и ключи при первом запуске.
+**Decision.** Self-hosted Langfuse in a separate compose file `infra/langfuse/docker-compose.yml`, connected through `include`. Headless initialisation (`LANGFUSE_INIT_*`) creates the organisation, the project and the keys on the first start.
 
-**Последствия.**
-- Трейсы и данные из БД пользователя не покидают машину. Это важно, потому что в trace попадают SQL и фрагменты результатов.
-- Окружение тяжелее: 11 контейнеров. Для слабых машин есть `make up-lite` без Langfuse, трассировка тогда просто отключена.
-- Переход на Langfuse Cloud — замена `LANGFUSE_HOST` и ключей в `.env`, код не меняется.
+**Consequences.**
+- Traces and data from the user's database do not leave the machine. This matters because traces contain SQL and fragments of results.
+- The environment is heavier: 11 containers. For weak machines there is `make up-lite` without Langfuse; tracing is then turned off.
+- Moving to Langfuse Cloud means changing `LANGFUSE_HOST` and the keys in `.env`; the code does not change.
 
-## ADR-002. Отдельные инстансы PostgreSQL для приложения и для анализируемых данных
+## ADR-002. Separate PostgreSQL instances for the application and for the analysed data
 
-**Контекст.** Агент выполняет сгенерированный SQL. Ошибка в валидаторе не должна дать доступ к таблицам пользователей, сессий и checkpoint'ов.
+**Context.** The agent executes generated SQL. An error in the validator must not give access to the tables of users, sessions and checkpoints.
 
-**Решение.** `app-db` (служебные данные) и `target-db` (анализируемые данные) — разные контейнеры с разными учётными данными. Агент подключается к `target-db` только ролью `s2d_reader` с правами `SELECT` (роль 2).
+**Decision.** `app-db` (service data) and `target-db` (analysed data) are different containers with different credentials. The agent connects to `target-db` only as the `s2d_reader` role with `SELECT` privileges (role 2).
 
-**Последствия.** Даже при обходе валидатора запрос физически не может обратиться к служебным данным (defense in depth). Стоимость решения — один дополнительный контейнер.
+**Consequences.** Even if the validator is bypassed, a query cannot reach the service data (defense in depth). The cost is one extra container.
 
-## ADR-003. npm вместо pnpm для фронтенда
+## ADR-003. npm instead of pnpm for the frontend
 
-**Контекст.** В плане был pnpm. На машине разработки corepack не может включить pnpm без прав администратора.
+**Context.** The plan used pnpm. On the development machine corepack cannot enable pnpm without administrator rights.
 
-**Решение.** npm (идёт вместе с Node.js 24). Lock-файл генерируется той же версией npm, что в Docker-образе `node:24-slim`, иначе `npm ci` в контейнере падает из-за отсутствующих optional-зависимостей для Linux.
+**Decision.** npm (it comes with Node.js 24). The lock file is generated by the same npm version as in the `node:24-slim` Docker image; otherwise `npm ci` in the container fails because of missing optional dependencies for Linux.
 
-**Последствия.** Разница для проекта такого размера несущественна. При обновлении зависимостей lock-файл пересобирается командой `npx npm@<версия из образа> install --package-lock-only`.
+**Consequences.** For a project of this size the difference is not significant. When dependencies are updated, the lock file is rebuilt with `npx npm@<image version> install --package-lock-only`.
 
-## ADR-004. Хост-порты настраиваются через .env
+## ADR-004. Host ports are set in .env
 
-**Контекст.** На машине разработки порт 5432 занят локальным PostgreSQL, порт 3000 — другим проектом.
+**Context.** On the development machine port 5432 is taken by a local PostgreSQL and port 3000 by another project.
 
-**Решение.** Все хост-порты задаются переменными (`APP_DB_PORT`, `TARGET_DB_PORT`, `BACKEND_PORT`, `FRONTEND_PORT`) и привязаны к `127.0.0.1`. Значения по умолчанию: 5442, 5443, 8000, 3000.
+**Decision.** All host ports are set by variables (`APP_DB_PORT`, `TARGET_DB_PORT`, `BACKEND_PORT`, `FRONTEND_PORT`) and are bound to `127.0.0.1`. Defaults: 5442, 5443, 8000, 3000.
 
-**Последствия.** Проект не конфликтует с другим ПО, а сервисы недоступны из внешней сети.
+**Consequences.** The project does not conflict with other software, and the services are not reachable from an external network.
 
-## ADR-005. Перечисления как VARCHAR + CHECK, а не нативный ENUM PostgreSQL
+## ADR-005. Enumerations as VARCHAR + CHECK, not native PostgreSQL ENUM
 
-**Контекст.** Статусы (`role`, `status` и т.п.) имеют фиксированный набор значений, который будет расширяться (например, новые статусы источника данных).
+**Context.** Statuses (`role`, `status` and others) have a fixed set of values that will grow (for example, new data source statuses).
 
-**Решение.** `VARCHAR(32)` с явным `CHECK (col IN (...))`, заданным в `__table_args__`. Автоматический CHECK у `sqlalchemy.Enum` отключён: с ним autogenerate создавал два одинаковых ограничения.
+**Decision.** `VARCHAR(32)` with an explicit `CHECK (col IN (...))` defined in `__table_args__`. The automatic CHECK of `sqlalchemy.Enum` is turned off: with it, autogenerate created two identical constraints.
 
-**Последствия.** Новое значение добавляется миграцией с заменой CHECK, без `ALTER TYPE`, который нельзя выполнить внутри транзакции в старых версиях PostgreSQL. Целостность значений по-прежнему гарантирует БД.
+**Consequences.** A new value is added by a migration that replaces the CHECK, without `ALTER TYPE`, which cannot run inside a transaction in older PostgreSQL versions. The database still guarantees the integrity of the values.
 
-## ADR-006. Синтетическая демо-БД с намеренными «ловушками»
+## ADR-006. Synthetic demo database with deliberate "traps"
 
-**Контекст.** Для оценки уточнения неоднозначности нужны вопросы, у которых несколько корректных трактовок дают **разные** ответы. Публичные бенчмарки (Spider, BIRD) построены на однозначных вопросах с одним эталонным SQL.
+**Context.** To evaluate ambiguity clarification we need questions where several correct interpretations give **different** answers. Public benchmarks (Spider, BIRD) are built on unambiguous questions with one reference SQL.
 
-**Решение.** Собственная БД продаж с детерминированным генератором и встроенными источниками неоднозначности: финансовый год с 1 апреля, дата заказа и дата оплаты, несколько платежей на заказ, «Алматы» как город и область, текущая цена и цена продажи (подробно — [docs/demo_db.md](docs/demo_db.md)). Наличие каждой ловушки закреплено тестом.
+**Decision.** An own sales database with a deterministic generator and built-in sources of ambiguity: a fiscal year that starts on 1 April, order date and payment date, several payments per order, "Almaty" as both a city and a region, current price and sale price (details in [docs/demo_db.md](docs/demo_db.md)). A test fixes the presence of each trap.
 
-**Последствия.** Набор `ambiguous_ru` строится на контролируемых данных, а расхождение ответов между трактовками измеримо (например, «первый квартал 2026»: 4 421 против 5 054 млн ₸). Ограничение: данные синтетические, поэтому основная оценка execution accuracy дополняется Spider и BIRD.
+**Consequences.** The `ambiguous_ru` set is built on controlled data, and the difference between the answers for different interpretations can be measured (for example, "Q1 2026": 4,421 vs 5,054 million ₸). Limitation: the data is synthetic, so the main execution accuracy evaluation also uses Spider and BIRD.
 
-## ADR-007. Часовой пояс демо-БД — Asia/Almaty
+## ADR-007. Demo database time zone: Asia/Almaty
 
-**Контекст.** Заказ, оформленный 1 октября в 00:30 по Алматы, в UTC относится к 30 сентября, то есть к предыдущему кварталу. Пользователь спрашивает о кварталах в местном времени.
+**Context.** An order placed on 1 October at 00:30 Almaty time falls on 30 September in UTC, that is, in the previous quarter. Users ask about quarters in local time.
 
-**Решение.** `ALTER DATABASE demo SET timezone = 'Asia/Almaty'`, временные метки хранятся как `timestamptz`.
+**Decision.** `ALTER DATABASE demo SET timezone = 'Asia/Almaty'`; timestamps are stored as `timestamptz`.
 
-**Последствия.** `date_trunc` и приведение `::date` в SQL агента работают в местном времени без явного `AT TIME ZONE`. Для подключаемых пользователем БД часовой пояс берётся из их настроек. Агенту он передаётся как часть описания схемы (роль 5).
+**Consequences.** `date_trunc` and the `::date` cast in the agent's SQL work in local time without an explicit `AT TIME ZONE`. For databases connected by users, the time zone is taken from their settings. It is passed to the agent as part of the schema description (role 5).
 
-## ADR-008. Проверка «только чтение» по правам роли, а не пробной записью
+## ADR-008. Read-only check by role privileges, not by a test write
 
-**Контекст.** Агент выполняет SQL, сгенерированный LLM. Если роль подключения может писать, ошибка валидатора превращается в порчу данных. Пробная запись (`CREATE TEMP TABLE`) ненадёжна: при `default_transaction_read_only = on` она падает и у роли с правами на запись, а этот режим сессия может отключить сама.
+**Context.** The agent executes SQL generated by an LLM. If the connection role can write, a validator error turns into data corruption. A test write (`CREATE TEMP TABLE`) is unreliable: with `default_transaction_read_only = on` it fails even for a role with write privileges, and a session can turn this mode off itself.
 
-**Решение.** При регистрации источника права роли проверяются по системным каталогам: атрибуты (`rolsuper`, `rolcreaterole`, `rolcreatedb`, `rolbypassrls`), `CREATE`/`TEMP` на базу, `CREATE` в схемах, `INSERT/UPDATE/DELETE/TRUNCATE` на таблицы, членство в `pg_write_server_files`, `pg_read_server_files`, `pg_execute_server_program`. Источник с любым нарушением не сохраняется, а пользователь видит список нарушений.
+**Decision.** When a source is registered, the role privileges are checked in the system catalogs: attributes (`rolsuper`, `rolcreaterole`, `rolcreatedb`, `rolbypassrls`), `CREATE`/`TEMP` on the database, `CREATE` in schemas, `INSERT/UPDATE/DELETE/TRUNCATE` on tables, membership in `pg_write_server_files`, `pg_read_server_files`, `pg_execute_server_program`. A source with any violation is not saved, and the user sees the list of violations.
 
-**Последствия.** Уровень 5 валидатора опирается на гарантию СУБД, а не на настройку сессии. Ограничение: права, выданные после регистрации, не отслеживаются. Повторная проверка при каждом подключении из пула — возможное улучшение.
+**Consequences.** Level 5 of the validator relies on a guarantee of the DBMS, not on a session setting. Limitation: privileges granted after registration are not tracked. Re-checking on every connection from the pool is a possible improvement.
 
-## ADR-009. Примеры значений столбцов через SELECT DISTINCT, а не из статистики
+## ADR-009. Sample column values through SELECT DISTINCT, not from statistics
 
-**Контекст.** Для value linking («Алматы» → `regions.name = 'Алматы'`) агенту нужны значения категориальных столбцов. Статистика `pg_stats.most_common_vals` пуста у столбцов с уникальными значениями, то есть как раз у справочников (`regions.name`, `categories.name`).
+**Context.** For value linking ("Almaty" → `regions.name = 'Алматы'`) the agent needs the values of categorical columns. The `pg_stats.most_common_vals` statistic is empty for columns with unique values, which is exactly the case for lookup tables (`regions.name`, `categories.name`).
 
-**Решение.** `pg_stats.n_distinct` используется только для отбора кандидатов (с учётом отрицательных значений-долей). Сами значения берутся `SELECT DISTINCT … LIMIT 21` в read-only транзакции с тайм-аутом 2 с. Столбцы с более чем 20 значениями пропускаются.
+**Decision.** `pg_stats.n_distinct` is used only to select candidates (taking negative fraction values into account). The values themselves are read with `SELECT DISTINCT … LIMIT 21` in a read-only transaction with a 2 s timeout. Columns with more than 20 values are skipped.
 
-**Последствия.** Значения есть у всех справочников демо-БД, но нет у ФИО и названий товаров. На больших таблицах запрос ограничен тайм-аутом и не блокирует индексацию.
+**Consequences.** All lookup tables of the demo database have sample values; personal names and product names do not. On large tables the query is limited by the timeout and does not block indexing.
 
-## ADR-010. SSE-ответ формируется вручную
+## ADR-010. The SSE response is built by hand
 
-**Контекст.** В FastAPI 0.146 встроенная поддержка SSE (`fastapi.sse`) работает с endpoint-генераторами. В них проверки (нет сессии, источник не готов, сессия занята) выполнялись бы уже после начала потока.
+**Context.** In FastAPI 0.146 the built-in SSE support (`fastapi.sse`) works with generator endpoints. In those, the checks (no session, source not ready, session busy) would run after the stream had already started.
 
-**Решение.** Endpoint — обычная функция: сначала проверки с HTTP-ошибками, затем `EventSourceResponse` с генератором байтов (`format_sse_event`). API-слой между агентом и клиентом собирает итог хода, сохраняет сообщение и подставляет `message_id` в `done`.
+**Decision.** The endpoint is an ordinary function: first the checks with HTTP errors, then an `EventSourceResponse` with a byte generator (`format_sse_event`). The API layer between the agent and the client collects the result of the turn, saves the message and puts `message_id` into `done`.
 
-**Последствия.** Клиент получает нормальные коды 404/409/422 до открытия потока. Агент (заглушка или LangGraph) не знает о БД приложения и HTTP: он только отдаёт события.
+**Consequences.** The client receives normal 404/409/422 codes before the stream opens. The agent (stub or LangGraph) knows nothing about the application database and HTTP; it only emits events.
 
-## ADR-011. Проверка SQL по AST (sqlglot), а не регулярными выражениями
+## ADR-011. SQL checks on the AST (sqlglot), not with regular expressions
 
-**Контекст.** Опасный SQL легко замаскировать от текстовых фильтров: регистр (`DeLeTe`), кавычки (`"pg_sleep"(10)`), комментарии, изменяющий CTE внутри `SELECT`, второе выражение после `;`. Регулярные выражения дают и пропуски, и ложные срабатывания (литерал `'DROP TABLE orders'`, псевдоним `deleted`).
+**Context.** Dangerous SQL is easy to hide from text filters: letter case (`DeLeTe`), quotes (`"pg_sleep"(10)`), comments, a data-modifying CTE inside `SELECT`, a second statement after `;`. Regular expressions give both misses and false positives (the literal `'DROP TABLE orders'`, the alias `deleted`).
 
-**Решение.** Запрос разбирается sqlglot, правила применяются к дереву: допустимый корень, запрещённые типы узлов в любом месте, функции по имени, системные каталоги. Всё, что парсер не разобрал, отклоняется (allowlist).
+**Decision.** sqlglot parses the query, and the rules are applied to the tree: an allowed root, forbidden node types anywhere, functions by name, system catalogs. Anything the parser cannot parse is rejected (allowlist).
 
-**Последствия.** На наборе из 88 атак — 100% блокировок, на 42 безобидных запросах — 0 ложных (docs/validator.md). Зависимость от sqlglot: конструкции PostgreSQL, которые он не разбирает (`NOTIFY`), отклоняются как синтаксические ошибки, и это безопасная сторона.
+**Consequences.** On a set of 88 attacks 100% are blocked, and on 42 harmless queries there are 0 false blocks (docs/validator.md). The project depends on sqlglot: PostgreSQL constructs it cannot parse (`NOTIFY`) are rejected as syntax errors, which is the safe side.
 
-## ADR-012. LIMIT max_rows + 1 вместо отдельного счётчика строк
+## ADR-012. LIMIT max_rows + 1 instead of a separate row count
 
-**Контекст.** Пользователь должен знать, что видит не весь результат. `count(*)` отдельным запросом удваивает нагрузку.
+**Context.** The user must know when they do not see the whole result. A separate `count(*)` query doubles the load.
 
-**Решение.** При нормализации внешний `LIMIT` ограничивается значением `max_rows + 1`, курсор читает не больше `max_rows + 1` строк. Если пришла лишняя строка, ставится `truncated = true`. Меньший `LIMIT` пользователя сохраняется, больший оборачивается подзапросом.
+**Decision.** During normalisation the outer `LIMIT` is capped at `max_rows + 1`, and the cursor reads at most `max_rows + 1` rows. If the extra row arrives, `truncated = true` is set. A smaller user `LIMIT` is kept, and a larger one is wrapped in a subquery.
 
-**Последствия.** Один запрос к БД, честный признак усечения. В показанном пользователю SQL виден `LIMIT 1001`, а не 1000. Это объясняется в интерфейсе (роль 6).
+**Consequences.** One query to the database and a reliable truncation flag. The SQL shown to the user contains `LIMIT 1001`, not 1000. The interface explains this (role 6).
 
-## ADR-013. Langfuse Cloud по умолчанию, локальный — по желанию
+## ADR-013. Langfuse Cloud by default, local Langfuse optional
 
-**Контекст.** Self-hosted Langfuse — это 6 контейнеров (ADR-001), и он заметно нагружает ноутбук. Для проекта создан проект в Langfuse Cloud. Данные демо-БД синтетические, поэтому передача трасс в облако допустима.
+**Context.** Self-hosted Langfuse is 6 containers (ADR-001), and it puts a noticeable load on a laptop. A Langfuse Cloud project was created for this work. The demo data is synthetic, so sending traces to the cloud is acceptable.
 
-**Решение.** Backend отправляет трассы в Langfuse Cloud (`LANGFUSE_BASE_URL`, ключи проекта). Локальный Langfuse вынесен в compose-профиль `langfuse-local` (`make up-langfuse`) со своими ключами `LANGFUSE_LOCAL_*`. Без ключей трассировка отключается, приложение работает. Тесты сбрасывают ключи и во внешние сервисы не ходят.
+**Decision.** The backend sends traces to Langfuse Cloud (`LANGFUSE_BASE_URL`, project keys). The local Langfuse is moved to the `langfuse-local` compose profile (`make up-langfuse`) with its own `LANGFUSE_LOCAL_*` keys. Without keys tracing is turned off and the application still works. Tests reset the keys and do not call external services.
 
-**Последствия.** `make up` поднимает 5 контейнеров вместо 11. Для пользовательских БД с реальными данными нужен локальный вариант или маскирование, переключение делается через `.env`.
+**Consequences.** `make up` starts 5 containers instead of 11. User databases with real data need the local option or masking; the switch is made in `.env`.
 
-## ADR-014. Модели LLM: gpt-4.1 для точных узлов, gpt-4.1-mini для остальных
+## ADR-014. LLM models: gpt-4.1 for precise nodes, gpt-4.1-mini for the rest
 
-**Контекст.** Ключ доступен только у OpenAI. Узлы различаются требованиями: генерация SQL и детектор неоднозначности требуют рассуждения о схеме, а guard и пояснение — простые задачи. В плане экспериментов есть подбор `temperature`, но рассуждающие модели (gpt-5*, o-серия) его не принимают.
+**Context.** Only an OpenAI key is available. The nodes have different needs: SQL generation and the ambiguity detector must reason about the schema, while guard and explanation are simple tasks. The experiment plan includes tuning `temperature`, but reasoning models (gpt-5*, the o-series) do not accept it.
 
-**Решение.** `strong` = gpt-4.1 (`generate_sql`, `detect_ambiguity`, temperature 0), `fast` = gpt-4.1-mini (`guard_input` — 0, `explain` — 0,3). Модели задаются в env и переопределяются на узел (для экспериментов). Для рассуждающих моделей `temperature` не передаётся. Anthropic — резервный провайдер через `with_fallbacks`, если задан ключ.
+**Decision.** `strong` = gpt-4.1 (`generate_sql`, `detect_ambiguity`, temperature 0), `fast` = gpt-4.1-mini (`guard_input` at 0, `explain` at 0.3). Models are set in env and can be overridden per node (for experiments). For reasoning models `temperature` is not passed. Anthropic is the fallback provider through `with_fallbacks` if its key is set.
 
-**Последствия.** По данным Langfuse ход стоит около $0,01 (≈ 5 тыс. входных токенов на gpt-4.1) и занимает 4–8 с. Сравнение с рассуждающей моделью (gpt-5.4-mini) — эксперимент 5 роли 7.
+**Consequences.** According to Langfuse, a turn costs about $0.01 (≈ 5 thousand input tokens on gpt-4.1) and takes 4–8 s. The comparison with a reasoning model (gpt-5.4-mini) is experiment 5 of role 7.
 
-## ADR-015. Schema linking: text-embedding-3-large, гибридный поиск, все кратчайшие пути JOIN
+## ADR-015. Schema linking: text-embedding-3-large, hybrid search, all shortest JOIN paths
 
-**Контекст.** В промпт попадает не вся схема, а связанная с вопросом часть (Just-in-Time context). Отбор должен находить все нужные таблицы, иначе SQL неверен независимо от качества LLM.
+**Context.** The prompt receives only the part of the schema related to the question (just-in-time context). The selection must find all required tables; otherwise the SQL is wrong whatever the quality of the LLM.
 
-**Решение.** На 40 вопросах с эталонными таблицами сравнили модели и режимы (доля вопросов, где найдены все таблицы, top-5): small dense 0,900, BM25 0,800, small hybrid 0,900, **large dense 0,975, large hybrid 0,975**. Выбраны large + hybrid: метрики равны, а BM25 страхует точные совпадения имён и кодов. Промежуточные таблицы для JOIN добавляются по **всем** кратчайшим путям графа FK до главной таблицы. Первая версия брала один путь, и «заказы в регионе» молча связывались через менеджера вместо клиента.
+**Decision.** Models and modes were compared on 40 questions with reference tables (share of questions where all tables were found, top-5): small dense 0.900, BM25 0.800, small hybrid 0.900, **large dense 0.975, large hybrid 0.975**. Large + hybrid was chosen: the metrics are equal, and BM25 covers exact matches of names and codes. Intermediate tables for JOINs are added along **all** shortest paths in the FK graph to the main table. The first version took a single path, and "orders in a region" was silently joined through the manager instead of the customer.
 
-**Последствия.** В промпте в среднем 5,3 таблицы из 11 (точность отбора ≈ 0,35): лишние таблицы дешевле пропущенных. Параметры подбирались на этом же наборе, поэтому независимая оценка выполняется на других наборах (роль 7).
+**Consequences.** On average the prompt has 5.3 of 11 tables (selection precision ≈ 0.35): extra tables cost less than missing ones. The parameters were tuned on this same set, so the independent evaluation uses other sets (role 7).
 
-## ADR-016. Собственный интерфейс LLM поверх LangChain
+## ADR-016. Own LLM interface on top of LangChain
 
-**Контекст.** Узлы графа нужно тестировать без сети и детерминированно. Фейковые модели LangChain не поддерживают structured output.
+**Context.** Graph nodes must be tested deterministically and without a network. LangChain fake models do not support structured output.
 
-**Решение.** Узлы зависят от протокола `LLM` (`structured`, `stream_text`). В работе используется `LangChainLLM` (OpenAI/Anthropic, `with_structured_output`, `with_fallbacks`), в тестах — сценарная `FakeLLM`, которая записывает промпты.
+**Decision.** The nodes depend on the `LLM` protocol (`structured`, `stream_text`). In production `LangChainLLM` is used (OpenAI/Anthropic, `with_structured_output`, `with_fallbacks`); tests use a scripted `FakeLLM` that records the prompts.
 
-**Последствия.** 38 тестов агента проверяют маршруты, самокоррекцию с подсказкой, уточнение и память сессии на настоящих валидаторе и БД без вызовов LLM. Тесты проверяют и то, что подсказка валидатора доходит до промпта генератора.
+**Consequences.** 38 agent tests check routes, self-correction with a hint, clarification and session memory on the real validator and database without LLM calls. The tests also check that the validator hint reaches the generator prompt.
 
-## ADR-017. Backend for Frontend и JWT в httpOnly-cookie
+## ADR-017. Backend for Frontend and JWT in an httpOnly cookie
 
-**Контекст.** Фронтенду нужны JWT для REST и поток SSE через POST с авторизацией. Хранить токен в `localStorage` проще, но тогда любой XSS (а ответ агента — текст, сгенерированный LLM по данным пользователя) может его украсть. Стандартный `EventSource` не умеет ни POST, ни заголовки.
+**Context.** The frontend needs a JWT for REST and an SSE stream over POST with authorisation. Keeping the token in `localStorage` is simpler, but then any XSS could steal it, and the agent's answer is text generated by an LLM from user data. The standard `EventSource` supports neither POST nor headers.
 
-**Решение.** Браузер обращается только к Next.js. Route handler `/api/auth/login` получает токен от FastAPI и кладёт его в httpOnly-cookie (`SameSite=Lax`, `Secure` по HTTPS). Прокси `/api/[...path]` подставляет `Authorization: Bearer` и передаёт тело ответа потоком, поэтому SSE идёт без буферизации. Изменяющие запросы с чужого `Origin` отклоняются: это второй рубеж защиты от CSRF после `SameSite`. Адрес бэкенда (`BACKEND_URL`) читается в рантайме, а не вшивается при сборке.
+**Decision.** The browser talks only to Next.js. The `/api/auth/login` route handler gets the token from FastAPI and puts it into an httpOnly cookie (`SameSite=Lax`, `Secure` over HTTPS). The `/api/[...path]` proxy adds `Authorization: Bearer` and streams the response body, so SSE goes without buffering. Modifying requests from a foreign `Origin` are rejected: this is the second line of CSRF protection after `SameSite`. The backend address (`BACKEND_URL`) is read at runtime and is not built into the bundle.
 
-**Последствия.** Токен не виден JavaScript (это проверяет e2e-тест). CORS не нужен, бэкенд не публикуется наружу. Поток SSE разбирается собственным парсером (60 строк, unit-тесты) вместо заброшенной `@microsoft/fetch-event-source`. Обрыв запроса браузером обрывает и запрос к бэкенду.
+**Consequences.** The token is not visible to JavaScript (an e2e test checks this). CORS is not needed, and the backend is not exposed. The SSE stream is parsed by an own parser (60 lines, unit tests) instead of the abandoned `@microsoft/fetch-event-source`. When the browser aborts a request, the request to the backend is aborted too.
 
-## ADR-018. Экран диалога: чат + аналитическая панель
+## ADR-018. Chat screen: chat + analysis panel
 
-**Контекст.** Ответ агента включает текст, SQL, отчёт пяти уровней проверки, таблицу и график. Если показывать всё это в ленте чата, графики и таблицы получаются мелкими, а длинные ответы теряют диалог.
+**Context.** The agent's answer includes text, SQL, the report of the five validation levels, a table and a chart. If all of this is shown in the chat feed, charts and tables become small, and long answers push the dialogue out of view.
 
-**Решение.** Слева чат: текст, уточнения, отказы и компактная карточка ответа. Справа аналитическая панель с вкладками «График / Таблица / SQL / Проверка» для выбранного ответа, разделитель перетаскивается. На телефоне панель открывается листом снизу. Отдельная страница «Обзор» (`GET /api/stats`) показывает дашборд из журнала запросов: где валидатор останавливал SQL, долю ответов с данными, уточнения и оценки.
+**Decision.** The chat is on the left: text, clarifications, refusals and a compact answer card. On the right is the analysis panel with the tabs Chart / Table / SQL / Validation for the selected answer; the divider can be dragged. On a phone the panel opens as a bottom sheet. A separate Overview page (`GET /api/stats`) shows a dashboard from the query log: where the validator stopped SQL, the share of answers with data, clarifications and ratings.
 
-**Последствия.** На одном экране видны все три части темы: диалог с уточнением, SQL с проверкой и результат. Бэкенд при этом менять не пришлось. Во время ответа панель показывает подробный ход агента, а после — историю самокоррекции: каждую отклонённую попытку с уровнем и подсказкой валидатора.
+**Consequences.** One screen shows all three parts of the topic: the dialogue with clarification, the SQL with its validation and the result. The backend did not have to change. While the answer is being produced, the panel shows the detailed progress of the agent, and afterwards the self-correction history: each rejected attempt with the validator level and hint.
 
-## ADR-019. Ход агента не зависит от соединения
+## ADR-019. The agent turn does not depend on the connection
 
-**Контекст.** Изначально ход выполнялся внутри генератора SSE. Если клиент закрывал вкладку или перезагружал страницу до события `done`, генератор отменялся и ответ терялся, хотя токены LLM уже были потрачены. E2E-тест поймал это на сценарии «отказ → перезагрузка».
+**Context.** Originally the turn ran inside the SSE generator. If the client closed the tab or reloaded the page before the `done` event, the generator was cancelled and the answer was lost, although the LLM tokens had already been spent. An e2e test caught this in the "refusal, then reload" scenario.
 
-**Решение.** Ход выполняется отдельной asyncio-задачей (`run_turn`): события пишутся в очередь, итог сохраняется в БД, сессия освобождается в `finally`. SSE-генератор только читает очередь. Остановка — явный `POST /sessions/{id}/stop`: задача отменяется, ход сохраняется с ошибкой `cancelled`, а поток штатно завершается событиями `error` и `done`.
+**Decision.** The turn runs as a separate asyncio task (`run_turn`): events are written to a queue, the result is saved to the database, and the session is released in `finally`. The SSE generator only reads the queue. Stopping is an explicit `POST /sessions/{id}/stop`: the task is cancelled, the turn is saved with the `cancelled` error, and the stream ends normally with the `error` and `done` events.
 
-**Последствия.** Обрыв соединения больше не теряет ответ: он появится в истории. Кнопка «Остановить» останавливает агента, а не только отображение. При завершении приложения ожидаются незаконченные ходы (`wait_turns`).
+**Consequences.** A dropped connection no longer loses the answer: it appears in the history. The Stop button stops the agent, not only the display. On application shutdown, unfinished turns are awaited (`wait_turns`).
 
-## ADR-020. Оркестрация агента: LangGraph, а не CrewAI, AutoGen или собственный цикл
+## ADR-020. Agent orchestration: LangGraph instead of CrewAI, AutoGen or an own loop
 
-**Контекст.** Шаги агента заранее известны, и между собой несколько агентов не переговариваются. В процессе есть цикл (самокоррекция до 3 попыток), ветвления (отказ, уточнение) и пауза, во время которой граф ждёт ответа человека. Пауза может длиться минуты и пережить перезапуск backend, а ответ приходит отдельным HTTP-запросом. Рассматривались такие варианты:
+**Context.** The agent's steps are known in advance, and there are no several agents talking to each other. The process has a loop (self-correction with up to 3 attempts), branches (refusal, clarification) and a pause while the graph waits for a human answer. The pause can last minutes and survive a backend restart, and the answer comes in a separate HTTP request. The options considered:
 
-| Вариант | Циклы | Пауза для человека с сохранением состояния | Кто выбирает следующий шаг | Стриминг шагов в UI |
+| Option | Loops | Human pause with saved state | Who chooses the next step | Streaming steps to the UI |
 |---|---|---|---|---|
-| LangChain (LCEL-цепочки) | Нет | Нет | Код | Частично |
-| CrewAI / AutoGen | Да | Ввод человека есть, но без сохранения между HTTP-запросами в стандартной конфигурации | LLM-агенты (роли, диалог агентов) | Частично |
-| Собственный цикл на asyncio | Да | Писать самим (сериализация, resume) | Код | Писать самим |
-| **LangGraph** | Да | `interrupt()` + checkpointer в PostgreSQL | Код (route-функции) | `astream` по узлам |
+| LangChain (LCEL chains) | No | No | Code | Partly |
+| CrewAI / AutoGen | Yes | Human input exists, but in the standard configuration it is not saved between HTTP requests | LLM agents (roles, agent dialogue) | Partly |
+| Own loop on asyncio | Yes | Must be written by hand (serialisation, resume) | Code | Must be written by hand |
+| **LangGraph** | Yes | `interrupt()` + checkpointer in PostgreSQL | Code (route functions) | `astream` by node |
 
-**Решение.** LangGraph 1.x, `StateGraph` из 10 узлов; маршрут выбирают route-функции по полю `state["route"]`. Для паузы на уточнение используется `interrupt()`, состояние хранит `AsyncPostgresSaver` в app-db, `thread_id` равен id сессии чата. Ответ на уточнение передаётся через `Command(resume=…)`.
+**Decision.** LangGraph 1.x, a `StateGraph` of 10 nodes; route functions choose the route from the `state["route"]` field. The clarification pause uses `interrupt()`, the state is stored by `AsyncPostgresSaver` in app-db, and `thread_id` equals the chat session id. The clarification answer is passed through `Command(resume=…)`.
 
-**Последствия.**
-- Уточнение работает без собственного механизма сохранения: граф продолжает с того же узла, даже если backend перезапускался между вопросом и ответом.
-- Память сессии (выбранные трактовки, история вопросов) хранится в полях с reducer'ами в тех же checkpoint'ах.
-- Диаграмма графа строится из кода ([docs/graph.md](docs/graph.md)) и поэтому совпадает с реализацией.
-- Узлы написаны как методы обычного класса `AgentNodes`. Их можно тестировать по отдельности с фейковой LLM, а конфигурации экспериментов (без уточнения, без отбора таблиц, без уровней 3–4) включаются флагами в том же графе.
-- Есть и ограничения. Состояние обязано сериализоваться, поэтому снимок схемы и пул соединений вынесены из него в `AgentContext`. API LangGraph менялся между версиями (`interrupt`, `Command`), версия зафиксирована в `uv.lock`.
+**Consequences.**
+- Clarification works without an own persistence mechanism: the graph continues from the same node even if the backend restarted between the question and the answer.
+- Session memory (chosen interpretations, question history) is kept in fields with reducers in the same checkpoints.
+- The graph diagram is built from the code ([docs/graph.md](docs/graph.md)), so it matches the implementation.
+- The nodes are methods of an ordinary `AgentNodes` class. They can be tested separately with a fake LLM, and the experiment configurations (without clarification, without table selection, without levels 3–4) are switched on by flags in the same graph.
+- There are limitations too. The state must be serialisable, so the schema snapshot and the connection pool were moved out of it into `AgentContext`. The LangGraph API changed between versions (`interrupt`, `Command`); the version is pinned in `uv.lock`.
 
-## ADR-021. Векторный индекс: Qdrant, а не pgvector
+## ADR-021. Vector index: Qdrant instead of pgvector
 
-**Контекст.** Schema linking ищет по документам схемы (таблица, столбец, значение столбца) и по примерам «вопрос → SQL». Нужны фильтр по источнику данных, гибридный поиск (по смыслу вопроса и по точным именам столбцов и значений) и русская морфология в лексической части. Объём небольшой: у демо-БД несколько сотен документов. Варианты:
+**Context.** Schema linking searches over schema documents (table, column, column value) and "question → SQL" examples. It needs a filter by data source, hybrid search (by the meaning of the question and by exact names of columns and values) and Russian morphology in the lexical part. The volume is small: the demo database has a few hundred documents. The options:
 
-| Вариант | Гибридный поиск | Фильтр по источнику | Эксплуатация |
+| Option | Hybrid search | Filter by source | Operation |
 |---|---|---|---|
-| pgvector в app-db | Dense есть; лексическую часть пришлось бы собирать на `tsvector` и объединять вручную | SQL `WHERE` | Нет отдельного сервиса; индекс в той же БД, что сессии и checkpoints |
-| Chroma / FAISS в процессе backend | Только dense, BM25 нужно делать отдельно | Ограниченно / вручную | Индекс живёт в процессе, теряется при перезапуске или требует своей персистентности |
-| **Qdrant** | Dense + sparse с IDF на стороне сервера, слияние RRF одним запросом | Индекс по payload `datasource_id` | Отдельный контейнер |
+| pgvector in app-db | Dense is available; the lexical part would have to be built on `tsvector` and merged by hand | SQL `WHERE` | No separate service; the index is in the same database as sessions and checkpoints |
+| Chroma / FAISS inside the backend process | Dense only; BM25 must be built separately | Limited / by hand | The index lives in the process and is lost on restart, or needs its own persistence |
+| **Qdrant** | Dense + sparse with server-side IDF, RRF fusion in one query | Payload index on `datasource_id` | Separate container |
 
-**Решение.** Qdrant v1.19 отдельным контейнером. Две коллекции, `schema_elements__<модель>` и `sql_examples__<модель>`, с именованными dense- и sparse-векторами. Веса слов (TF) и токенизацию считает [`sparse.py`](backend/app/agent/retrieval/sparse.py): идентификаторы разбиваются по `_`, русские и английские слова приводятся к основе (Snowball). IDF считает Qdrant (`Modifier.IDF`). Ранги документов объединяются через RRF, затем агрегируются по таблицам.
+**Decision.** Qdrant v1.19 as a separate container. Two collections, `schema_elements__<model>` and `sql_examples__<model>`, with named dense and sparse vectors. Term weights (TF) and tokenisation are computed by [`sparse.py`](backend/app/agent/retrieval/sparse.py): identifiers are split on `_`, and Russian and English words are stemmed (Snowball). Qdrant computes IDF (`Modifier.IDF`). Document ranks are merged with RRF and then aggregated by table.
 
-**Последствия.**
-- Гибридный поиск выполняется одним запросом `prefetch` + `FusionQuery(RRF)`, своя реализация BM25 не нужна.
-- Имя модели эмбеддингов входит в имя коллекции: смена модели (сравнение small и large, ADR-015) не смешивает векторы разной размерности.
-- Индекс отделён от служебной БД, переиндексация её не нагружает.
-- Платой стал ещё один контейнер. Индекс восстанавливается из снимка схемы (`make index`), поэтому в резервные копии не входит. На таком объёме pgvector дал бы то же качество; выбор решили встроенный sparse-поиск с IDF и то, что индекс отделён от app-db.
+**Consequences.**
+- Hybrid search is one `prefetch` + `FusionQuery(RRF)` query, and no own BM25 implementation is needed.
+- The embedding model name is part of the collection name: changing the model (comparing small and large, ADR-015) does not mix vectors of different dimensions.
+- The index is separate from the service database, and reindexing does not load it.
+- The price is one more container. The index is rebuilt from the schema snapshot (`make index`), so it is not included in backups. At this volume pgvector would give the same quality; the choice was decided by the built-in sparse search with IDF and by keeping the index outside app-db.
 
-## ADR-022. Трассировка: Langfuse, а не LangSmith
+## ADR-022. Tracing: Langfuse instead of LangSmith
 
-**Контекст.** Нужно видеть дерево шагов агента с промптами, токенами, стоимостью и задержкой, привязывать к трассе оценки пользователей и хранить версии промптов, чтобы показать их эволюцию. Если анализируются реальные данные, трассы должны оставаться у себя. Варианты:
+**Context.** We need to see the tree of agent steps with prompts, tokens, cost and latency, attach user ratings to a trace and keep prompt versions to show how they evolved. When real data is analysed, the traces must stay on our own side. The options:
 
-| Вариант | Интеграция с LangGraph | Свой сервер | Prompt management | Лицензия |
+| Option | LangGraph integration | Own server | Prompt management | Licence |
 |---|---|---|---|---|
-| LangSmith | Нативная | Только в платной корпоративной версии | Да | Проприетарная |
-| Phoenix (Arize) | Через OpenTelemetry | Да | Ограниченно | Открытая (ELv2) |
-| **Langfuse** | Callback для LangChain / LangGraph | Да (MIT, docker compose) | Да, с привязкой версии к генерации | Открытая (MIT) |
+| LangSmith | Native | Only in the paid enterprise version | Yes | Proprietary |
+| Phoenix (Arize) | Through OpenTelemetry | Yes | Limited | Open (ELv2) |
+| **Langfuse** | Callback for LangChain / LangGraph | Yes (MIT, docker compose) | Yes, with the version linked to the generation | Open (MIT) |
 
-**Решение.** Langfuse, по умолчанию в облачной версии; локальная запускается профилем compose ([ADR-013](#adr-013-langfuse-cloud-по-умолчанию-локальный--по-желанию)). Трассы пишутся через callback-обработчик LangChain, оценки 👍/👎 сохраняются как scores, промпты хранятся в Prompt Management.
+**Decision.** Langfuse, the cloud version by default; the local one starts with a compose profile ([ADR-013](#adr-013-langfuse-cloud-by-default-local-langfuse-optional)). Traces are written through the LangChain callback handler, 👍/👎 ratings are saved as scores, and prompts are kept in Prompt Management.
 
-**Последствия.** Чтобы перейти с облака на свой сервер или обратно, достаточно поменять переменные `.env`. Код привязан к LangChain-callback, в остальном он от Langfuse не зависит: без ключей трассировка отключается, и тесты во внешние сервисы не обращаются. Нативной визуализации графа LangGraph, как в LangSmith, здесь нет, поэтому граф документируется отдельно ([docs/graph.md](docs/graph.md)).
+**Consequences.** Moving from the cloud to an own server or back only requires changing the `.env` variables. The code is tied to the LangChain callback and otherwise does not depend on Langfuse: without keys tracing is turned off, and tests do not call external services. There is no native LangGraph graph visualisation as in LangSmith, so the graph is documented separately ([docs/graph.md](docs/graph.md)).
 
-## ADR-023. Уточнение через interrupt и checkpoint, а не угадывание
+## ADR-023. Clarification through interrupt and checkpoint instead of guessing
 
-**Контекст.** Главный вклад работы в том, что агент спрашивает пользователя, какую трактовку неоднозначного вопроса тот имел в виду. Встроить это в процесс можно по-разному:
+**Context.** The main contribution of the work is that the agent asks the user which interpretation of an ambiguous question they meant. This can be built into the process in different ways:
 
-| Вариант | Плюсы | Минусы |
+| Option | Advantages | Disadvantages |
 |---|---|---|
-| Модель выбирает трактовку сама и пишет её в ответе | Нет лишнего шага | Пользователь может не заметить, что ответ на другой вопрос |
-| Перечислить ответы для всех трактовок | Без диалога | Несколько SQL на вопрос, растут стоимость и шум; сравнивать ответы должен пользователь |
-| Уточняющий вопрос текстом в чате, ответ разбирает LLM | Просто | Ответ свободной формы снова может быть неоднозначен; нет связи со столбцами схемы |
-| **Структурированное уточнение: варианты, привязанные к схеме, + пауза графа** | Пользователь выбирает кнопкой; вариант сразу переводится в трактовку для генератора | Нужны пауза и продолжение графа (ADR-020) |
+| The model chooses an interpretation itself and states it in the answer | No extra step | The user may not notice that the answer is to a different question |
+| Answers for all interpretations | No dialogue | Several SQL queries per question, more cost and noise; the user has to compare the answers |
+| A clarifying question as chat text, the LLM parses the answer | Simple | A free-form answer can be ambiguous again; no link to the schema columns |
+| **Structured clarification: options tied to the schema + a graph pause** | The user picks with a button; the option is immediately turned into an interpretation for the generator | Requires pausing and resuming the graph (ADR-020) |
 
-**Решение.** `detect_ambiguity` получает вопрос вместе с уже найденной схемой и возвращает structured output: статус (`clear` / `ambiguous` / `out_of_scope`) и для каждой неоднозначности тип (`metric`, `temporal`, `value`, `schema`, `scope`), фрагмент вопроса и 2–4 варианта, привязанных к столбцам. Узел `clarify` ставит граф на паузу через `interrupt()`; UI показывает варианты кнопками и поле для своего ответа. Выбор записывается в `clarifications`, и в той же сессии агент его больше не переспрашивает. На один вопрос приходится не больше 2 раундов уточнения. Явные умолчания (выручка без отменённых заказов, календарный год без слова «финансовый») описаны в промпте, чтобы не уточнять очевидное.
+**Decision.** `detect_ambiguity` receives the question together with the retrieved schema and returns structured output: a status (`clear` / `ambiguous` / `out_of_scope`) and, for each ambiguity, its type (`metric`, `temporal`, `value`, `schema`, `scope`), the fragment of the question and 2–4 options tied to columns. The `clarify` node pauses the graph with `interrupt()`; the UI shows the options as buttons and a field for a custom answer. The choice is written to `clarifications`, and the agent does not ask it again in the same session. One question has at most 2 rounds of clarification. Explicit defaults (revenue without cancelled orders, calendar year unless the word "fiscal" is used) are written in the prompt so that obvious things are not clarified.
 
-**Последствия.** На наборе из 62 неоднозначных вопросов уточнение подняло точность с 40,3% до 67,7% (+27,4 п.п., p < 0,001); на однозначных лишние уточнения составили 11,4% ([EVALS.md](EVALS.md#эксперимент-2-уточнение-неоднозначности)). Ход с уточнением требует двух HTTP-запросов и стоит примерно вдвое дороже. Тип `schema` (какую из двух похожих цен брать) детектор пока не распознаёт, это известное ограничение.
+**Consequences.** On a set of 62 ambiguous questions clarification raised accuracy from 40.3% to 67.7% (+27.4 pp, p < 0.001); on clear questions unnecessary clarifications were 11.4% ([EVALS.md](EVALS.md#experiment-2-ambiguity-clarification)). A turn with clarification needs two HTTP requests and costs about twice as much. The detector does not yet recognise the `schema` type (which of two similar prices to use); this is a known limitation.
 
-## ADR-024. Собственный раннер оценки с кэшем LLM
+## ADR-024. Own evaluation runner with an LLM cache
 
-**Контекст.** Эксперименты требуют execution accuracy (выполнить SQL и сравнить результат с эталоном), симулированного пользователя для уточнений, парной статистики и воспроизводимости при ограниченном бюджете на API. Готовые инструменты (Langfuse Experiments, DeepEval, RAGAS) хранят прогоны и дают LLM-судей. Выполнять SQL и сравнивать результаты с допуском по порядку строк и типам они не умеют, как и отвечать на `interrupt()` графа.
+**Context.** The experiments need execution accuracy (run the SQL and compare the result with the reference), a simulated user for clarifications, paired statistics, and reproducibility under a limited API budget. Existing tools (Langfuse Experiments, DeepEval, RAGAS) store runs and provide LLM judges. They cannot execute SQL and compare results with tolerance to row order and types, and they cannot answer an `interrupt()` of the graph.
 
-**Решение.** Пакет [`backend/evals`](backend/evals). Раннер вызывает тот же граф, что и приложение, с флагами конфигурации из `evals/configs/*.yaml`, а на уточнения отвечает LLM-судья, который знает задуманную трактовку. Ответы LLM кэшируются в SQLite по хэшу (узел, модель, temperature, seed, схема, сообщения) вместе с исходной стоимостью. Дата прогона фиксирована. Для статистики используются точный тест Макнемара и bootstrap-интервалы. Прогоны также пишутся в Langfuse.
+**Decision.** The [`backend/evals`](backend/evals) package. The runner calls the same graph as the application, with configuration flags from `evals/configs/*.yaml`, and an LLM judge that knows the intended interpretation answers the clarifications. LLM responses are cached in SQLite by a hash of (node, model, temperature, seed, schema, messages) together with the original cost. The run date is fixed. Statistics use the exact McNemar test and bootstrap intervals. Runs are also written to Langfuse.
 
-**Последствия.** Повторный подсчёт метрик и разбор ошибок ничего не стоят и дают тот же результат; при попадании в кэш в отчёт всё равно записывается исходная стоимость вызова. Этап 1 оценки стоил около $5 ([EVALS.md](EVALS.md)). Пакет оценки вместе со сборкой наборов занимает около 3 тыс. строк, и их тоже нужно тестировать: сейчас есть 20 тестов метрик, наборов и кэша. Smoke-набор с порогами регрессии запускается в CI.
+**Consequences.** Recomputing metrics and analysing errors costs nothing and gives the same result; on a cache hit the report still records the original cost of the call. Stage 1 of the evaluation cost about $5 ([EVALS.md](EVALS.md)). The evaluation package together with the dataset builders is about 3 thousand lines, and it also needs tests: there are currently 20 tests for metrics, datasets and the cache. The smoke set with regression thresholds runs in CI.

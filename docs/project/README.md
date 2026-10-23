@@ -1,28 +1,28 @@
-# Управление проектом
+# Project management
 
 ## YouTrack
 
-Задачи проекта ведутся в YouTrack: [wasm.youtrack.cloud/issues/DIP](https://wasm.youtrack.cloud/issues/DIP), проект `DIP` (шаблон Kanban). На 21.10.2026 заведено 36 задач.
+Project tasks are tracked in YouTrack: [wasm.youtrack.cloud/issues/DIP](https://wasm.youtrack.cloud/issues/DIP), project `DIP` (Kanban template). As of 21.10.2026, 36 tasks had been created.
 
-| Задачи | Содержание | Состояние |
+| Tasks | Contents | State |
 |---|---|---|
-| DIP-1…8 | План по ролям и роли 1–7, со ссылками на коммиты | Готово |
-| DIP-9…16 | Документы предзащиты 1: архитектура, proposal, требования, обзор литературы, сравнения, диаграммы, роадмап | Ревью |
-| DIP-17, DIP-18 | Прототип в Figma, тег `pre-defense-1` | Очередь |
-| DIP-19…36 | План до мая 2027 года: интервью, промпт v2, этап 2 оценки, главы диплома, предзащиты | Очередь |
+| DIP-1…8 | Plan by roles and roles 1–7, with links to the commits | Done |
+| DIP-9…16 | Pre-defence 1 documents: architecture, proposal, requirements, literature review, comparisons, diagrams, roadmap | Review |
+| DIP-17, DIP-18 | Figma prototype, tag `pre-defense-1` | Queue |
+| DIP-19…36 | Plan until May 2027: interviews, prompt v2, stage 2 evaluation, diploma chapters, pre-defences | Queue |
 
-В каждой задаче указаны ожидаемый результат, критерий приёмки и срок. Выполненные задачи DIP-1…8 заведены 21.10.2026 сразу закрытыми, так как до этой даты работы планировались в [docs/roles](../roles/README.md). Исходный список задач сохранён в [`youtrack_tasks.csv`](youtrack_tasks.csv).
+Each task states the expected result, the acceptance criterion and the deadline. The completed tasks DIP-1…8 were created on 21.10.2026 already closed, because before that date the work was planned in [docs/roles](../roles/README.md). The original task list is kept in [`youtrack_tasks.csv`](youtrack_tasks.csv).
 
-## Порядок работы с 22.10.2026
+## Workflow since 22.10.2026
 
-1. Задача в YouTrack: исполнитель, ожидаемый результат, критерий приёмки, срок.
-2. Ветка от `main`: `DIP-<номер>-<кратко>`, например `DIP-21-prompt-v2-refusals`.
-3. Коммиты: `DIP-21: Reduce false out_of_scope refusals`.
-4. Pull request в `main`: что изменено, ссылка на задачу, как проверено (тесты, evals). Значимые изменения просматривает руководитель на согласованных контрольных точках.
-5. После слияния ссылка на PR добавляется в задачу. Задача закрывается, только когда выполнен критерий приёмки.
-6. На каждую сданную версию ставится тег: `pre-defense-1`, `pre-defense-2`, `final-pre-defense`. Теги не переносятся.
+1. A task in YouTrack: assignee, expected result, acceptance criterion, deadline.
+2. A branch from `main`: `DIP-<number>-<short-name>`, for example `DIP-21-prompt-v2-refusals`.
+3. Commits: `DIP-21: Reduce false out_of_scope refusals`.
+4. A pull request to `main`: what was changed, a link to the task, how it was checked (tests, evals). The supervisor reviews significant changes at the agreed milestones.
+5. After the merge, the link to the pull request is added to the task. A task is closed only when its acceptance criterion is met.
+6. Each submitted version gets a tag: `pre-defense-1`, `pre-defense-2`, `final-pre-defense`. A tag is not moved after the version has been submitted.
 
-## Шаблоны
+## Templates
 
-- [Интервью с пользователем](../templates/interview.md)
-- [Протокол встречи с руководителем](../templates/supervisor_meeting.md)
+- [User interview](../templates/interview.md)
+- [Supervisor meeting notes](../templates/supervisor_meeting.md)

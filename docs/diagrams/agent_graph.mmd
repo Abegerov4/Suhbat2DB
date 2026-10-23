@@ -1,19 +1,19 @@
-%% Граф агента (упрощённо). Полная версия, сгенерированная из кода, — docs/graph.md
+%% Agent graph (simplified). The full version generated from the code is in docs/graph.md
 stateDiagram-v2
     [*] --> guard_input
-    guard_input --> refuse: атака / изменение данных / вне темы
-    guard_input --> schema_linking: вопрос о данных
+    guard_input --> refuse: attack / data change / off topic
+    guard_input --> schema_linking: question about data
     schema_linking --> detect_ambiguity
-    detect_ambiguity --> clarify: неоднозначно
-    clarify --> schema_linking: ответ пользователя (resume)
-    detect_ambiguity --> generate_sql: однозначно
-    detect_ambiguity --> refuse: нельзя ответить по схеме
+    detect_ambiguity --> clarify: ambiguous
+    clarify --> schema_linking: user answer (resume)
+    detect_ambiguity --> generate_sql: clear
+    detect_ambiguity --> refuse: cannot be answered from the schema
     generate_sql --> validate_sql
-    validate_sql --> self_correct: уровни 1, 3, 4 (попыток < 3)
-    validate_sql --> refuse: уровень 2 / попытки исчерпаны
-    validate_sql --> execute: уровни 1–4 пройдены
+    validate_sql --> self_correct: levels 1, 3, 4 (attempts < 3)
+    validate_sql --> refuse: level 2 / attempts used up
+    validate_sql --> execute: levels 1–4 passed
     self_correct --> generate_sql
-    execute --> self_correct: ошибка СУБД
+    execute --> self_correct: DBMS error
     execute --> explain_and_visualize
     explain_and_visualize --> [*]
     refuse --> [*]

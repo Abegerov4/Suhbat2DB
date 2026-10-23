@@ -1,19 +1,19 @@
-%% Диаграмма контекста системы (C4, уровень 1)
+%% System context diagram (C4, level 1)
 flowchart TB
-    analyst["👤 Аналитик<br/><i>задаёт вопросы к данным<br/>на естественном языке</i>"]
-    admin["👤 Администратор<br/><i>подключает базы данных</i>"]
+    analyst["👤 Analyst<br/><i>asks questions about data<br/>in natural language</i>"]
+    admin["👤 Administrator<br/><i>connects databases</i>"]
 
-    system["<b>Suhbat2DB</b><br/>веб-платформа диалогового анализа данных:<br/>уточняет неоднозначные вопросы,<br/>генерирует и проверяет SQL,<br/>поясняет и визуализирует результат"]
+    system["<b>Suhbat2DB</b><br/>web platform for conversational data analysis:<br/>clarifies ambiguous questions,<br/>generates and validates SQL,<br/>explains and visualises the result"]
 
-    target[("Анализируемая БД<br/>PostgreSQL<br/><i>роль только для чтения</i>")]
-    llm["LLM-провайдер<br/>OpenAI API<br/><i>генерация, классификация,<br/>эмбеддинги</i>"]
-    langfuse["Langfuse Cloud<br/><i>трассы, стоимость,<br/>версии промптов</i>"]
+    target[("Analysed database<br/>PostgreSQL<br/><i>read-only role</i>")]
+    llm["LLM provider<br/>OpenAI API<br/><i>generation, classification,<br/>embeddings</i>"]
+    langfuse["Langfuse Cloud<br/><i>traces, cost,<br/>prompt versions</i>"]
 
-    analyst -->|"вопросы, ответы на уточнения,<br/>оценки ответов (HTTPS)"| system
-    admin -->|"регистрация источника данных"| system
-    system -->|"SELECT в read-only транзакции,<br/>интроспекция схемы"| target
-    system -->|"промпты со связанной схемой"| llm
-    system -.->|"трассы каждого хода"| langfuse
+    analyst -->|"questions, clarification answers,<br/>answer ratings (HTTPS)"| system
+    admin -->|"data source registration"| system
+    system -->|"SELECT in a read-only transaction,<br/>schema introspection"| target
+    system -->|"prompts with the linked schema"| llm
+    system -.->|"traces of every turn"| langfuse
 
     classDef person fill:#e8f1ff,stroke:#3b6fd8,color:#0b2a5b
     classDef sys fill:#3b6fd8,stroke:#1f4aa8,color:#ffffff

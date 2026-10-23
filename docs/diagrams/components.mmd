@@ -1,27 +1,27 @@
-%% Диаграмма компонентов (C4, уровень 2). Та же диаграмма — в ARCHITECTURE.md §1
+%% Component diagram (C4, level 2). The same diagram is in ARCHITECTURE.md §1
 flowchart LR
-    browser["Браузер"]
+    browser["Browser"]
 
     subgraph FE["frontend · Next.js 16"]
-        ui["UI<br/>чат, аналитическая панель,<br/>обзор, источники"]
-        bff["BFF<br/>JWT в httpOnly-cookie,<br/>прокси REST и SSE"]
+        ui["UI<br/>chat, analysis panel,<br/>overview, data sources"]
+        bff["BFF<br/>JWT in httpOnly cookie,<br/>REST and SSE proxy"]
     end
 
     subgraph BE["backend · FastAPI"]
         api["REST + SSE API"]
-        chat["Сервис хода<br/>asyncio-задача,<br/>очередь событий"]
-        ds["Источники данных<br/>проверка прав,<br/>интроспекция, индексация"]
-        subgraph AG["Агент · LangGraph"]
-            graph_["Граф и узлы"]
+        chat["Turn service<br/>asyncio task,<br/>event queue"]
+        ds["Data sources<br/>privilege check,<br/>introspection, indexing"]
+        subgraph AG["Agent · LangGraph"]
+            graph_["Graph and nodes"]
             linker["Schema linking"]
-            llmc["LLM-клиент<br/>модель на узел, fallback"]
+            llmc["LLM client<br/>model per node, fallback"]
         end
-        val["Валидатор SQL<br/>уровни 1–5"]
+        val["SQL validator<br/>levels 1–5"]
     end
 
-    appdb[("app-db · PostgreSQL<br/>пользователи, сессии,<br/>журнал, checkpoints")]
-    targetdb[("target-db · PostgreSQL<br/>анализируемые данные")]
-    qdrant[("Qdrant<br/>индекс схемы<br/>и примеров")]
+    appdb[("app-db · PostgreSQL<br/>users, sessions,<br/>log, checkpoints")]
+    targetdb[("target-db · PostgreSQL<br/>analysed data")]
+    qdrant[("Qdrant<br/>schema and<br/>example index")]
     openai["OpenAI API"]
     lf["Langfuse Cloud"]
 
@@ -36,9 +36,9 @@ flowchart LR
     graph_ --> val
     linker --> qdrant
     ds --> qdrant
-    ds -->|"интроспекция"| targetdb
-    val -->|"EXPLAIN, SELECT<br/>роль s2d_reader"| targetdb
+    ds -->|"introspection"| targetdb
+    val -->|"EXPLAIN, SELECT<br/>role s2d_reader"| targetdb
     llmc --> openai
     chat --> appdb
     graph_ -->|checkpoints| appdb
-    graph_ -.->|трассы| lf
+    graph_ -.->|traces| lf

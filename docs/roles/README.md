@@ -1,23 +1,23 @@
-# Роли и порядок разработки Suhbat2DB
+# Roles and development order of Suhbat2DB
 
-Проект разбит на 8 ролей. Проект выполняется одним человеком, поэтому роли проходятся **по очереди**: каждая следующая опирается на результат предыдущей. Внутри роли задачи тоже упорядочены.
+The project is divided into 8 roles. One person carries out the project, so the roles are completed **one after another**: each role builds on the result of the previous one. The tasks inside a role are ordered as well.
 
-Общие интерфейсы между ролями (REST API, SSE-события, состояние агента, отчёт валидатора) зафиксированы в [`../CONTRACTS.md`](../CONTRACTS.md). При изменении контракта сначала правится этот файл, потом код.
+The shared interfaces between roles (REST API, SSE events, agent state, validator report) are fixed in [`../CONTRACTS.md`](../CONTRACTS.md). When a contract changes, this file is edited first and the code second.
 
-## Порядок
+## Order
 
-| # | Роль | Файл | Что получается на выходе | План (исходный) | Факт / пересмотренный срок |
+| # | Role | File | Output | Original plan | Actual / revised date |
 |---|---|---|---|---|---|
-| 1 ✅ | DevOps | [01_devops.md](01_devops.md) | Монорепозиторий, docker-compose, CI, `make up` поднимает всё окружение | Октябрь 2026 | ✅ 19.10.2026 |
-| 2 ✅ | Database | [02_database.md](02_database.md) | Демо-БД с данными и комментариями, read-only роль, схема БД приложения | Октябрь – ноябрь 2026 | ✅ 19.10.2026 |
-| 3 ✅ | Backend | [03_backend.md](03_backend.md) | FastAPI: auth, источники данных, интроспекция схемы, сессии, SSE-заглушка агента | Ноябрь – декабрь 2026 | ✅ 19.10.2026 |
-| 4 ✅ | SQL Validator | [04_sql_validator.md](04_sql_validator.md) | 5-уровневый валидатор и безопасное выполнение, покрытые тестами | Декабрь 2026 | ✅ 19.10.2026 |
-| 5 ✅ | AI Agent | [05_ai_agent.md](05_ai_agent.md) | LangGraph-агент: schema linking, генерация, самокоррекция, уточнение, пояснение | Декабрь 2026 – март 2027 | ✅ 19.10.2026 |
-| 6 ✅ | Frontend | [06_frontend.md](06_frontend.md) | Next.js: чат, уточнения, SQL и отчёт валидатора, таблица, графики | Январь – март 2027 | ✅ 19.10.2026 |
-| 7 | Evals | [07_evals.md](07_evals.md) | Наборы данных, раннеры, метрики, A/B-эксперименты, `EVALS.md` | Ноябрь 2026 (наборы) → март 2027 (эксперименты) | Этап 1 — ✅ 21.10.2026; этап 2 — декабрь 2026 |
-| 8 | Documentation & Defense | [08_documentation.md](08_documentation.md) | `ARCHITECTURE.md`, текст диплома, презентация, демо-сценарий | Апрель – май 2027 | С октября 2026 (документы предзащиты 1) до мая 2027 |
+| 1 ✅ | DevOps | [01_devops.md](01_devops.md) | Monorepository, docker-compose, CI; `make up` starts the whole environment | October 2026 | ✅ 19.10.2026 |
+| 2 ✅ | Database | [02_database.md](02_database.md) | Demo database with data and comments, read-only role, application database schema | October – November 2026 | ✅ 19.10.2026 |
+| 3 ✅ | Backend | [03_backend.md](03_backend.md) | FastAPI: auth, data sources, schema introspection, sessions, SSE agent stub | November – December 2026 | ✅ 19.10.2026 |
+| 4 ✅ | SQL Validator | [04_sql_validator.md](04_sql_validator.md) | 5-level validator and safe execution, covered by tests | December 2026 | ✅ 19.10.2026 |
+| 5 ✅ | AI Agent | [05_ai_agent.md](05_ai_agent.md) | LangGraph agent: schema linking, generation, self-correction, clarification, explanation | December 2026 – March 2027 | ✅ 19.10.2026 |
+| 6 ✅ | Frontend | [06_frontend.md](06_frontend.md) | Next.js: chat, clarifications, SQL and the validator report, table, charts | January – March 2027 | ✅ 19.10.2026 |
+| 7 | Evals | [07_evals.md](07_evals.md) | Datasets, runners, metrics, A/B experiments, `EVALS.md` | November 2026 (datasets) → March 2027 (experiments) | Stage 1 ✅ 21.10.2026; stage 2 in December 2026 |
+| 8 | Documentation & Defense | [08_documentation.md](08_documentation.md) | `ARCHITECTURE.md`, diploma text, presentation, demo scenario | April – May 2027 | From October 2026 (pre-defence 1 documents) until May 2027 |
 
-## Зависимости
+## Dependencies
 
 ```mermaid
 flowchart LR
@@ -27,19 +27,19 @@ flowchart LR
     D4 --> D5[5 AI Agent]
     D3 --> D6[6 Frontend]
     D5 --> D6
-    D2 --> D7a[7a Evals: наборы]
-    D5 --> D7b[7b Evals: эксперименты]
+    D2 --> D7a[7a Evals: datasets]
+    D5 --> D7b[7b Evals: experiments]
     D7a --> D7b
     D7b --> D8[8 Documentation]
 ```
 
-**Исключения из строгой очерёдности:**
+**Exceptions to the strict order:**
 
-- **7a (сбор наборов данных)** можно делать сразу после роли 2. По плану диплома набор неоднозначных вопросов нужен уже в октябре – ноябре.
-- **Frontend** можно начать после роли 3, работая с SSE-заглушкой (mock), и подключить настоящего агента, когда будет готова роль 5.
+- **7a (collecting the datasets)** can start right after role 2. According to the diploma plan, the set of ambiguous questions is needed as early as October – November.
+- **Frontend** can start after role 3, working with the SSE stub (mock), and switch to the real agent when role 5 is ready.
 
-## Правила работы
+## Working rules
 
-- Каждая роль заканчивается **Definition of Done** (DoD) в конце своего файла. Переходить к следующей роли можно, только когда DoD выполнен.
-- Задачи из файлов переносятся в GitHub Projects (одна задача на один пункт чек-листа), ветка именуется `feature/<роль>-<задача>`.
-- После каждой роли делается короткая демонстрация руководителю (по плану: ежемесячный отчёт).
+- Each role ends with a **Definition of Done** (DoD) at the end of its file. The next role starts only when the DoD is met.
+- The tasks from the files are moved to GitHub Projects (one task per checklist item), and the branch is named `feature/<role>-<task>`. Since 22.10.2026 tasks are tracked in YouTrack instead ([docs/project](../project/README.md)).
+- After each role there is a short demonstration to the supervisor (according to the plan, a monthly report).
