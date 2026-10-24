@@ -16,14 +16,14 @@
 
 | # | Statement | Status | Evidence |
 |---|---|---|---|
-| 1 | An LLM without clarification silently chooses one reading of an ambiguous question | ✅ Verified | E1: in 25 of 62 ambiguous questions the answer was correct for another reasonable interpretation; E3 reports the same for English |
-| 2 | Clarification with answer options increases accuracy on ambiguous questions | ⚠️ Partly verified | E1: 40.3% → 67.7% EX, p < 0.001, but the answers were given by a simulated user, not by people |
-| 3 | Clarification does not get in the way on clear questions | ⚠️ Partly verified | E1: 5 of 44 clear questions (11.4%) still received a clarifying question; whether users accept this has to be checked in interviews |
-| 4 | An LLM agent can be pushed to generate dangerous SQL or to follow instructions hidden in the data | ✅ Verified | E4; E2: all 134 direct attacks were blocked by the validator and guard, but 1 of 6 indirect injections changed the answer text |
-| 5 | Analysts, managers, teachers and students who do not know SQL need fast access to data | ❓ Assumption | Based on the author's experience; to be checked in E5 (questions 1–3) |
-| 6 | Users want to see the SQL and the validation report to trust the answer | ❓ Assumption | To be checked in E5 (questions 8–9) |
-| 7 | Data administrators will connect a database only with a read-only guarantee | ❓ Assumption | To be checked in E5 (question 10) |
-| 8 | Users prefer a clarifying question to a quick answer based on a guess | ❓ Assumption | To be checked in E5 (question 7) |
+| 1 | An LLM without clarification silently chooses one reading of an ambiguous question | Verified | E1: in 25 of 62 ambiguous questions the answer was correct for another reasonable interpretation; E3 reports the same for English |
+| 2 | Clarification with answer options increases accuracy on ambiguous questions | Partly verified | E1: 40.3% → 67.7% EX, p < 0.001, but the answers were given by a simulated user, not by people |
+| 3 | Clarification does not get in the way on clear questions | Partly verified | E1: 5 of 44 clear questions (11.4%) still received a clarifying question; whether users accept this has to be checked in interviews |
+| 4 | An LLM agent can be pushed to generate dangerous SQL or to follow instructions hidden in the data | Verified | E4; E2: all 134 direct attacks were blocked by the validator and guard, but 1 of 6 indirect injections changed the answer text |
+| 5 | Analysts, managers, teachers and students who do not know SQL need fast access to data | Assumption | Based on the author's experience; to be checked in E5 (questions 1–3) |
+| 6 | Users want to see the SQL and the validation report to trust the answer | Assumption | To be checked in E5 (questions 8–9) |
+| 7 | Data administrators will connect a database only with a read-only guarantee | Assumption | To be checked in E5 (question 10) |
+| 8 | Users prefer a clarifying question to a quick answer based on a guess | Assumption | To be checked in E5 (question 7) |
 
 ## 3. How the evidence affects the requirements
 
@@ -36,7 +36,18 @@
 
 | | |
 |---|---|
-| Who | 3–5 people: an analyst or business employee who works with reports, a manager, a teacher of a database course, a person who administers a database |
+| Who | At least 5 people from the primary group: teachers and students of the AITU database course (changed after the supervisor's comment of 24.10.2026, [DIP-19](https://wasm.youtrack.cloud/issue/DIP-19)) |
 | When | 25.10 – 08.11.2026 |
 | How | 20–30 minutes, in person or online, by the [interview template](templates/interview.md); personal data is not stored in the repository |
 | Result | Notes in `docs/interviews/`, a summary table "confirmed / not confirmed / new", requirements v2 |
+
+## 5. Confirmation criteria
+
+Written down before the interviews, so that the answers are not interpreted to fit the assumptions. Questions refer to the [interview template](templates/interview.md).
+
+| # | Statement | Confirmed if | Refuted if |
+|---|---|---|---|
+| 5 | People who do not know SQL need fast access to data | At least 3 of 5 describe a recent case when they needed data and waited for someone or gave up (questions 1–3) | Most get the data themselves without delay, or never need it |
+| 6 | Users want to see the SQL and the validation report | At least 3 of 5 name SQL, the query or a check as what they need to trust an answer (questions 8–9) | Most only care about the figure and ignore the SQL |
+| 7 | A data administrator connects a database only with a read-only guarantee | The respondents who manage access name write protection or data leaks as the first condition (question 10) | Read-only access is not a concern for them |
+| 8 | Users prefer a clarifying question to a quick answer based on a guess | At least 3 of 5 choose a clarifying question for an ambiguous request (question 7) | Most prefer a quick answer and find clarifications annoying |

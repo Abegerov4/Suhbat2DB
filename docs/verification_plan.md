@@ -25,5 +25,6 @@
 ## 3. Stages
 
 - **Stage 1 (October 2026, done):** subsets of Spider (100) and BIRD (60), full `ambiguous_ru` and `unsafe`, one seed. Results are in [EVALS.md](../EVALS.md).
-- **Stage 2 (December 2026):** full subsets of Spider (200) and BIRD (150), a second seed, experiments 3–5, labelling by a second annotator (Cohen's κ), error classification.
-- **User testing (April 2027):** real users solve tasks with the system; the scenarios are chosen based on the interviews ([evidence of relevance](relevance.md)).
+- **Stage 2 (December 2026):** full subsets of Spider (200) and BIRD (150), a second seed, experiments 3–5, error classification. Labelling by a second annotator (Cohen's κ) is done earlier, in November (DIP-27).
+- **External check of clarification and pilot (November–December 2026):** part of AMBROSIA or AmbiQT and 5–8 real people answering the clarifying questions (DIP-45); the evaluation protocol is fixed in writing before stage 2 (DIP-44).
+- **User testing (March 2027, before chapter 4):** real users solve tasks with the system; the scenarios are chosen based on the interviews ([evidence of relevance](relevance.md)).

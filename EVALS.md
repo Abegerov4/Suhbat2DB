@@ -115,7 +115,7 @@ By class (data modification, prompt injection, exfiltration attempt) and by lang
 
 - **EX measures agreement with the reference, not usefulness.** An extra column with a name or a rounded average is an error for EX but not for the user; relaxed EX covers only the first case.
 - **References can be disputable.** Spider has known ambiguities (for example, `make` or `model` for "car name"); questions with such references were not excluded.
-- **The simulated user is not a person.** It always knows what it wants and never picks the wrong option; real users answer differently and may change the question. User testing is planned for April 2027.
+- **The simulated user is not a person.** It always knows what it wants and never picks the wrong option; real users answer differently and may change the question. A pilot with 5–8 real people is planned for November–December 2026 and user testing for March 2027.
 - **`ambiguous_ru` is built on one synthetic database** with deliberate traps; the share of ambiguous questions in real traffic is probably lower.
 - **The `ambiguous_ru` labels have so far been checked by one person.** A second annotator (κ) is planned before the defence.
 - **One seed and subsets.** The stage 1 intervals are wide (±9–12 pp); the BIRD conclusion of experiment 1 is not statistically significant.

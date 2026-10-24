@@ -28,7 +28,9 @@ Public Text-to-SQL benchmarks (Spider, BIRD) hardly test the second and third po
 | Teachers and students of database courses | Study how a question turns into SQL | Visible SQL, explanation of errors and corrections |
 | Data administrators | Connect databases to the system | A guarantee that the system will not change the data or overload the DBMS |
 
-Interviews with users that should confirm these needs are still to be done ([template](templates/interview.md), dates in the [roadmap](roadmap.md)).
+**Primary group.** After the supervisor's comment of 24.10.2026 the primary group is teachers and students of the AITU database course: they are accessible for interviews and user testing, and the system's visible SQL and validation report match their task directly. The other groups remain secondary; their needs are not studied separately in this work.
+
+The needs of the primary group are still assumptions. At least 5 interviews within this group are planned ([template](templates/interview.md), [DIP-19](https://wasm.youtrack.cloud/issue/DIP-19), dates in the [roadmap](roadmap.md)); the criteria that confirm or refute each assumption are written down in advance in [relevance.md](relevance.md#5-confirmation-criteria).
 
 ## 3. Aim and objectives
 
@@ -59,10 +61,10 @@ The novelty of the work is that explicit ambiguity detection with a clarificatio
 |---|---|
 | PostgreSQL as the analysed DBMS | Other DBMSs (they can be added through sqlglot dialects, but they are outside this work) |
 | Read-only access to data | Data modification, ETL, building data marts |
-| Questions in Russian; English and Kazakh without separate optimisation | Voice input |
+| Questions in Russian (main language) and in Kazakh and English: questions in Kazakh are in scope and must not be refused (FR-16, DIP-21), but prompts and datasets are not optimised for Kazakh separately | Voice input; a separate Kazakh dataset |
 | Web interface, `admin` and `analyst` roles | Mobile application, SSO, multi-tenancy |
 | LLMs through an API (OpenAI, Anthropic as the fallback provider) | Fine-tuning an own model |
-| Demo database and the Spider and BIRD benchmarks | Work with real personal data |
+| Demo database, the Spider and BIRD benchmarks and an open dataset from data.egov.kz ([DIP-46](https://wasm.youtrack.cloud/issue/DIP-46)) | Work with real personal data ([data flow](data_flow.md)) |
 | Tracing in Langfuse | Production operation, SLA |
 
 If time allows: an MCP server with the validator tools and a semantic cache.

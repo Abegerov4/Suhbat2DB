@@ -33,7 +33,7 @@
 ## Outstanding tasks
 
 - 3–5 user interviews and requirements v2 (25.10 – 08.11.2026).
-- Recording the supervisor's and committee's comments and the fixes made for them.
+- Supervisor's comments of 24.10.2026: five points recorded with decisions and tasks ([section 11](../supervisor_feedback.md)); quick fixes done (AI tools disclosure, data-flow table, primary user group, Kazakh scope), the rest planned (DIP-44…47).
 - Prompt v2: fewer false refusals and unnecessary clarifications, the "schema" ambiguity, protection of the explanation against injection (November 2026).
 - Stage 2 evaluation: full samples, a second seed, experiments 3–5, a second annotator (December 2026).
 - Diploma text, chapters 1–4; pre-defence 2 (January 2027) and the final pre-defence (May 2027).

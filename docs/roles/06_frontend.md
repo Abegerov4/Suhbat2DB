@@ -1,6 +1,6 @@
 # Role 6. Frontend
 
-**Status: ✅ completed** (October 2026). Screenshots are in the [README](../../README.md#interface).
+**Status: completed** (October 2026). Screenshots are in the [README](../../README.md#interface).
 
 **Aim:** a web interface where a person without SQL knowledge asks questions and answers clarifications. The answer comes together with the SQL, the validation report, a table and a chart.
 **Depends on:** role 3 (API + SSE), role 5 (the real agent).
@@ -44,7 +44,7 @@ frontend/src/
 | Route | Contents |
 |---|---|
 | `/login`, `/register` | Forms; registration logs the user in immediately. Next to the form there is an animated panel: the product logo with database and folder icons orbiting around it and ripples in the background (`OrbitingCircles`, `Ripple`, Magic UI) |
-| `/` | **Overview**: 4 KPIs with an animated counter (`NumberTicker`, Magic UI) (questions, answers with data, clarifications, blocked SQL); an activity chart with a period selector (7, 14 or 30 days) and a summary of the four outcomes with the change against the previous period; where the validator stopped queries; recent dialogues; sources and 👍/👎 ratings |
+| `/` | **Overview**: 4 KPIs with an animated counter (`NumberTicker`, Magic UI) (questions, answers with data, clarifications, blocked SQL); an activity chart with a period selector (7, 14 or 30 days) and a summary of the four outcomes with the change against the previous period; where the validator stopped queries; recent dialogues; sources and like/dislike ratings |
 | `/chat` | Choice of a source, sample questions; the first question creates a session |
 | `/chat/[sessionId]` | Chat + analysis panel |
 | `/datasources` | Source cards with status (polling during indexing); for admin: connection, reindexing, deletion |
@@ -62,7 +62,7 @@ frontend/src/
   - SQL (`SqlPanel`: shiki highlighting, copying, **self-correction history**: each rejected attempt with the validator level, reason and hint)
   - Validation (`ValidationReport`: 5 levels with an icon and a label; the level where the query stopped is highlighted, and the following ones are marked "not checked")
 - [x] Refusals and errors are a separate card with a clear title by code (`refused`, `unsafe_sql`, `max_attempts`, `cancelled`…), not a toast
-- [x] 👍/👎 + an optional comment → `POST /feedback` (the score goes to Langfuse)
+- [x] like/dislike + an optional comment → `POST /feedback` (the score goes to Langfuse)
 - [x] History: `GET /sessions/{id}/messages` renders the same components. An unfinished clarification stays active; a refusal card is restored (the `error` field of the message, migration 0002)
 
 ### 6.4 SSE and the turn life cycle

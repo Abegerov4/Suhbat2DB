@@ -143,7 +143,7 @@ Each trap is a property of the data that makes one question admit several correc
 | Number of orders without cancelled ones | `count(*)`, `status <> 'cancelled'` | 8,471 |
 | Number of all orders | `count(*)` | 8,998 |
 | Units sold | `sum(order_items.quantity)` | 46,263 |
-| ❌ Error: `JOIN orders × payments` | sum of `total_amount` after the JOIN | 6,712.1 million ₸ (+20%) |
+| Error: `JOIN orders × payments` | sum of `total_amount` after the JOIN | 6,712.1 million ₸ (+20%) |
 
 The last row shows a typical generation error, not an interpretation: a b2b order can have several payments, so the JOIN duplicates the order rows.
 
