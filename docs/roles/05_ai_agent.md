@@ -1,6 +1,6 @@
 # Role 5. AI Agent (LLM Engineer)
 
-**Status: ✅ completed** (October 2026). Graph: [docs/graph.md](../graph.md); state: [CONTRACTS §5](../CONTRACTS.md#5-agent-state-langgraph).
+**Status: completed** (October 2026). Graph: [docs/graph.md](../graph.md); state: [CONTRACTS §5](../CONTRACTS.md#5-agent-state-langgraph).
 
 **Aim:** a LangGraph agent that replaces `FakeAgentRunner`. The agent links the question to the schema, clarifies ambiguities, generates SQL, corrects it using the validator report, executes it and explains the result. Every step is traced.
 **Depends on:** roles 3 (the `AgentRunner` interface, `SchemaSnapshot`) and 4 (the validator).
@@ -34,7 +34,7 @@ backend/app/agent/
 - [x] Model per node: `strong` = **gpt-4.1** (`detect_ambiguity`, `generate_sql`, temperature 0), `fast` = **gpt-4.1-mini** (`guard_input`, `explain`, temperature 0 and 0.3). The models are set in env
 - [x] Reasoning models (gpt-5*, the o-series) do not accept `temperature`, so the parameter is not passed (`supports_temperature`)
 - [x] Fallback provider through `with_fallbacks` if its key is set. Currently only an OpenAI key is available
-- [x] Langfuse: a `CallbackHandler` with a `trace_id` created in advance, the session and user in the metadata; the `trace_id` goes to the SSE `done` event and to the message. 👍/👎 is sent to Langfuse as the `user_feedback` score
+- [x] Langfuse: a `CallbackHandler` with a `trace_id` created in advance, the session and user in the metadata; the `trace_id` goes to the SSE `done` event and to the message. like/dislike is sent to Langfuse as the `user_feedback` score
 - [ ] ~~`LLM_MAX_COST_PER_REQUEST`~~ not needed: the cost is bounded by the limits on attempts and clarifications, and the actual cost is ≈ $0.01 per question (Langfuse)
 
 ### 5.2 Retrieval: schema linking

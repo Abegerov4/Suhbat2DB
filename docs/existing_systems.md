@@ -12,7 +12,7 @@
 | Vanna | An open-source Python library: RAG over DDL, documentation and SQL examples | The closest open analogue that can be self-hosted |
 | Chat with an LLM (ChatGPT and similar, without tools) | The user pastes the schema and asks for SQL | The most common way in practice; corresponds to the baseline in the experiments |
 
-Section 3.2 separately covers two research prototypes with a clarification dialogue, Sphinteract and AmbiSQL. They are the closest academic analogues ([literature review](literature_review.md), sources 18 and 20), but they are not products, so they are compared only on the criteria that apply to them.
+The subsection "Research systems" below separately covers two research prototypes with a clarification dialogue, Sphinteract and AmbiSQL. They are the closest academic analogues ([literature review](literature_review.md), sources 18 and 20), but they are not products, so they are compared only on the criteria that apply to them.
 
 ## 2. Criteria
 
@@ -34,28 +34,28 @@ Section 3.2 separately covers two research prototypes with a clarification dialo
 
 | Criterion | Cortex Analyst | Genie | Spotter | Vanna | Chat with an LLM | Suhbat2DB |
 |---|---|---|---|---|---|---|
-| C1. Clarification | ⚠️ An ambiguous question is rejected with a list of similar questions the system can answer [S2] | ⚠️ Can ask a clarifying question; according to the forum, this is configured through the space instructions [G2, G3] | ✅ "Asks when it is not sure instead of guessing" [T1] | — not stated | ⚠️ Depends on the model, not guaranteed | ✅ A question with options tied to the schema, pause and resume (ADR-023) |
-| C2. SQL visible | ✅ The API returns an `sql` block [S1] | ✅ The generated SQL can be viewed [G2] | ⚠️ Shows search tokens and natural-language steps [T1, T2] | ✅ | ✅ | ✅ With the history of attempts |
-| C3. SQL validation | — not stated (quality comes from the semantic model and verified queries) [S3] | — not stated (trusted queries and functions from the space author) [G1] | ⚠️ The search engine builds the SQL from tokens [T2] | — not stated | ❌ | ✅ 5 levels, AST, EXPLAIN ([validator.md](validator.md)) |
-| C4. Read-only | ⚠️ Depends on the Snowflake role privileges | ⚠️ Depends on the privileges in Unity Catalog | ⚠️ BI platform privileges | ⚠️ Depends on the connection passed by the developer | ❌ The user runs the SQL personally | ✅ Privilege check on connection + read-only transaction + AST policy |
-| C5. No manual semantic model | ❌ Needs a semantic model or a view [S1] | ⚠️ The space must be configured: tables, instructions, examples [G1] | ❌ Needs a ThoughtSpot data model | ⚠️ Needs "training" on DDL, documentation, examples [V1] | ✅ | ✅ The schema, comments and values are indexed automatically |
-| C6. Open source, self-hosted | ❌ Snowflake cloud | ❌ Databricks cloud | ❌ SaaS | ✅ MIT, maintained (version 2.0.2, February 2026) [V1] | ❌ | ✅ docker compose |
-| C7. Any PostgreSQL | ❌ Data in Snowflake | ❌ Data in Databricks | ⚠️ Through platform connectors | ✅ | ✅ | ✅ |
-| C8. Russian | — not stated | — not stated | — not stated | ⚠️ Depends on the model | ✅ | ✅ Interface and prompts in Russian; the `ambiguous_ru` set |
-| C9. Open evaluation | ⚠️ Internal measurements in a blog post [S2] | — not stated | — not stated | — not stated | — (there is work on the models themselves) | ✅ Spider, BIRD, `ambiguous_ru`, `unsafe` with intervals ([EVALS.md](../EVALS.md)) |
+| C1. Clarification | Partly. An ambiguous question is rejected with a list of similar questions the system can answer [S2] | Partly. Can ask a clarifying question; according to the forum, this is configured through the space instructions [G2, G3] | Yes, "Asks when it is not sure instead of guessing" [T1] | — not stated | Partly. Depends on the model, not guaranteed | Yes. A question with options tied to the schema, pause and resume (ADR-023) |
+| C2. SQL visible | Yes. The API returns an `sql` block [S1] | Yes. The generated SQL can be viewed [G2] | Partly. Shows search tokens and natural-language steps [T1, T2] | Yes | Yes | Yes. With the history of attempts |
+| C3. SQL validation | — not stated (quality comes from the semantic model and verified queries) [S3] | — not stated (trusted queries and functions from the space author) [G1] | Partly. The search engine builds the SQL from tokens [T2] | — not stated | No | Yes, 5 levels, AST, EXPLAIN ([validator.md](validator.md)) |
+| C4. Read-only | Partly. Depends on the Snowflake role privileges | Partly. Depends on the privileges in Unity Catalog | Partly. BI platform privileges | Partly. Depends on the connection passed by the developer | No. The user runs the SQL personally | Yes. Privilege check on connection + read-only transaction + AST policy |
+| C5. No manual semantic model | No. Needs a semantic model or a view [S1] | Partly. The space must be configured: tables, instructions, examples [G1] | No. Needs a ThoughtSpot data model | Partly. Needs "training" on DDL, documentation, examples [V1] | Yes | Yes. The schema, comments and values are indexed automatically |
+| C6. Open source, self-hosted | No. Snowflake cloud | No. Databricks cloud | No. SaaS | Yes. MIT, maintained (version 2.0.2, February 2026) [V1] | No | Yes, docker compose |
+| C7. Any PostgreSQL | No. Data in Snowflake | No. Data in Databricks | Partly. Through platform connectors | Yes | Yes | Yes |
+| C8. Russian | — not stated | — not stated | — not stated | Partly. Depends on the model | Yes | Yes. Interface and prompts in Russian; the `ambiguous_ru` set |
+| C9. Open evaluation | Partly. Internal measurements in a blog post [S2] | — not stated | — not stated | — not stated | — (there is work on the models themselves) | Yes. Spider, BIRD, `ambiguous_ru`, `unsafe` with intervals ([EVALS.md](../EVALS.md)) |
 
-Symbols: ✅ present; ⚠️ partly or with conditions; ❌ absent; — not stated in the sources found.
+Notation: "Yes" means the feature is present; "Partly" means it is present partly or with conditions; "No" means it is absent; "—" means it is not stated in the sources found.
 
 ### 3.2 Research systems
 
 | Criterion | Sphinteract | AmbiSQL | Suhbat2DB |
 |---|---|---|---|
-| C1. Clarification | ✅ Short questions with options and a free answer, then the SQL is rebuilt; four ambiguity types [R1] | ✅ Multiple-choice questions, question rewriting; taxonomy by database elements and by model reasoning [R2] | ✅ Options tied to schema columns, graph pause and resume |
-| C3. SQL validation | — not stated | — not stated | ✅ 5 levels, AST, EXPLAIN |
-| C4. Read-only | — not stated | — not stated | ✅ Role privileges, read-only transaction, AST policy |
-| C6. Open source | — not stated | ✅ The code is published on GitHub [R2] | ✅ |
-| C8. Russian | ❌ English datasets | ❌ English datasets | ✅ |
-| C9. Measured quality | ✅ KaggleDBQA and BIRD; the user is mostly simulated by an LLM [R1] | ⚠️ Ambiguity detection accuracy and the gain in exact SQL match on its own evaluation; a demo paper [R2] | ✅ Spider, BIRD, `ambiguous_ru`, `unsafe` |
+| C1. Clarification | Yes. Short questions with options and a free answer, then the SQL is rebuilt; four ambiguity types [R1] | Yes. Multiple-choice questions, question rewriting; taxonomy by database elements and by model reasoning [R2] | Yes. Options tied to schema columns, graph pause and resume |
+| C3. SQL validation | — not stated | — not stated | Yes, 5 levels, AST, EXPLAIN |
+| C4. Read-only | — not stated | — not stated | Yes. Role privileges, read-only transaction, AST policy |
+| C6. Open source | — not stated | Yes. The code is published on GitHub [R2] | Yes |
+| C8. Russian | No. English datasets | No. English datasets | Yes |
+| C9. Measured quality | Yes. KaggleDBQA and BIRD; the user is mostly simulated by an LLM [R1] | Partly. Ambiguity detection accuracy and the gain in exact SQL match on its own evaluation; a demo paper [R2] | Yes. Spider, BIRD, `ambiguous_ru`, `unsafe` |
 
 Both prototypes show that clarification with answer options increases accuracy. They do not cover SQL validation before execution or a read-only guarantee: these are works about understanding the question, not about executing the query safely.
 

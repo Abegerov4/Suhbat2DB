@@ -1,6 +1,6 @@
 # Role 3. Backend
 
-**Status: ✅ completed** (October 2026)
+**Status: completed** (October 2026)
 
 **Aim:** a FastAPI service with all endpoints from [`CONTRACTS.md`](../CONTRACTS.md). For now a stub works in place of the agent and returns a correct SSE stream.
 **Depends on:** roles 1 and 2.

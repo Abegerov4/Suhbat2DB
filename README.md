@@ -56,6 +56,7 @@
 16. [Work plan](#16-work-plan)
 17. [Limitations and open questions](#17-limitations-and-open-questions)
 18. [Literature and benchmarks](#18-literature-and-benchmarks)
+19. [Use of AI tools](#19-use-of-ai-tools)
 
 ---
 
@@ -333,7 +334,7 @@ Subsets, one seed, gpt-4.1. The method, datasets, error analysis and limitations
 ## 12. Observability (LLMOps)
 
 - **Langfuse Cloud** (or a local instance via `make up-langfuse`). Each dialogue turn is a separate trace, and each graph node and LLM call is a span. Prompts, responses, tokens, cost and latency are visible; the `trace_id` is stored with the message.
-- **User feedback** (👍 / 👎 under an answer) is attached to the trace as a score. Failed traces go into a regression dataset.
+- **User feedback** (like / dislike under an answer) is attached to the trace as a score. Failed traces go into a regression dataset.
 - **Prompt management.** Prompts are stored as files in git; `make prompts` uploads them to Langfuse as a new version, so the evolution of the main prompt (v1 to the current version) can be shown at the defence.
 - **Query log.** The outcome of each SQL query (status, the level where it stopped, latency) is stored in the application database and shown on the Overview page.
 - **CI.** GitHub Actions runs linters, backend and frontend tests, and e2e tests with an accessibility check. A smoke eval on 50 questions with regression thresholds runs for pull requests that change the agent, the validator or the datasets.
@@ -474,14 +475,14 @@ The detailed plan with risks and dependencies is in [docs/roadmap.md](docs/roadm
 
 | Period | Stage | Milestone | Status |
 |---|---|---|---|
-| October 2026 | Analysis and design; environment, demo database, backend, validator, agent, interface (roles 1–6); stage 1 evaluation; pre-defence documents | **Pre-defence 1, 24.10.2026**, tag `pre-defense-1` | ✅ / in progress |
-| 25.10 – 08.11.2026 | Comments from the pre-defence, 3–5 user interviews, requirements v2 | Interview notes | ⏳ |
-| November 2026 | Prompt v2 based on the error analysis; draft of chapter 1 | `EVALS.md` v2 | ⏳ |
-| December 2026 | Stage 2 evaluation: full samples, second seed, experiments 3–5, κ, error analysis | Full `EVALS.md` | ⏳ |
-| January 2027 | Chapter 2 | **Pre-defence 2**, tag `pre-defense-2` | ⏳ |
-| February – March 2027 | Chapters 3–4, conference abstract, optional MCP server | Draft text | ⏳ |
-| April 2027 | User testing, full text, plagiarism check | Plagiarism check certificate | ⏳ |
-| May 2027 | Presentation, demo, backup video | **Final pre-defence**, tag `final-pre-defense`; defence | ⏳ |
+| October 2026 | Analysis and design; environment, demo database, backend, validator, agent, interface (roles 1–6); stage 1 evaluation; pre-defence documents | **Pre-defence 1, 24.10.2026**, tag `pre-defense-1` | Done |
+| 25.10 – 08.11.2026 | Comments from the pre-defence, 3–5 user interviews, requirements v2 | Interview notes | Planned |
+| November 2026 | Prompt v2 based on the error analysis; draft of chapter 1 | `EVALS.md` v2 | Planned |
+| December 2026 | Stage 2 evaluation: full samples, second seed, experiments 3–5, κ, error analysis | Full `EVALS.md` | Planned |
+| January 2027 | Chapter 2 | **Pre-defence 2**, tag `pre-defense-2` | Planned |
+| February – March 2027 | Chapters 3–4, conference abstract, optional MCP server | Draft text | Planned |
+| April 2027 | User testing, full text, plagiarism check | Plagiarism check certificate | Planned |
+| May 2027 | Presentation, demo, backup video | **Final pre-defence**, tag `final-pre-defense`; defence | Planned |
 
 ## 17. Limitations and open questions
 
@@ -501,6 +502,12 @@ The full review with an analysis table is in [docs/literature_review.md](docs/li
 - Pourreza M., Rafiei D. *DIN-SQL: Decomposed In-Context Learning of Text-to-SQL with Self-Correction.* NeurIPS 2023.
 - Gao D. et al. *Text-to-SQL Empowered by Large Language Models: A Benchmark Evaluation (DAIL-SQL).* VLDB 2024.
 - Documentation: [LangGraph](https://langchain-ai.github.io/langgraph/), [sqlglot](https://sqlglot.com/), [Qdrant](https://qdrant.tech/documentation/), [Langfuse](https://langfuse.com/docs), [FastAPI](https://fastapi.tiangolo.com/).
+
+## 19. Use of AI tools
+
+The code, tests and documentation of this repository were written with the AI coding assistant Claude Code (Anthropic) under the author's direction. The author set the topic, the architecture, the requirements and the design of the experiments, and reviewed and ran every change. Correctness is checked independently of the assistant: by the unit, integration and e2e tests in CI, the SQL validator test set and the reproducible evaluation (`EVALS.md`).
+
+The core of the system (roles 1–6) was added on 19.10.2026 in a few large commits that follow the plan in [docs/roles](docs/roles/README.md). Since 22.10.2026 every change goes through a YouTrack task, a branch and a pull request. The decision was recorded after the supervisor's comment of 24.10.2026 ([docs/supervisor_feedback.md](docs/supervisor_feedback.md)).
 
 ---
 

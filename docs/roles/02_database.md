@@ -1,6 +1,6 @@
 # Role 2. Database
 
-**Status: ✅ completed** (October 2026). The demo database and its "traps" are described in detail in [docs/demo_db.md](../demo_db.md).
+**Status: completed** (October 2026). The demo database and its "traps" are described in detail in [docs/demo_db.md](../demo_db.md).
 
 **Aim:** a demo database on which ambiguous questions really arise, a safe role for the agent, and the application database schema.
 **Depends on:** role 1 (the `app-db` and `target-db` containers).

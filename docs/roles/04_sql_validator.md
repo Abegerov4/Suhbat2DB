@@ -1,6 +1,6 @@
 # Role 4. SQL Validator
 
-**Status: ✅ completed** (October 2026). The rules, their reasons and the results are in [docs/validator.md](../validator.md) (the basis for chapter 2 of the diploma).
+**Status: completed** (October 2026). The rules, their reasons and the results are in [docs/validator.md](../validator.md) (the basis for chapter 2 of the diploma).
 
 **Aim:** a deterministic `app.validator` module that guarantees that only a safe, syntactically correct `SELECT` consistent with the schema reaches execution. This is the core of the research part of the diploma, so the module is covered by tests more thoroughly than the others.
 **Depends on:** role 2 (`s2d_reader`), role 3 (`SchemaSnapshot`, connection pools).

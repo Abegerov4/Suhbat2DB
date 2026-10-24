@@ -34,13 +34,13 @@ In the plan of the justification document, the prototype (MVP) was scheduled for
 
 | Period | Work | Result | Requirements |
 |---|---|---|---|
-| 25.10 – 08.11.2026 | Comments from pre-defence 1; 3–5 interviews with potential users; refinement of the requirements based on them | Interview notes, requirements v2 | — |
-| 09.11 – 30.11.2026 | Prompt v2: false refusals, defaults during clarification, "schema" ambiguity, protection of the explanation against injection. Check on questions not used in the analysis. Draft of chapter 1 (review) | `EVALS.md` v2, chapter 1 | FR-11, FR-16, NFR-02, NFR-07 |
-| 01.12 – 27.12.2026 | Stage 2 evaluation: full samples Spider 200 and BIRD 150, a second seed, experiments 3–5, labelling by a second person (κ), classification of 30–50 errors | Full `EVALS.md` | FR-11, NFR-07 |
-| January 2027 | Chapter 2 (design); preparation for and holding of pre-defence 2 | Tag `pre-defense-2` | — |
+| 25.10 – 08.11.2026 | Comments from pre-defence 1; at least 5 interviews with the primary group (DIP-19); refinement of the requirements based on them | Interview notes, requirements v2 | — |
+| 09.11 – 30.11.2026 | Evaluation protocol fixed in writing before stage 2: primary metric, hypotheses, thresholds, held-out questions (DIP-44). Labelling by a second person and Cohen's κ (DIP-27, moved from December). Prompt v2: false refusals, defaults during clarification, "schema" ambiguity, protection of the explanation against injection. Draft of chapter 1 (review) | `docs/evaluation_protocol.md`, `EVALS.md` v2, chapter 1 | FR-11, FR-16, NFR-02, NFR-07 |
+| 01.12 – 27.12.2026 | Stage 2 evaluation: full samples Spider 200 and BIRD 150, a second seed, experiments 3–5, classification of 30–50 errors. Clarification on an external benchmark (AMBROSIA or AmbiQT) and a pilot with 5–8 real people (DIP-45). External attack set and 30 indirect injections (DIP-47) | Full `EVALS.md` | FR-11, NFR-01, NFR-07 |
+| January 2027 | Chapter 2 (design); demonstration on open data from data.egov.kz (DIP-46); preparation for and holding of pre-defence 2 | Tag `pre-defense-2` | — |
 | February 2027 | Chapter 3 (implementation); optionally an MCP server with the validator tools | Draft of chapter 3 | FR-17 |
-| March 2027 | Chapter 4 (experiments); abstract for a student conference on experiment 2 | Draft of chapters 1–4 | — |
-| April 2027 | User testing with real users; full text; plagiarism check | Diploma text | — |
+| March 2027 | User testing with real users (moved before chapter 4 after the supervisor's comment 3); chapter 4 (experiments), including the negative result of stage 1; abstract for a student conference on experiment 2 | Draft of chapters 1–4 | — |
+| April 2027 | Full text; plagiarism check | Diploma text | — |
 | May 2027 | Final pre-defence, fixes, presentation, demo scenario and backup video | Tag `final-pre-defense` | — |
 
 ## 4. Risks
@@ -51,7 +51,7 @@ In the plan of the justification document, the prototype (MVP) was scheduled for
 | R2 | The LLM API becomes unavailable or more expensive | Medium | High | Fallback provider (Anthropic), response cache in the evaluation, a stub for tests and e2e | Under control |
 | R3 | Budget for the experiments | Medium | Medium | LLM cache, subsets in stage 1, stage 2 estimate (≈ $9) | Under control |
 | R4 | The simulated user distorts the effect of clarification | Medium | Medium | A judge on a strong model, review of "suspicious" answers, user testing in April | Active |
-| R5 | The `ambiguous_ru` labels were checked by one person | High | Medium | A second annotator on 20% of the questions, Cohen's κ | Planned |
+| R5 | The `ambiguous_ru` labels were checked by one person | High | Medium | A second annotator on 20% of the questions, Cohen's κ, in November (DIP-27); an external benchmark (DIP-45) | Planned |
 | R6 | No confirmation of the need from real users | High | Medium | 3–5 interviews by 08.11.2026 | Planned |
 | R7 | Indirect injections through data | Medium (1 of 6 in stage 1) | Medium: the data does not change, but the answer text is distorted | Checking the numbers in the explanation → blocking, a separate prompt | Active |
 | R8 | A single developer: illness, workload from other courses | Medium | High | Prioritisation (Must first), weekly progress checks with the supervisor, spare time in December and April | Under control |

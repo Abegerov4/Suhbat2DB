@@ -1,6 +1,6 @@
 # Role 1. DevOps
 
-**Status: ✅ completed** (October 2026)
+**Status: completed** (October 2026)
 
 **Aim:** an environment where the whole project starts with one command and code quality is checked automatically.
 **Depends on:** nothing.
